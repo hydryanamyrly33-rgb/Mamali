@@ -38,7 +38,7 @@ body.space{
   background:#020617;
 }
 
-/* ستاره‌ها (فضایی واقعی) */
+/* ستاره‌ها (فضایی واقعی) — نسخه متحرک */
 .stars{
   position:fixed;
   inset:0;
@@ -52,9 +52,19 @@ body.space{
   opacity:0;
   transition:opacity 0.6s ease;
   z-index:-1;
+
+  /* ⭐ حرکت نرم ستاره‌ها ⭐ */
+  background-size:200% 200%;
+  animation:starMove 18s linear infinite;
 }
-body.space .stars{
-  opacity:1;
+
+@keyframes starMove{
+  0%{
+    background-position:0% 0%;
+  }
+  100%{
+    background-position:-200% -200%;
+  }
 }
 
 /* هاله نئونی */
@@ -193,7 +203,7 @@ body.holo .cube{
   box-shadow:0 18px 35px rgba(15,23,42,0.9);
 }
 
-/* جای‌گذاری مکعب‌ها (مثلث متساوی‌الساقین) */
+/* جای‌گذاری مکعب‌ها */
 .cube.instagram{
   top:0;
   left:50%;
