@@ -2,18 +2,12 @@
 <html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>سگ‌و شرفدار ترین ها به برنامه ایرانی</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 
 <style>
-:root{
-  --bg-mode:neon;
-  --text-main:#e5e7eb;
-  --text-soft:#9ca3af;
-}
-
 *{
   margin:0;
   padding:0;
@@ -26,45 +20,43 @@ body{
   display:flex;
   justify-content:center;
   align-items:center;
-  background:radial-gradient(circle at top,#0f172a,#000);
+  background:radial-gradient(circle at center,#0b1220,#000);
   overflow:hidden;
-  color:var(--text-main);
-  transition:background 0.6s ease;
+  transition:0.4s;
 }
 
-/* حالت فضایی واقعی */
-body.space-bg{
-  background:radial-gradient(circle at center,#000010,#020617 40%,#000);
+body.light{
+  background:white;
 }
 
 /* ستاره‌ها */
-#bg{
+canvas{
   position:fixed;
   inset:0;
   z-index:-2;
 }
 
-/* wrapper */
+/* متن‌ها */
 .wrapper{
   text-align:center;
   position:relative;
   z-index:10;
 }
 
-/* عنوان */
-.title{
-  font-size:26px;
-  font-weight:700;
-  margin-bottom:6px;
-}
-
 .maker{
   font-size:11px;
-  color:var(--text-soft);
+  color:#bbb;
   margin-bottom:4px;
 }
 
-/* دکمه تغییر پس‌زمینه */
+.title{
+  font-size:24px;
+  font-weight:700;
+  color:white;
+  margin-bottom:10px;
+}
+
+/* تغییر پس‌زمینه */
 .bg-toggle{
   margin-top:6px;
   font-size:11px;
@@ -79,31 +71,30 @@ body.space-bg{
   background:rgba(255,255,255,0.05);
 }
 
-/* مدار */
-.orbit{
-  position:relative;
-  width:320px;
-  height:320px;
-  margin:20px auto;
-}
-
-.ring{
+/* لامپ وسط */
+.center{
   position:absolute;
-  width:280px;
-  height:280px;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  width:110px;
+  height:110px;
   border-radius:50%;
-  border:1px dashed rgba(255,255,255,0.25);
-  animation:spin 14s linear infinite;
-  transform-style:preserve-3d;
+  border:none;
+  cursor:pointer;
+  font-size:40px;
+  background:white;
+  color:#333;
+  box-shadow:0 0 30px rgba(255,255,255,0.6);
+  transition:0.3s;
+  display:flex;
+  justify-content:center;
+  align-items:center;
 }
 
-@keyframes spin{
-  from{transform:rotateX(65deg) rotateZ(0deg);}
-  to{transform:rotateX(65deg) rotateZ(360deg);}
-}
-
-.pause{
-  animation-play-state:paused;
+body.light .center{
+  background:#222;
+  color:white;
 }
 
 /* آیکن‌ها */
@@ -115,7 +106,7 @@ body.space-bg{
   display:flex;
   justify-content:center;
   align-items:center;
-  background:rgba(255,255,255,0.06);
+  background:rgba(255,255,255,0.08);
   backdrop-filter:blur(8px);
   border:1px solid rgba(255,255,255,0.2);
   box-shadow:0 0 25px rgba(255,255,255,0.08);
@@ -124,36 +115,33 @@ body.space-bg{
   transition:0.3s;
 }
 
-.icon:hover{
-  transform:scale(1.25);
+body.light .icon{
+  background:rgba(0,0,0,0.1);
+  color:black;
+  border-color:rgba(0,0,0,0.2);
 }
 
-/* دکمه وسط */
-.center{
-  position:absolute;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  width:100px;
-  height:100px;
-  border-radius:50%;
-  border:none;
-  cursor:pointer;
-  font-size:28px;
-  background:linear-gradient(145deg,#ffffff,#dddddd);
-  box-shadow:0 0 30px rgba(255,255,255,0.6);
-  transition:0.3s;
+/* جایگذاری مثلث */
+.instagram{
+  top: calc(50% - 180px);
+  left: calc(50% - 35px);
 }
 
-.center:hover{
-  transform:translate(-50%,-50%) scale(1.1);
+.youtube{
+  top: calc(50% - 20px);
+  left: calc(50% - 150px);
 }
 
-/* کنترل مدار */
-.control-box{
-  margin-top:10px;
+.telegram{
+  top: calc(50% - 20px);
+  left: calc(50% + 80px);
+}
+
+/* متن پایین */
+.control{
+  margin-top:260px;
   font-size:12px;
-  color:var(--text-soft);
+  color:#bbb;
 }
 </style>
 </head>
@@ -172,39 +160,22 @@ body.space-bg{
     تغییر پس‌زمینه: نئونی / فضایی واقعی
   </div>
 
-  <div class="orbit">
-    <div class="ring" id="ring"></div>
+  <!-- آیکن‌ها -->
+  <a class="icon instagram"><i class="fab fa-instagram" style="color:#ff2e9f;"></i></a>
+  <a class="icon youtube"><i class="fab fa-youtube" style="color:#ff0000;"></i></a>
+  <a class="icon telegram"><i class="fab fa-telegram" style="color:#2aabee;"></i></a>
 
-    <!-- سه آیکن دقیقا روی مدار -->
-    <a class="icon" id="icon1"
-       data-app="instagram://user?username=instagram"
-       data-web="https://instagram.com/instagram">
-      <i class="fab fa-instagram" style="color:#ff2e9f;"></i>
-    </a>
+  <!-- لامپ -->
+  <button class="center" id="lamp">
+    <i class="fa-solid fa-lightbulb"></i>
+  </button>
 
-    <a class="icon" id="icon2"
-       data-app="tg://resolve?domain=telegram"
-       data-web="https://t.me/telegram">
-      <i class="fab fa-telegram" style="color:#2aabee;"></i>
-    </a>
-
-    <a class="icon" id="icon3"
-       data-app="vnd.youtube://"
-       data-web="https://youtube.com">
-      <i class="fab fa-youtube" style="color:#ff0000;"></i>
-    </a>
-
-    <button class="center" id="btn">⋯</button>
-  </div>
-
-  <div class="control-box">
-    روی سیاره وسط بزن تا چرخش مدار رو متوقف/شروع کنی.
-  </div>
+  <div class="control">روی لامپ بزن، تا صفحه تاریک / روشن بشه.</div>
 
 </div>
 
 <script>
-// ===== ستاره‌ها =====
+// ستاره‌ها
 const canvas=document.getElementById("bg");
 const ctx=canvas.getContext("2d");
 let stars=[];
@@ -239,47 +210,12 @@ function draw(){
 }
 draw();
 
-// ===== قرار دادن ۳ آیکن دقیقاً روی مدار =====
-function placeIcons(){
-  const radius=140;
-  const icons=[icon1,icon2,icon3];
-  const step=360/icons.length;
-
-  icons.forEach((icon,i)=>{
-    const angle=(step*i - 90) * Math.PI/180;
-    const x=160 + radius*Math.cos(angle) - 35;
-    const y=160 + radius*Math.sin(angle) - 35;
-    icon.style.left=x+"px";
-    icon.style.top=y+"px";
-  });
-}
-placeIcons();
-
-// ===== توقف/شروع مدار =====
-const ring=document.getElementById("ring");
-document.getElementById("btn").onclick=()=>{
-  ring.classList.toggle("pause");
+// لامپ → تاریک/روشن
+document.getElementById("lamp").onclick=()=>{
+  document.body.classList.toggle("light");
 };
 
-// ===== باز کردن اپ → اگر نشد سایت =====
-function openSmart(app,web){
-  const start=Date.now();
-  let fallback=false;
-  const timer=setTimeout(()=>{
-    if(!fallback && web) window.location=web;
-  },700);
-  window.location=app;
-  setTimeout(()=>clearTimeout(timer),1500);
-}
-
-document.querySelectorAll(".icon").forEach(ic=>{
-  ic.onclick=(e)=>{
-    e.preventDefault();
-    openSmart(ic.dataset.app,ic.dataset.web);
-  };
-});
-
-// ===== تغییر پس‌زمینه =====
+// تغییر پس‌زمینه
 document.getElementById("bgToggle").onclick=()=>{
   document.body.classList.toggle("space-bg");
 };
