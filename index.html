@@ -6,26 +6,24 @@
 <title>سایبری مدار مرکز</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Vazirmatn:wght@300;400;600;700&display=swap" rel="stylesheet"/>
 
 <style>
 :root{
   --bg-main:#020617;
-  --accent-main:#ff2e9f;
-  --accent-alt:#00e5ff;
-  --accent-soft:#7c3aed;
+  --accent-pink:#ff2e9f;
+  --accent-cyan:#00e5ff;
+  --accent-purple:#7c3aed;
   --glass-bg:rgba(15,23,42,0.78);
   --glass-border:rgba(148,163,184,0.55);
   --text-main:#e5e7eb;
   --text-soft:#9ca3af;
-  --orbit-speed:18s;
 }
 
 *{
   margin:0;
   padding:0;
   box-sizing:border-box;
-  font-family:"Vazirmatn","Poppins",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Vazirmatn",sans-serif;
 }
 
 body{
@@ -33,12 +31,12 @@ body{
   display:flex;
   justify-content:center;
   align-items:center;
-  background:radial-gradient(circle at top,#020617 0,#000 70%);
+  background:radial-gradient(circle at top,#0f172a 0,#020617 45%,#000 100%);
   overflow:hidden;
   color:var(--text-main);
 }
 
-/* soft nebula */
+/* nebula */
 body::before{
   content:"";
   position:fixed;
@@ -48,7 +46,7 @@ body::before{
     radial-gradient(circle at 80% 10%,rgba(56,189,248,0.18),transparent 55%),
     radial-gradient(circle at 50% 80%,rgba(129,140,248,0.18),transparent 55%);
   filter:blur(3px);
-  animation:nebula 20s ease-in-out infinite alternate;
+  animation:nebula 18s ease-in-out infinite alternate;
   z-index:-3;
 }
 
@@ -73,23 +71,23 @@ body::before{
   padding:16px;
   width:100%;
   max-width:480px;
-  perspective:1400px;
+  perspective:1200px;
 }
 
 /* header */
 .header{
-  margin-bottom:20px;
+  margin-bottom:22px;
 }
 
 .title{
   font-size:26px;
-  letter-spacing:1px;
   font-weight:600;
+  letter-spacing:1px;
   text-shadow:0 0 16px rgba(248,250,252,0.25);
 }
 
 .title span{
-  background:linear-gradient(135deg,var(--accent-main),var(--accent-alt));
+  background:linear-gradient(135deg,var(--accent-pink),var(--accent-cyan));
   -webkit-background-clip:text;
   color:transparent;
 }
@@ -101,7 +99,7 @@ body::before{
 }
 
 /* orbit container */
-.orbit-container{
+.orbit{
   position:relative;
   width:320px;
   height:320px;
@@ -110,10 +108,10 @@ body::before{
   transition:transform 0.25s ease-out;
 }
 
-/* glow ring */
+/* glow */
 .orbit-glow{
   position:absolute;
-  inset:18px;
+  inset:24px;
   border-radius:50%;
   background:conic-gradient(
     from 0deg,
@@ -134,22 +132,17 @@ body::before{
   inset:0;
   border-radius:50%;
   transform-style:preserve-3d;
-  animation:spin var(--orbit-speed) linear infinite;
-  pointer-events:none;
+  animation:spin 18s linear infinite;
 }
 
-.ring.r1{ animation-duration:14s; }
-.ring.r2{ animation-duration:18s; }
-.ring.r3{ animation-duration:22s; }
-.ring.r4{ animation-duration:26s; }
-.ring.r5{ animation-duration:30s; }
+.ring.outer{ animation-duration:22s; }
 
 .ring::before{
   content:"";
   position:absolute;
   inset:0;
   border-radius:50%;
-  border:1px dashed rgba(148,163,184,0.28);
+  border:1px dashed rgba(148,163,184,0.3);
   transform:rotateX(62deg);
 }
 
@@ -158,12 +151,12 @@ body::before{
   to{transform:rotateX(62deg) rotateZ(360deg);}
 }
 
-.ring.paused{
+.ring.pause{
   animation-play-state:paused;
 }
 
-/* center planet */
-.center-btn{
+/* center button */
+.center{
   position:absolute;
   top:50%;
   left:50%;
@@ -175,8 +168,8 @@ body::before{
   background:
     radial-gradient(circle at 30% 20%,#ffffff,#e5e7eb 40%,#cbd5f5 70%,#020617 100%);
   box-shadow:
-    0 0 24px rgba(248,250,252,0.7),
-    0 0 70px rgba(59,130,246,0.55);
+    0 0 26px rgba(248,250,252,0.7),
+    0 0 80px rgba(59,130,246,0.6);
   cursor:pointer;
   display:flex;
   align-items:center;
@@ -188,99 +181,43 @@ body::before{
   transition:transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-.center-btn::before{
-  content:"";
-  position:absolute;
-  width:180%;
-  height:180%;
-  background:conic-gradient(
-    from 0deg,
-    rgba(236,72,153,0.0),
-    rgba(236,72,153,0.4),
-    rgba(56,189,248,0.4),
-    rgba(129,140,248,0.4),
-    rgba(236,72,153,0.0)
-  );
-  mix-blend-mode:screen;
-  opacity:0;
-  transition:opacity 0.35s ease;
-}
-
-.center-btn span{
+.center span{
   position:relative;
   z-index:2;
 }
 
-.center-btn.active{
+.center.active{
   transform:translate(-50%,-50%) scale(1.06);
   box-shadow:
-    0 0 32px rgba(248,250,252,0.9),
+    0 0 34px rgba(248,250,252,0.9),
     0 0 110px rgba(56,189,248,0.9);
 }
 
-.center-btn.active::before{
-  opacity:1;
-}
-
-/* 3D icon cards */
+/* icon cards */
 .icon{
   position:absolute;
   width:70px;
   height:70px;
   border-radius:20px;
   display:flex;
-  flex-direction:column;
   align-items:center;
   justify-content:center;
-  gap:4px;
   background:var(--glass-bg);
   border:1px solid var(--glass-border);
   box-shadow:
-    0 10px 22px rgba(15,23,42,0.9),
+    0 12px 24px rgba(15,23,42,0.9),
     0 0 18px rgba(148,163,184,0.4);
   color:white;
   text-decoration:none;
   backdrop-filter:blur(12px);
   -webkit-backdrop-filter:blur(12px);
-  font-size:22px;
-  pointer-events:auto;
+  font-size:26px;
   transform-style:preserve-3d;
   transition:transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, background 0.22s ease;
 }
 
-/* 3D sides */
-.icon::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius:inherit;
-  background:linear-gradient(145deg,rgba(15,23,42,0.9),rgba(15,23,42,0.4));
-  transform:translateZ(-10px);
-  opacity:0.7;
-}
-
-.icon-inner{
-  position:relative;
-  z-index:2;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:4px;
-}
-
-.icon span{
-  font-size:9px;
-  letter-spacing:0.4px;
-  color:var(--text-soft);
-}
-
-.icon i{
-  text-shadow:0 0 10px rgba(248,250,252,0.6);
-}
-
 .icon:hover{
-  transform:translateZ(18px) scale(1.08);
+  transform:translateZ(16px) scale(1.08);
   box-shadow:
     0 16px 30px rgba(15,23,42,1),
     0 0 26px rgba(248,250,252,0.8);
@@ -289,7 +226,7 @@ body::before{
 }
 
 /* bottom info */
-.info-panel{
+.info{
   margin-top:8px;
   padding:10px 14px;
   border-radius:18px;
@@ -311,7 +248,7 @@ body::before{
   font-size:11px;
   text-transform:uppercase;
   letter-spacing:1px;
-  color:var(--accent-alt);
+  color:var(--accent-cyan);
 }
 
 .info-text{
@@ -333,102 +270,12 @@ body::before{
 }
 
 .info-chip i{
-  color:var(--accent-main);
-}
-
-/* settings button (hidden icon) */
-.settings-trigger{
-  position:absolute;
-  top:8px;
-  left:10px;
-  width:26px;
-  height:26px;
-  border-radius:999px;
-  background:rgba(15,23,42,0.7);
-  border:1px solid rgba(148,163,184,0.6);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:13px;
-  color:var(--text-soft);
-  box-shadow:0 8px 18px rgba(15,23,42,0.9);
-  cursor:pointer;
-}
-
-/* settings panel */
-.settings-panel{
-  position:fixed;
-  inset:auto 0 0 0;
-  background:rgba(15,23,42,0.98);
-  border-radius:18px 18px 0 0;
-  border-top:1px solid rgba(148,163,184,0.7);
-  box-shadow:0 -18px 40px rgba(15,23,42,1);
-  padding:12px 16px 18px;
-  transform:translateY(100%);
-  transition:transform 0.3s ease-out;
-  z-index:20;
-  font-size:11px;
-}
-
-.settings-panel.open{
-  transform:translateY(0%);
-}
-
-.settings-header{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin-bottom:8px;
-}
-
-.settings-title{
-  font-size:12px;
-  font-weight:600;
-}
-
-.settings-group{
-  margin-top:8px;
-  padding-top:6px;
-  border-top:1px solid rgba(30,41,59,0.9);
-}
-
-.settings-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin-top:6px;
-  gap:8px;
-}
-
-.settings-row label{
-  font-size:10px;
-  color:var(--text-soft);
-}
-
-.settings-row input[type="color"]{
-  width:32px;
-  height:20px;
-  padding:0;
-  border-radius:6px;
-  border:1px solid rgba(148,163,184,0.8);
-  background:transparent;
-}
-
-.settings-row input[type="range"]{
-  width:120px;
-}
-
-.settings-badge{
-  font-size:9px;
-  padding:3px 7px;
-  border-radius:999px;
-  border:1px solid rgba(148,163,184,0.7);
-  color:var(--accent-alt);
+  color:var(--accent-pink);
 }
 
 /* responsive */
 @media (max-width:420px){
-  .orbit-container{
+  .orbit{
     width:280px;
     height:280px;
   }
@@ -436,9 +283,12 @@ body::before{
     width:64px;
     height:64px;
   }
-  .center-btn{
+  .center{
     width:100px;
     height:100px;
+  }
+  .title{
+    font-size:24px;
   }
 }
 </style>
@@ -449,36 +299,57 @@ body::before{
 <canvas id="bg"></canvas>
 
 <div class="wrapper" id="tiltWrapper">
-  <div class="settings-trigger" id="settingsIcon">
-    <i class="fa-solid fa-sliders"></i>
-  </div>
-
   <div class="header">
     <div class="title"><span>سایبری</span> مدار مرکز</div>
     <div class="subtitle">یک لانچر سه‌بعدی نئونی برای لینک‌ها و برنامه‌هات ✨</div>
   </div>
 
-  <div class="orbit-container" id="orbitContainer">
+  <div class="orbit" id="orbitContainer">
     <div class="orbit-glow"></div>
 
-    <!-- 5 rings -->
-    <div class="ring r1" data-radius="70"></div>
-    <div class="ring r2" data-radius="90"></div>
-    <div class="ring r3" data-radius="110"></div>
-    <div class="ring r4" data-radius="130"></div>
-    <div class="ring r5" data-radius="150"></div>
+    <!-- inner ring -->
+    <div class="ring" id="ringInner" data-radius="95">
+      <a class="icon" data-app="instagram://user?username=instagram" data-web="https://instagram.com/instagram">
+        <i class="fab fa-instagram" style="color:#ff2e9f;"></i>
+      </a>
+      <a class="icon" data-app="fb://profile" data-web="https://facebook.com">
+        <i class="fab fa-facebook-f" style="color:#1877f2;"></i>
+      </a>
+      <a class="icon" data-app="linkedin://" data-web="https://linkedin.com">
+        <i class="fab fa-linkedin-in" style="color:#0a66c2;"></i>
+      </a>
+      <a class="icon" data-app="discord://" data-web="https://discord.com">
+        <i class="fab fa-discord" style="color:#5865f2;"></i>
+      </a>
+    </div>
 
-    <!-- center planet -->
-    <button class="center-btn" id="centerBtn">
+    <!-- outer ring -->
+    <div class="ring outer" id="ringOuter" data-radius="135">
+      <a class="icon" data-app="vnd.youtube://" data-web="https://youtube.com">
+        <i class="fab fa-youtube" style="color:#ff0000;"></i>
+      </a>
+      <a class="icon" data-app="twitter://" data-web="https://twitter.com">
+        <i class="fab fa-x-twitter" style="color:#1d9bf0;"></i>
+      </a>
+      <a class="icon" data-app="tg://resolve?domain=telegram" data-web="https://t.me/telegram">
+        <i class="fab fa-telegram" style="color:#2aabee;"></i>
+      </a>
+      <a class="icon" data-app="github://" data-web="https://github.com">
+        <i class="fab fa-github" style="color:#ffffff;"></i>
+      </a>
+    </div>
+
+    <!-- center button -->
+    <button class="center" id="centerBtn">
       <span>⋯</span>
     </button>
   </div>
 
-  <div class="info-panel">
+  <div class="info">
     <div class="info-left">
       <div class="info-title">کنترل مدار</div>
       <div class="info-text">
-        روی سیاره وسط بزن تا چرخش مدارها رو متوقف/شروع کنی. نگه‌دار تا تنظیمات باز بشه.
+        روی سیاره وسط بزن تا چرخش مدارها رو متوقف/شروع کنی.
       </div>
     </div>
     <div class="info-chip">
@@ -488,49 +359,12 @@ body::before{
   </div>
 </div>
 
-<!-- settings panel -->
-<div class="settings-panel" id="settingsPanel">
-  <div class="settings-header">
-    <div class="settings-title">تنظیمات مدار</div>
-    <button id="closeSettings" style="background:none;border:none;color:var(--text-soft);font-size:14px;">
-      <i class="fa-solid fa-xmark"></i>
-    </button>
-  </div>
-
-  <div class="settings-group">
-    <div class="settings-row">
-      <label>رنگ نئون اصلی</label>
-      <input type="color" id="colorMain" value="#ff2e9f">
-    </div>
-    <div class="settings-row">
-      <label>رنگ نئون کمکی</label>
-      <input type="color" id="colorAlt" value="#00e5ff">
-    </div>
-  </div>
-
-  <div class="settings-group">
-    <div class="settings-row">
-      <label>سرعت چرخش مدارها</label>
-      <input type="range" id="speedRange" min="10" max="35" value="18">
-      <span class="settings-badge" id="speedLabel">۱۸s</span>
-    </div>
-  </div>
-
-  <div class="settings-group">
-    <div class="settings-row">
-      <label>ستاره‌ها (پس‌زمینه)</label>
-      <input type="range" id="starsRange" min="20" max="80" value="60">
-      <span class="settings-badge" id="starsLabel">۶۰</span>
-    </div>
-  </div>
-</div>
-
 <script>
-// ===== STARFIELD (بهینه) =====
+// ===== STARFIELD (سبک و روون) =====
 const canvas=document.getElementById("bg");
 const ctx=canvas.getContext("2d");
-let STAR_COUNT=60;
 let stars=[];
+const STAR_COUNT=60;
 
 function resize(){
   canvas.width=innerWidth;
@@ -569,189 +403,70 @@ function drawStars(){
 }
 drawStars();
 
-// ===== ORBIT ICONS CONFIG =====
-// هر مدار یک لیست آیکن داره
-const ringsConfig=[
-  // r1 (داخلی‌ترین)
-  [
-    { name:"اینستاگرام", icon:"fab fa-instagram", color:"#ff2e9f",
-      app:"instagram://user?username=instagram",
-      web:"https://instagram.com/instagram" },
-    { name:"تلگرام", icon:"fab fa-telegram", color:"#2aabee",
-      app:"tg://resolve?domain=telegram",
-      web:"https://t.me/telegram" },
-    { name:"واتساپ", icon:"fab fa-whatsapp", color:"#25d366",
-      app:"whatsapp://",
-      web:"https://wa.me" },
-    { name:"یوتیوب", icon:"fab fa-youtube", color:"#ff0000",
-      app:"vnd.youtube://",
-      web:"https://youtube.com" },
-  ],
-  // r2
-  [
-    { name:"فیسبوک", icon:"fab fa-facebook-f", color:"#1877f2",
-      app:"fb://profile",
-      web:"https://facebook.com" },
-    { name:"X / توییتر", icon:"fab fa-x-twitter", color:"#1d9bf0",
-      app:"twitter://",
-      web:"https://twitter.com" },
-    { name:"لینکدین", icon:"fab fa-linkedin-in", color:"#0a66c2",
-      app:"linkedin://",
-      web:"https://linkedin.com" },
-    { name:"دیسکورد", icon:"fab fa-discord", color:"#5865f2",
-      app:"discord://",
-      web:"https://discord.com" },
-    { name:"گیت‌هاب", icon:"fab fa-github", color:"#ffffff",
-      app:"github://",
-      web:"https://github.com" },
-    { name:"کروم", icon:"fab fa-chrome", color:"#facc15",
-      app:"googlechrome://",
-      web:"https://google.com" },
-  ],
-  // r3
-  [
-    { name:"اسپاتیفای", icon:"fab fa-spotify", color:"#1db954",
-      app:"spotify://",
-      web:"https://open.spotify.com" },
-    { name:"نتفلیکس", icon:"fa-solid fa-film", color:"#e50914",
-      app:"nflx://",
-      web:"https://netflix.com" },
-    { name:"تیک‌تاک", icon:"fab fa-tiktok", color:"#ffffff",
-      app:"snssdk1233://",
-      web:"https://tiktok.com" },
-    { name:"ردیت", icon:"fab fa-reddit-alien", color:"#ff4500",
-      app:"reddit://",
-      web:"https://reddit.com" },
-  ],
-  // r4
-  [
-    { name:"ایمیل", icon:"fa-solid fa-envelope", color:"#f97316",
-      app:"mailto:",
-      web:"https://mail.google.com" },
-    { name:"نقشه", icon:"fa-solid fa-map-location-dot", color:"#22c55e",
-      app:"geo:0,0?q=",
-      web:"https://maps.google.com" },
-    { name:"فایل‌ها", icon:"fa-solid fa-folder-open", color:"#eab308",
-      app:"file://",
-      web:"https://drive.google.com" },
-    { name:"تقویم", icon:"fa-solid fa-calendar-days", color:"#38bdf8",
-      app:"content://com.android.calendar",
-      web:"https://calendar.google.com" },
-  ],
-  // r5 (بیرونی‌ترین)
-  [
-    { name:"اخلاق نِتِز", icon:"fa-solid fa-shield-heart", color:"#f97316",
-      app:"", web:"https://example.com" },
-    { name:"تنظیمات گوشی", icon:"fa-solid fa-gear", color:"#a855f7",
-      app:"android.settings.SETTINGS",
-      web:"" },
-    { name:"فروشگاه", icon:"fa-solid fa-bag-shopping", color:"#22c55e",
-      app:"market://details?id=com.android.vending",
-      web:"https://play.google.com" },
-    { name:"مرورگر", icon:"fa-solid fa-globe", color:"#38bdf8",
-      app:"", web:"https://google.com" },
-  ]
-];
-
-const ringElements=document.querySelectorAll(".ring");
-
-// ساخت آیکن‌ها و چیدن روی مدارها
-ringElements.forEach((ring,idx)=>{
-  const cfg=ringsConfig[idx] || [];
+// ===== چیدن آیکن‌ها روی مدار بدون هم‌پوشانی =====
+function layoutRing(ring){
   const radius=parseInt(ring.dataset.radius,10) || 100;
-  const count=cfg.length;
+  const icons=[...ring.querySelectorAll(".icon")];
+  const count=icons.length;
+  if(count===0) return;
   const step=360/count;
 
-  cfg.forEach((item,i)=>{
+  icons.forEach((icon,i)=>{
     const angle=step*i;
-    const icon=document.createElement("a");
-    icon.className="icon";
-    icon.style.setProperty("--icon-color",item.color);
-
-    icon.innerHTML=`
-      <div class="icon-inner">
-        <i class="${item.icon}" style="color:${item.color};"></i>
-        <span>${item.name}</span>
-      </div>
-    `;
-
-    // موقعیت روی مدار (بدون هم‌پوشانی)
     icon.style.transform=
       `rotateZ(${angle}deg) translateY(-${radius}px) rotateZ(${-angle}deg) translateZ(8px)`;
-
-    icon.href="#";
-    icon.addEventListener("click",(e)=>{
-      e.preventDefault();
-      openSmart(item.app,item.web);
-    });
-
-    ring.appendChild(icon);
   });
-});
+}
 
-// ===== SMART APP OPEN (اپ → اگر نشد → سایت) =====
+layoutRing(document.getElementById("ringInner"));
+layoutRing(document.getElementById("ringOuter"));
+
+// ===== باز کردن اپ → اگر نشد سایت =====
 function openSmart(appLink,webLink){
-  // اگر لینک اپ خالی بود، مستقیم سایت
-  if(!appLink){
-    if(webLink) window.location=webLink;
+  if(!appLink && webLink){
+    window.location=webLink;
     return;
   }
   const start=Date.now();
-  let fallbackTriggered=false;
+  let fallback=false;
 
   const timer=setTimeout(()=>{
-    if(!fallbackTriggered && webLink){
-      fallbackTriggered=true;
+    if(!fallback && webLink){
+      fallback=true;
       window.location=webLink;
     }
   },700);
 
-  // تلاش برای باز کردن اپ
   window.location=appLink;
 
-  // اگر مرورگر اجازه نداد، بعد از کمی زمان fallback می‌کنیم
-  setTimeout(()=>{
-    clearTimeout(timer);
-  },1600);
+  setTimeout(()=>clearTimeout(timer),1600);
 }
 
-// ===== ORBIT CONTROL =====
+document.querySelectorAll(".icon").forEach(icon=>{
+  icon.addEventListener("click",e=>{
+    e.preventDefault();
+    const app=icon.dataset.app || "";
+    const web=icon.dataset.web || "";
+    openSmart(app,web);
+  });
+});
+
+// ===== کنترل مدار =====
+const ringInner=document.getElementById("ringInner");
+const ringOuter=document.getElementById("ringOuter");
 const centerBtn=document.getElementById("centerBtn");
 let paused=false;
 
-function setRingsPaused(state){
-  paused=state;
-  ringElements.forEach(r=>{
-    if(paused) r.classList.add("paused");
-    else r.classList.remove("paused");
+centerBtn.addEventListener("click",()=>{
+  paused=!paused;
+  [ringInner,ringOuter].forEach(r=>{
+    if(paused) r.classList.add("pause");
+    else r.classList.remove("pause");
   });
   centerBtn.classList.toggle("active",!paused);
-}
-
-centerBtn.addEventListener("click",()=>{
-  // کلیک ساده → توقف/شروع
-  setRingsPaused(!paused);
 });
 
-// دابل کلیک → باز/بستن تنظیمات
-centerBtn.addEventListener("dblclick",(e)=>{
-  e.preventDefault();
-  toggleSettings();
-});
-
-// نگه داشتن طولانی → تنظیمات
-let holdTimer=null;
-centerBtn.addEventListener("touchstart",()=>{
-  holdTimer=setTimeout(()=>{
-    toggleSettings();
-  },800);
-},{passive:true});
-
-centerBtn.addEventListener("touchend",()=>{
-  if(holdTimer) clearTimeout(holdTimer);
-},{passive:true});
-
-// ===== 3D TILT =====
+// ===== 3D TILT ساده =====
 const tiltWrapper=document.getElementById("tiltWrapper");
 const orbitContainer=document.getElementById("orbitContainer");
 
@@ -781,58 +496,7 @@ tiltWrapper.addEventListener("touchmove",(e)=>{
 tiltWrapper.addEventListener("touchend",()=>{
   orbitContainer.style.transform="rotateX(0deg) rotateY(0deg)";
 });
+</script>
 
-// ===== SETTINGS PANEL =====
-const settingsPanel=document.getElementById("settingsPanel");
-const settingsIcon=document.getElementById("settingsIcon");
-const closeSettings=document.getElementById("closeSettings");
-const colorMain=document.getElementById("colorMain");
-const colorAlt=document.getElementById("colorAlt");
-const speedRange=document.getElementById("speedRange");
-const speedLabel=document.getElementById("speedLabel");
-const starsRange=document.getElementById("starsRange");
-const starsLabel=document.getElementById("starsLabel");
-
-function toggleSettings(){
-  settingsPanel.classList.toggle("open");
-}
-
-settingsIcon.addEventListener("click",toggleSettings);
-closeSettings.addEventListener("click",toggleSettings);
-
-// اعمال تنظیمات رنگ
-function applyColors(){
-  document.documentElement.style.setProperty("--accent-main",colorMain.value);
-  document.documentElement.style.setProperty("--accent-alt",colorAlt.value);
-}
-
-colorMain.addEventListener("input",()=>{
-  applyColors();
-  saveSettings();
-});
-colorAlt.addEventListener("input",()=>{
-  applyColors();
-  saveSettings();
-});
-
-// سرعت مدارها
-function applySpeed(){
-  const v=parseInt(speedRange.value,10);
-  document.documentElement.style.setProperty("--orbit-speed",`${v}s`);
-  speedLabel.textContent=`${v}s`;
-}
-speedRange.addEventListener("input",()=>{
-  applySpeed();
-  saveSettings();
-});
-
-// تعداد ستاره‌ها
-function applyStars(){
-  STAR_COUNT=parseInt(starsRange.value,10);
-  starsLabel.textContent=STAR_COUNT.toString();
-  initStars();
-}
-starsRange.addEventListener("input",()=>{
-  applyStars();
-  saveSettings();
-})
+</body>
+</html>
