@@ -2,151 +2,335 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Cyber Orbit Menu</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>Cyber Orbit Hub</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet"/>
 
 <style>
+:root{
+  --bg-main:#020617;
+  --accent-pink:#ff2e9f;
+  --accent-cyan:#00e5ff;
+  --accent-purple:#7c3aed;
+  --glass-bg:rgba(15,23,42,0.7);
+  --glass-border:rgba(148,163,184,0.5);
+  --text-main:#e5e7eb;
+  --text-soft:#9ca3af;
+}
+
 *{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial, sans-serif;
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:"Poppins",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 }
 
 body{
-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-background: radial-gradient(circle at center,#0b1220,#000);
-overflow:hidden;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:radial-gradient(circle at top,#0f172a 0,#020617 45%,#000 100%);
+  overflow:hidden;
+  color:var(--text-main);
 }
 
+/* animated nebula background */
 body::before{
-content:"";
-position:absolute;
-width:200%;
-height:200%;
-background: radial-gradient(circle,#ff008033,transparent 40%),
-            radial-gradient(circle,#00d4ff22,transparent 40%);
-animation:moveBg 12s linear infinite;
+  content:"";
+  position:fixed;
+  inset:-40%;
+  background:
+    radial-gradient(circle at 10% 20%,rgba(236,72,153,0.18),transparent 55%),
+    radial-gradient(circle at 80% 10%,rgba(56,189,248,0.18),transparent 55%),
+    radial-gradient(circle at 50% 80%,rgba(129,140,248,0.18),transparent 55%);
+  filter:blur(2px);
+  animation:nebula 18s ease-in-out infinite alternate;
+  z-index:-3;
 }
 
-@keyframes moveBg{
-0%{transform:translate(0,0);}
-50%{transform:translate(-10%,-10%);}
-100%{transform:translate(0,0);}
+@keyframes nebula{
+  0%{transform:translate3d(0,0,0) scale(1);}
+  50%{transform:translate3d(-4%,3%,0) scale(1.05);}
+  100%{transform:translate3d(3%,-4%,0) scale(1.02);}
 }
 
-canvas{
-position:fixed;
-inset:0;
+/* starfield canvas */
+#bg{
+  position:fixed;
+  inset:0;
+  z-index:-2;
 }
 
+/* main wrapper */
 .wrapper{
-position:relative;
-z-index:10;
-text-align:center;
+  position:relative;
+  z-index:10;
+  text-align:center;
+  padding:16px;
+  width:100%;
+  max-width:480px;
+  perspective:1400px;
 }
 
-h1{
-color:white;
-font-size:48px;
-margin-bottom:50px;
-letter-spacing:2px;
-text-shadow:0 0 20px rgba(255,255,255,.3);
+/* header */
+.header{
+  margin-bottom:26px;
 }
 
-h1 span{
-color:#ff0080;
+.title{
+  font-size:30px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  font-weight:600;
+  text-shadow:0 0 18px rgba(248,250,252,0.25);
 }
 
-.orbit{
-position:relative;
-width:320px;
-height:320px;
-display:flex;
-justify-content:center;
-align-items:center;
+.title span{
+  background:linear-gradient(135deg,var(--accent-pink),var(--accent-cyan));
+  -webkit-background-clip:text;
+  color:transparent;
 }
 
+.subtitle{
+  margin-top:6px;
+  font-size:13px;
+  color:var(--text-soft);
+}
+
+/* orbit container with tilt */
+.orbit-container{
+  position:relative;
+  width:320px;
+  height:320px;
+  margin:0 auto 18px;
+  transform-style:preserve-3d;
+  transition:transform 0.25s ease-out;
+}
+
+/* glow ring behind */
+.orbit-glow{
+  position:absolute;
+  inset:18px;
+  border-radius:50%;
+  background:conic-gradient(
+    from 0deg,
+    rgba(236,72,153,0.0),
+    rgba(236,72,153,0.7),
+    rgba(56,189,248,0.7),
+    rgba(129,140,248,0.7),
+    rgba(236,72,153,0.0)
+  );
+  filter:blur(18px);
+  opacity:0.7;
+  z-index:-1;
+}
+
+/* orbit rings */
 .ring{
-position:absolute;
-width:280px;
-height:280px;
-border-radius:50%;
-animation:spin 14s linear infinite;
-transform-style:preserve-3d;
+  position:absolute;
+  inset:32px;
+  border-radius:50%;
+  border:1px dashed rgba(148,163,184,0.35);
+  transform-style:preserve-3d;
+  animation:spin 18s linear infinite;
+}
+
+.ring-inner{
+  inset:64px;
+  animation-duration:14s;
+}
+
+.ring-outer{
+  inset:0;
+  animation-duration:22s;
 }
 
 @keyframes spin{
-from{transform:rotateX(65deg) rotate(0deg);}
-to{transform:rotateX(65deg) rotate(360deg);}
+  from{transform:rotateX(62deg) rotateZ(0deg);}
+  to{transform:rotateX(62deg) rotateZ(360deg);}
 }
 
-.pause{
-animation-play-state:paused;
+.ring.paused{
+  animation-play-state:paused;
 }
 
+/* center planet button */
+.center-btn{
+  position:absolute;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  width:110px;
+  height:110px;
+  border-radius:50%;
+  border:1px solid rgba(248,250,252,0.7);
+  background:
+    radial-gradient(circle at 30% 20%,#ffffff, #e5e7eb 40%, #cbd5f5 70%, #0f172a 100%);
+  box-shadow:
+    0 0 30px rgba(248,250,252,0.7),
+    0 0 80px rgba(59,130,246,0.55);
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:30px;
+  color:#0f172a;
+  position:relative;
+  overflow:hidden;
+  transition:transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.center-btn::before{
+  content:"";
+  position:absolute;
+  width:180%;
+  height:180%;
+  background:conic-gradient(
+    from 0deg,
+    rgba(236,72,153,0.0),
+    rgba(236,72,153,0.4),
+    rgba(56,189,248,0.4),
+    rgba(129,140,248,0.4),
+    rgba(236,72,153,0.0)
+  );
+  mix-blend-mode:screen;
+  opacity:0;
+  transition:opacity 0.35s ease;
+}
+
+.center-btn span{
+  position:relative;
+  z-index:2;
+}
+
+.center-btn.active{
+  transform:translate(-50%,-50%) scale(1.06);
+  box-shadow:
+    0 0 40px rgba(248,250,252,0.9),
+    0 0 120px rgba(56,189,248,0.9);
+}
+
+.center-btn.active::before{
+  opacity:1;
+}
+
+/* orbit icons (glass cards) */
 .icon{
-position:absolute;
-width:70px;
-height:70px;
-border-radius:18px;
-display:flex;
-justify-content:center;
-align-items:center;
-background:rgba(255,255,255,0.06);
-backdrop-filter: blur(8px);
-border:1px solid rgba(255,255,255,0.2);
-box-shadow:0 0 25px rgba(255,255,255,0.08);
-color:white;
-font-size:30px;
-transition:0.3s;
+  position:absolute;
+  width:78px;
+  height:78px;
+  border-radius:22px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  background:var(--glass-bg);
+  border:1px solid var(--glass-border);
+  box-shadow:
+    0 18px 35px rgba(15,23,42,0.9),
+    0 0 22px rgba(148,163,184,0.45);
+  color:white;
+  font-size:26px;
+  text-decoration:none;
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  transition:transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+}
+
+.icon span{
+  font-size:10px;
+  letter-spacing:0.5px;
+  text-transform:uppercase;
+  color:var(--text-soft);
 }
 
 .icon:hover{
-transform:scale(1.25) rotate(10deg);
-box-shadow:0 0 30px rgba(255,255,255,0.25);
+  transform:translateZ(18px) scale(1.12);
+  box-shadow:
+    0 22px 40px rgba(15,23,42,1),
+    0 0 30px rgba(248,250,252,0.7);
+  border-color:rgba(248,250,252,0.9);
+  background:rgba(15,23,42,0.9);
 }
 
-.fb{top:-25px;left:105px;color:#1877f2;}
-.ig{right:-25px;top:105px;color:#ff0080;}
-.li{left:-25px;top:105px;color:#0a66c2;}
-.dc{bottom:-25px;left:105px;color:#5865f2;}
+/* positions on rings */
+.fb{ top:-10px; left:50%; transform:translate(-50%,-50%); color:#1877f2; }
+.ig{ right:-4px; top:50%; transform:translate(50%,-50%); color:#ff2e9f; }
+.li{ left:-4px; top:50%; transform:translate(-50%,-50%); color:#0a66c2; }
+.dc{ bottom:-10px; left:50%; transform:translate(-50%,50%); color:#5865f2; }
 
-.center{
-position:absolute;
-width:100px;
-height:100px;
-border-radius:50%;
-border:none;
-cursor:pointer;
-font-size:28px;
-background:linear-gradient(145deg,#ffffff,#dddddd);
-box-shadow:0 0 30px rgba(255,255,255,0.6);
-transition:0.3s;
+.yt{ top:8%; left:14%; color:#ff0000; }
+.tw{ top:8%; right:14%; color:#1d9bf0; }
+.gh{ bottom:8%; left:14%; color:#ffffff; }
+.tg{ bottom:8%; right:14%; color:#2aabee; }
+
+/* bottom info panel */
+.info-panel{
+  margin-top:10px;
+  padding:10px 14px;
+  border-radius:18px;
+  background:rgba(15,23,42,0.85);
+  border:1px solid rgba(51,65,85,0.9);
+  box-shadow:0 18px 40px rgba(15,23,42,1);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
 }
 
-.center:hover{
-transform:scale(1.1);
+.info-left{
+  text-align:left;
 }
 
-.star{
-position:absolute;
-width:2px;
-height:2px;
-background:white;
-border-radius:50%;
-opacity:0.8;
-animation:fall linear infinite;
+.info-title{
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  color:var(--accent-cyan);
 }
 
-@keyframes fall{
-from{transform:translateY(-10vh);}
-to{transform:translateY(110vh);}
+.info-text{
+  font-size:11px;
+  color:var(--text-soft);
+}
+
+.info-chip{
+  font-size:11px;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid rgba(148,163,184,0.7);
+  background:radial-gradient(circle at 0 0,rgba(56,189,248,0.35),transparent 60%);
+  color:var(--text-main);
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+.info-chip i{
+  color:var(--accent-pink);
+}
+
+/* responsive tweaks */
+@media (max-width:420px){
+  .orbit-container{
+    width:280px;
+    height:280px;
+  }
+  .icon{
+    width:70px;
+    height:70px;
+  }
+  .center-btn{
+    width:100px;
+    height:100px;
+  }
+  .title{
+    font-size:26px;
+  }
 }
 </style>
 </head>
@@ -155,39 +339,173 @@ to{transform:translateY(110vh);}
 
 <canvas id="bg"></canvas>
 
-<div class="wrapper">
-<h1>3D <span>Orbit</span> Menu</h1>
+<div class="wrapper" id="tiltWrapper">
+  <div class="header">
+    <div class="title">Cyber <span>Orbit</span> Hub</div>
+    <div class="subtitle">یک لانچر سه‌بعدی برای لینک‌ها و برنامه‌هات ✨</div>
+  </div>
 
-<div class="orbit">
-<div class="ring" id="ring">
+  <div class="orbit-container" id="orbitContainer">
+    <div class="orbit-glow"></div>
 
-<a class="icon fb" href="https://facebook.com" target="_blank">
-<i class="fab fa-facebook-f"></i>
-</a>
+    <!-- outer ring -->
+    <div class="ring ring-outer" id="ringOuter">
+      <a class="icon yt" href="https://youtube.com" target="_blank">
+        <i class="fab fa-youtube"></i>
+        <span>YouTube</span>
+      </a>
+      <a class="icon tw" href="https://twitter.com" target="_blank">
+        <i class="fab fa-x-twitter"></i>
+        <span>X / Twitter</span>
+      </a>
+      <a class="icon gh" href="https://github.com" target="_blank">
+        <i class="fab fa-github"></i>
+        <span>GitHub</span>
+      </a>
+      <a class="icon tg" href="https://t.me" target="_blank">
+        <i class="fab fa-telegram"></i>
+        <span>Telegram</span>
+      </a>
+    </div>
 
-<a class="icon ig" href="https://instagram.com" target="_blank">
-<i class="fab fa-instagram"></i>
-</a>
+    <!-- middle ring -->
+    <div class="ring" id="ringMid">
+      <a class="icon fb" href="https://facebook.com" target="_blank">
+        <i class="fab fa-facebook-f"></i>
+        <span>Facebook</span>
+      </a>
+      <a class="icon ig" href="https://instagram.com" target="_blank">
+        <i class="fab fa-instagram"></i>
+        <span>Instagram</span>
+      </a>
+      <a class="icon li" href="https://linkedin.com" target="_blank">
+        <i class="fab fa-linkedin-in"></i>
+        <span>LinkedIn</span>
+      </a>
+      <a class="icon dc" href="https://discord.com" target="_blank">
+        <i class="fab fa-discord"></i>
+        <span>Discord</span>
+      </a>
+    </div>
 
-<a class="icon li" href="https://linkedin.com" target="_blank">
-<i class="fab fa-linkedin-in"></i>
-</a>
+    <!-- inner ring (آماده برای اضافه کردن چیزهای بعدی) -->
+    <div class="ring ring-inner" id="ringInner">
+      <!-- می‌تونی بعداً اینجا شورتکات‌های شخصی خودت رو بذاری -->
+    </div>
 
-<a class="icon dc" href="https://discord.com" target="_blank">
-<i class="fab fa-discord"></i>
-</a>
+    <!-- center planet button -->
+    <button class="center-btn" id="centerBtn">
+      <span>⋯</span>
+    </button>
+  </div>
 
-</div>
-
-<button class="center" id="btn">⋯</button>
-</div>
+  <div class="info-panel">
+    <div class="info-left">
+      <div class="info-title">Orbit Control</div>
+      <div class="info-text">
+        روی سیاره وسط بزن تا چرخش مدارها رو متوقف/شروع کنی.
+      </div>
+    </div>
+    <div class="info-chip">
+      <i class="fa-solid fa-cube"></i>
+      <span>3D UI • Glass • Neon</span>
+    </div>
+  </div>
 </div>
 
 <script>
-const ring=document.getElementById("ring");
-document.getElementById("btn").onclick=()=>{
-ring.classList.toggle("pause");
-};
+// ====== STARFIELD BACKGROUND ======
+const canvas=document.getElementById("bg");
+const ctx=canvas.getContext("2d");
+
+function resize(){
+  canvas.width=innerWidth;
+  canvas.height=innerHeight;
+}
+resize();
+window.addEventListener("resize",resize);
+
+let stars=[];
+const STAR_COUNT=140;
+
+function initStars(){
+  stars=[];
+  for(let i=0;i<STAR_COUNT;i++){
+    stars.push({
+      x:Math.random()*canvas.width,
+      y:Math.random()*canvas.height,
+      z:Math.random()*1.2+0.3,
+      r:Math.random()*1.4+0.4
+    });
+  }
+}
+initStars();
+
+function drawStars(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for(const s of stars){
+    ctx.beginPath();
+    ctx.fillStyle=`rgba(248,250,252,${0.35 + s.z*0.4})`;
+    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.fill();
+    s.y+=0.12*s.z;
+    if(s.y>canvas.height){
+      s.y=0;
+      s.x=Math.random()*canvas.width;
+    }
+  }
+  requestAnimationFrame(drawStars);
+}
+drawStars();
+
+// ====== ORBIT CONTROL ======
+const ringOuter=document.getElementById("ringOuter");
+const ringMid=document.getElementById("ringMid");
+const ringInner=document.getElementById("ringInner");
+const centerBtn=document.getElementById("centerBtn");
+
+let paused=false;
+
+centerBtn.addEventListener("click",()=>{
+  paused=!paused;
+  [ringOuter,ringMid,ringInner].forEach(r=>{
+    if(paused) r.classList.add("paused");
+    else r.classList.remove("paused");
+  });
+  centerBtn.classList.toggle("active",!paused);
+});
+
+// ====== 3D TILT (PARALLAX) ======
+const tiltWrapper=document.getElementById("tiltWrapper");
+const orbitContainer=document.getElementById("orbitContainer");
+
+function handleTilt(x,y,rect){
+  const relX=(x-rect.left)/rect.width - 0.5;
+  const relY=(y-rect.top)/rect.height - 0.5;
+  const rotateX=relY * -16;
+  const rotateY=relX * 16;
+  orbitContainer.style.transform=`rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+}
+
+tiltWrapper.addEventListener("mousemove",(e)=>{
+  const rect=orbitContainer.getBoundingClientRect();
+  handleTilt(e.clientX,e.clientY,rect);
+});
+
+tiltWrapper.addEventListener("mouseleave",()=>{
+  orbitContainer.style.transform="rotateX(0deg) rotateY(0deg)";
+});
+
+// touch for mobile
+tiltWrapper.addEventListener("touchmove",(e)=>{
+  const touch=e.touches[0];
+  const rect=orbitContainer.getBoundingClientRect();
+  handleTilt(touch.clientX,touch.clientY,rect);
+},{passive:true});
+
+tiltWrapper.addEventListener("touchend",()=>{
+  orbitContainer.style.transform="rotateX(0deg) rotateY(0deg)";
+});
 </script>
 
 </body>
