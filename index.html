@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cyber Orbit Menu</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+<style>
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:Arial, sans-serif;
+}
+
+body{
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background: radial-gradient(circle at center,#0b1220,#000);
+overflow:hidden;
+}
+
+body::before{
+content:"";
+position:absolute;
+width:200%;
+height:200%;
+background: radial-gradient(circle,#ff008033,transparent 40%),
+            radial-gradient(circle,#00d4ff22,transparent 40%);
+animation:moveBg 12s linear infinite;
+}
+
+@keyframes moveBg{
+0%{transform:translate(0,0);}
+50%{transform:translate(-10%,-10%);}
+100%{transform:translate(0,0);}
+}
+
+canvas{
+position:fixed;
+inset:0;
+}
+
+.wrapper{
+position:relative;
+z-index:10;
+text-align:center;
+}
+
+h1{
+color:white;
+font-size:48px;
+margin-bottom:50px;
+letter-spacing:2px;
+text-shadow:0 0 20px rgba(255,255,255,.3);
+}
+
+h1 span{
+color:#ff0080;
+}
+
+.orbit{
+position:relative;
+width:320px;
+height:320px;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.ring{
+position:absolute;
+width:280px;
+height:280px;
+border-radius:50%;
+animation:spin 14s linear infinite;
+transform-style:preserve-3d;
+}
+
+@keyframes spin{
+from{transform:rotateX(65deg) rotate(0deg);}
+to{transform:rotateX(65deg) rotate(360deg);}
+}
+
+.pause{
+animation-play-state:paused;
+}
+
+.icon{
+position:absolute;
+width:70px;
+height:70px;
+border-radius:18px;
+display:flex;
+justify-content:center;
+align-items:center;
+background:rgba(255,255,255,0.06);
+backdrop-filter: blur(8px);
+border:1px solid rgba(255,255,255,0.2);
+box-shadow:0 0 25px rgba(255,255,255,0.08);
+color:white;
+font-size:30px;
+transition:0.3s;
+}
+
+.icon:hover{
+transform:scale(1.25) rotate(10deg);
+box-shadow:0 0 30px rgba(255,255,255,0.25);
+}
+
+.fb{top:-25px;left:105px;color:#1877f2;}
+.ig{right:-25px;top:105px;color:#ff0080;}
+.li{left:-25px;top:105px;color:#0a66c2;}
+.dc{bottom:-25px;left:105px;color:#5865f2;}
+
+.center{
+position:absolute;
+width:100px;
+height:100px;
+border-radius:50%;
+border:none;
+cursor:pointer;
+font-size:28px;
+background:linear-gradient(145deg,#ffffff,#dddddd);
+box-shadow:0 0 30px rgba(255,255,255,0.6);
+transition:0.3s;
+}
+
+.center:hover{
+transform:scale(1.1);
+}
+
+.star{
+position:absolute;
+width:2px;
+height:2px;
+background:white;
+border-radius:50%;
+opacity:0.8;
+animation:fall linear infinite;
+}
+
+@keyframes fall{
+from{transform:translateY(-10vh);}
+to{transform:translateY(110vh);}
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="bg"></canvas>
+
+<div class="wrapper">
+<h1>3D <span>Orbit</span> Menu</h1>
+
+<div class="orbit">
+<div class="ring" id="ring">
+
+<a class="icon fb" href="https://facebook.com" target="_blank">
+<i class="fab fa-facebook-f"></i>
+</a>
+
+<a class="icon ig" href="https://instagram.com" target="_blank">
+<i class="fab fa-instagram"></i>
+</a>
+
+<a class="icon li" href="https://linkedin.com" target="_blank">
+<i class="fab fa-linkedin-in"></i>
+</a>
+
+<a class="icon dc" href="https://discord.com" target="_blank">
+<i class="fab fa-discord"></i>
+</a>
+
+</div>
+
+<button class="center" id="btn">⋯</button>
+</div>
+</div>
+
+<script>
+const ring=document.getElementById("ring");
+document.getElementById("btn").onclick=()=>{
+ring.classList.toggle("pause");
+};
+</script>
+
+</body>
+</html>
