@@ -3,19 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-<title>سایبری مدار مرکز</title>
+<title>سگ‌و شرفدار ترین ها به برنامه ایرانی</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 
 <style>
 :root{
-  --bg-mode:neon; /* neon | space */
-  --bg-main:#020617;
-  --accent-pink:#ff2e9f;
-  --accent-cyan:#00e5ff;
-  --accent-purple:#7c3aed;
-  --glass-bg:rgba(15,23,42,0.78);
-  --glass-border:rgba(148,163,184,0.55);
+  --bg-mode:neon;
   --text-main:#e5e7eb;
   --text-soft:#9ca3af;
 }
@@ -24,7 +18,7 @@
   margin:0;
   padding:0;
   box-sizing:border-box;
-  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Vazirmatn",sans-serif;
+  font-family:"Vazirmatn",sans-serif;
 }
 
 body{
@@ -32,7 +26,7 @@ body{
   display:flex;
   justify-content:center;
   align-items:center;
-  background:radial-gradient(circle at top,#0f172a 0,#020617 45%,#000 100%);
+  background:radial-gradient(circle at top,#0f172a,#000);
   overflow:hidden;
   color:var(--text-main);
   transition:background 0.6s ease;
@@ -40,56 +34,28 @@ body{
 
 /* حالت فضایی واقعی */
 body.space-bg{
-  background:radial-gradient(circle at center,#000010 0,#020617 35%,#000 100%);
+  background:radial-gradient(circle at center,#000010,#020617 40%,#000);
 }
 
-/* nebula برای حالت نئونی */
-body::before{
-  content:"";
-  position:fixed;
-  inset:-40%;
-  background:
-    radial-gradient(circle at 10% 20%,rgba(236,72,153,0.18),transparent 55%),
-    radial-gradient(circle at 80% 10%,rgba(56,189,248,0.18),transparent 55%),
-    radial-gradient(circle at 50% 80%,rgba(129,140,248,0.18),transparent 55%);
-  filter:blur(3px);
-  animation:nebula 18s ease-in-out infinite alternate;
-  z-index:-3;
-  pointer-events:none;
-}
-
-body.space-bg::before{
-  opacity:0.15;
-  filter:blur(2px);
-}
-
-@keyframes nebula{
-  0%{transform:translate3d(0,0,0) scale(1);}
-  50%{transform:translate3d(-3%,2%,0) scale(1.03);}
-  100%{transform:translate3d(2%,-3%,0) scale(1.01);}
-}
-
-/* starfield */
+/* ستاره‌ها */
 #bg{
   position:fixed;
   inset:0;
   z-index:-2;
 }
 
-/* main wrapper */
+/* wrapper */
 .wrapper{
+  text-align:center;
   position:relative;
   z-index:10;
-  text-align:center;
-  padding:16px;
-  width:100%;
-  max-width:480px;
-  perspective:1200px;
 }
 
-/* header */
-.header{
-  margin-bottom:10px;
+/* عنوان */
+.title{
+  font-size:26px;
+  font-weight:700;
+  margin-bottom:6px;
 }
 
 .maker{
@@ -98,234 +64,96 @@ body.space-bg::before{
   margin-bottom:4px;
 }
 
-.title{
-  font-size:26px;
-  font-weight:600;
-  letter-spacing:1px;
-  text-shadow:0 0 16px rgba(248,250,252,0.25);
-}
-
-.title span{
-  background:linear-gradient(135deg,var(--accent-pink),var(--accent-cyan));
-  -webkit-background-clip:text;
-  color:transparent;
-}
-
-.subtitle{
-  margin-top:6px;
-  font-size:12px;
-  color:var(--text-soft);
-}
-
-/* bg toggle button */
+/* دکمه تغییر پس‌زمینه */
 .bg-toggle{
-  margin-top:8px;
+  margin-top:6px;
   font-size:11px;
-  color:var(--accent-cyan);
+  color:#00e5ff;
   cursor:pointer;
   display:inline-flex;
   align-items:center;
   gap:6px;
   padding:4px 10px;
   border-radius:999px;
-  border:1px solid rgba(148,163,184,0.6);
-  background:rgba(15,23,42,0.7);
+  border:1px solid rgba(255,255,255,0.3);
+  background:rgba(255,255,255,0.05);
 }
 
-/* orbit container */
+/* مدار */
 .orbit{
   position:relative;
   width:320px;
   height:320px;
-  margin:10px auto 16px;
-  transform-style:preserve-3d;
-  transition:transform 0.25s ease-out;
+  margin:20px auto;
 }
 
-/* glow */
-.orbit-glow{
-  position:absolute;
-  inset:24px;
-  border-radius:50%;
-  background:conic-gradient(
-    from 0deg,
-    rgba(236,72,153,0.0),
-    rgba(236,72,153,0.7),
-    rgba(56,189,248,0.7),
-    rgba(129,140,248,0.7),
-    rgba(236,72,153,0.0)
-  );
-  filter:blur(18px);
-  opacity:0.6;
-  z-index:-1;
-}
-
-body.space-bg .orbit-glow{
-  opacity:0.35;
-}
-
-/* ring */
 .ring{
   position:absolute;
-  inset:0;
+  width:280px;
+  height:280px;
   border-radius:50%;
+  border:1px dashed rgba(255,255,255,0.25);
+  animation:spin 14s linear infinite;
   transform-style:preserve-3d;
-  animation:spin 18s linear infinite;
-}
-
-.ring::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius:50%;
-  border:1px dashed rgba(148,163,184,0.35);
-  transform:rotateX(62deg);
 }
 
 @keyframes spin{
-  from{transform:rotateX(62deg) rotateZ(0deg);}
-  to{transform:rotateX(62deg) rotateZ(360deg);}
+  from{transform:rotateX(65deg) rotateZ(0deg);}
+  to{transform:rotateX(65deg) rotateZ(360deg);}
 }
 
-.ring.pause{
+.pause{
   animation-play-state:paused;
 }
 
-/* center button */
+/* آیکن‌ها */
+.icon{
+  position:absolute;
+  width:70px;
+  height:70px;
+  border-radius:18px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:rgba(255,255,255,0.06);
+  backdrop-filter:blur(8px);
+  border:1px solid rgba(255,255,255,0.2);
+  box-shadow:0 0 25px rgba(255,255,255,0.08);
+  font-size:30px;
+  color:white;
+  transition:0.3s;
+}
+
+.icon:hover{
+  transform:scale(1.25);
+}
+
+/* دکمه وسط */
 .center{
   position:absolute;
   top:50%;
   left:50%;
   transform:translate(-50%,-50%);
-  width:110px;
-  height:110px;
+  width:100px;
+  height:100px;
   border-radius:50%;
-  border:1px solid rgba(248,250,252,0.7);
-  background:
-    radial-gradient(circle at 30% 20%,#ffffff,#e5e7eb 40%,#cbd5f5 70%,#020617 100%);
-  box-shadow:
-    0 0 26px rgba(248,250,252,0.7),
-    0 0 80px rgba(59,130,246,0.6);
+  border:none;
   cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
   font-size:28px;
-  color:#020617;
-  position:relative;
-  overflow:hidden;
-  transition:transform 0.25s ease, box-shadow 0.25s ease;
+  background:linear-gradient(145deg,#ffffff,#dddddd);
+  box-shadow:0 0 30px rgba(255,255,255,0.6);
+  transition:0.3s;
 }
 
-.center span{
-  position:relative;
-  z-index:2;
+.center:hover{
+  transform:translate(-50%,-50%) scale(1.1);
 }
 
-.center.active{
-  transform:translate(-50%,-50%) scale(1.06);
-  box-shadow:
-    0 0 34px rgba(248,250,252,0.9),
-    0 0 110px rgba(56,189,248,0.9);
-}
-
-/* icon cards */
-.icon{
-  position:absolute;
-  width:70px;
-  height:70px;
-  border-radius:20px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:var(--glass-bg);
-  border:1px solid var(--glass-border);
-  box-shadow:
-    0 12px 24px rgba(15,23,42,0.9),
-    0 0 18px rgba(148,163,184,0.4);
-  color:white;
-  text-decoration:none;
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
-  font-size:28px;
-  transform-style:preserve-3d;
-  transition:transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, background 0.22s ease;
-}
-
-.icon:hover{
-  transform:translateZ(16px) scale(1.08);
-  box-shadow:
-    0 16px 30px rgba(15,23,42,1),
-    0 0 26px rgba(248,250,252,0.8);
-  border-color:rgba(248,250,252,0.9);
-  background:rgba(15,23,42,0.95);
-}
-
-/* bottom info */
-.info{
-  margin-top:8px;
-  padding:10px 14px;
-  border-radius:18px;
-  background:rgba(15,23,42,0.9);
-  border:1px solid rgba(51,65,85,0.9);
-  box-shadow:0 16px 36px rgba(15,23,42,1);
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  font-size:11px;
-}
-
-.info-left{
-  text-align:right;
-}
-
-.info-title{
-  font-size:11px;
-  text-transform:uppercase;
-  letter-spacing:1px;
-  color:var(--accent-cyan);
-}
-
-.info-text{
-  margin-top:2px;
-  font-size:10px;
+/* کنترل مدار */
+.control-box{
+  margin-top:10px;
+  font-size:12px;
   color:var(--text-soft);
-}
-
-.info-chip{
-  font-size:10px;
-  padding:6px 10px;
-  border-radius:999px;
-  border:1px solid rgba(148,163,184,0.7);
-  background:radial-gradient(circle at 0 0,rgba(56,189,248,0.35),transparent 60%);
-  color:var(--text-main);
-  display:flex;
-  align-items:center;
-  gap:6px;
-}
-
-.info-chip i{
-  color:var(--accent-pink);
-}
-
-/* responsive */
-@media (max-width:420px){
-  .orbit{
-    width:280px;
-    height:280px;
-  }
-  .icon{
-    width:64px;
-    height:64px;
-  }
-  .center{
-    width:100px;
-    height:100px;
-  }
-  .title{
-    font-size:24px;
-  }
 }
 </style>
 </head>
@@ -334,201 +162,127 @@ body.space-bg .orbit-glow{
 
 <canvas id="bg"></canvas>
 
-<div class="wrapper" id="tiltWrapper">
-  <div class="header">
-    <div class="maker">سازنده این ابر سایت😂🥲: امیرعلی حیدریان</div>
-    <div class="title"><span>سایبری</span> مدار مرکز</div>
-    <div class="subtitle">یک لانچر سه‌بعدی نئونی برای لینک‌ها و برنامه‌هات ✨</div>
-    <div class="bg-toggle" id="bgToggle">
-      <i class="fa-solid fa-wand-magic-sparkles"></i>
-      <span>تغییر پس‌زمینه: نئونی / فضایی واقعی</span>
-    </div>
+<div class="wrapper">
+
+  <div class="maker">سازنده این ابر سایت: امیرعلی حیدریان</div>
+  <div class="title">سگ‌و شرفدار ترین ها به برنامه ایرانی</div>
+
+  <div class="bg-toggle" id="bgToggle">
+    <i class="fa-solid fa-wand-magic-sparkles"></i>
+    تغییر پس‌زمینه: نئونی / فضایی واقعی
   </div>
 
-  <div class="orbit" id="orbitContainer">
-    <div class="orbit-glow"></div>
+  <div class="orbit">
+    <div class="ring" id="ring"></div>
 
-    <!-- یک مدار با ۳ آیکن دقیقا روی خط مدار -->
-    <div class="ring" id="ringMain" data-radius="115">
-      <a class="icon"
-         data-app="instagram://user?username=instagram"
-         data-web="https://instagram.com/instagram">
-        <i class="fab fa-instagram" style="color:#ff2e9f;"></i>
-      </a>
+    <!-- سه آیکن دقیقا روی مدار -->
+    <a class="icon" id="icon1"
+       data-app="instagram://user?username=instagram"
+       data-web="https://instagram.com/instagram">
+      <i class="fab fa-instagram" style="color:#ff2e9f;"></i>
+    </a>
 
-      <a class="icon"
-         data-app="tg://resolve?domain=telegram"
-         data-web="https://t.me/telegram">
-        <i class="fab fa-telegram" style="color:#2aabee;"></i>
-      </a>
+    <a class="icon" id="icon2"
+       data-app="tg://resolve?domain=telegram"
+       data-web="https://t.me/telegram">
+      <i class="fab fa-telegram" style="color:#2aabee;"></i>
+    </a>
 
-      <a class="icon"
-         data-app="vnd.youtube://"
-         data-web="https://youtube.com">
-        <i class="fab fa-youtube" style="color:#ff0000;"></i>
-      </a>
-    </div>
+    <a class="icon" id="icon3"
+       data-app="vnd.youtube://"
+       data-web="https://youtube.com">
+      <i class="fab fa-youtube" style="color:#ff0000;"></i>
+    </a>
 
-    <!-- دکمه وسط -->
-    <button class="center" id="centerBtn">
-      <span>⋯</span>
-    </button>
+    <button class="center" id="btn">⋯</button>
   </div>
 
-  <div class="info">
-    <div class="info-left">
-      <div class="info-title">کنترل مدار</div>
-      <div class="info-text">
-        روی سیاره وسط بزن تا چرخش مدار رو متوقف/شروع کنی.  
-        آیکن‌ها دقیقاً روی مدار می‌چرخن.
-      </div>
-    </div>
-    <div class="info-chip">
-      <i class="fa-solid fa-cube"></i>
-      <span>رابط نئونی • سه‌بعدی • شیشه‌ای</span>
-    </div>
+  <div class="control-box">
+    روی سیاره وسط بزن تا چرخش مدار رو متوقف/شروع کنی.
   </div>
+
 </div>
 
 <script>
-// ===== STARFIELD =====
+// ===== ستاره‌ها =====
 const canvas=document.getElementById("bg");
 const ctx=canvas.getContext("2d");
 let stars=[];
-const STAR_COUNT=60;
-
+for(let i=0;i<100;i++){
+  stars.push({
+    x:Math.random()*innerWidth,
+    y:Math.random()*innerHeight,
+    speed:Math.random()*1+0.3
+  });
+}
 function resize(){
   canvas.width=innerWidth;
   canvas.height=innerHeight;
 }
 resize();
-window.addEventListener("resize",resize);
+window.onresize=resize;
 
-function initStars(){
-  stars=[];
-  for(let i=0;i<STAR_COUNT;i++){
-    stars.push({
-      x:Math.random()*canvas.width,
-      y:Math.random()*canvas.height,
-      z:Math.random()*1.2+0.3,
-      r:Math.random()*1.3+0.4
-    });
-  }
-}
-initStars();
-
-function drawStars(){
+function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  for(const s of stars){
+  ctx.fillStyle="white";
+  for(let s of stars){
     ctx.beginPath();
-    ctx.fillStyle=`rgba(248,250,252,${0.3 + s.z*0.4})`;
-    ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+    ctx.arc(s.x,s.y,1.5,0,Math.PI*2);
     ctx.fill();
-    s.y+=0.09*s.z;
+    s.y+=s.speed;
     if(s.y>canvas.height){
       s.y=0;
       s.x=Math.random()*canvas.width;
     }
   }
-  requestAnimationFrame(drawStars);
+  requestAnimationFrame(draw);
 }
-drawStars();
+draw();
 
-// ===== چیدن ۳ آیکن دقیقا روی مدار =====
-function layoutRing(ring){
-  const radius=parseInt(ring.dataset.radius,10) || 110;
-  const icons=[...ring.querySelectorAll(".icon")];
-  const count=icons.length;
-  if(count===0) return;
-  const step=360/count;
+// ===== قرار دادن ۳ آیکن دقیقاً روی مدار =====
+function placeIcons(){
+  const radius=140;
+  const icons=[icon1,icon2,icon3];
+  const step=360/icons.length;
 
   icons.forEach((icon,i)=>{
-    const angle=step*i - 90; // یکی بالا، دو تا چپ و راست
-    icon.style.transform=
-      `rotateZ(${angle}deg) translateY(-${radius}px) rotateZ(${-angle}deg) translateZ(8px)`;
+    const angle=(step*i - 90) * Math.PI/180;
+    const x=160 + radius*Math.cos(angle) - 35;
+    const y=160 + radius*Math.sin(angle) - 35;
+    icon.style.left=x+"px";
+    icon.style.top=y+"px";
   });
 }
+placeIcons();
 
-const ringMain=document.getElementById("ringMain");
-layoutRing(ringMain);
+// ===== توقف/شروع مدار =====
+const ring=document.getElementById("ring");
+document.getElementById("btn").onclick=()=>{
+  ring.classList.toggle("pause");
+};
 
 // ===== باز کردن اپ → اگر نشد سایت =====
-function openSmart(appLink,webLink){
-  if(!appLink && webLink){
-    window.location=webLink;
-    return;
-  }
+function openSmart(app,web){
   const start=Date.now();
   let fallback=false;
-
   const timer=setTimeout(()=>{
-    if(!fallback && webLink){
-      fallback=true;
-      window.location=webLink;
-    }
+    if(!fallback && web) window.location=web;
   },700);
-
-  window.location=appLink;
-
-  setTimeout(()=>clearTimeout(timer),1600);
+  window.location=app;
+  setTimeout(()=>clearTimeout(timer),1500);
 }
 
-document.querySelectorAll(".icon").forEach(icon=>{
-  icon.addEventListener("click",e=>{
+document.querySelectorAll(".icon").forEach(ic=>{
+  ic.onclick=(e)=>{
     e.preventDefault();
-    const app=icon.dataset.app || "";
-    const web=icon.dataset.web || "";
-    openSmart(app,web);
-  });
+    openSmart(ic.dataset.app,ic.dataset.web);
+  };
 });
 
-// ===== کنترل مدار =====
-const centerBtn=document.getElementById("centerBtn");
-let paused=false;
-
-centerBtn.addEventListener("click",()=>{
-  paused=!paused;
-  if(paused) ringMain.classList.add("pause");
-  else ringMain.classList.remove("pause");
-  centerBtn.classList.toggle("active",!paused);
-});
-
-// ===== 3D TILT ساده =====
-const tiltWrapper=document.getElementById("tiltWrapper");
-const orbitContainer=document.getElementById("orbitContainer");
-
-function handleTilt(x,y,rect){
-  const relX=(x-rect.left)/rect.width - 0.5;
-  const relY=(y-rect.top)/rect.height - 0.5;
-  const rotateX=relY * -14;
-  const rotateY=relX * 14;
-  orbitContainer.style.transform=`rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-}
-
-tiltWrapper.addEventListener("mousemove",(e)=>{
-  const rect=orbitContainer.getBoundingClientRect();
-  handleTilt(e.clientX,e.clientY,rect);
-});
-
-tiltWrapper.addEventListener("mouseleave",()=>{
-  orbitContainer.style.transform="rotateX(0deg) rotateY(0deg)";
-});
-
-tiltWrapper.addEventListener("touchmove",(e)=>{
-  const t=e.touches[0];
-  const rect=orbitContainer.getBoundingClientRect();
-  handleTilt(t.clientX,t.clientY,rect);
-},{passive:true});
-
-tiltWrapper.addEventListener("touchend",()=>{
-  orbitContainer.style.transform="rotateX(0deg) rotateY(0deg)";
-});
-
-// ===== تغییر پس‌زمینه (نئونی / فضایی واقعی) =====
-const bgToggle=document.getElementById("bgToggle");
-bgToggle.addEventListener("click",()=>{
+// ===== تغییر پس‌زمینه =====
+document.getElementById("bgToggle").onclick=()=>{
   document.body.classList.toggle("space-bg");
-});
+};
 </script>
 
 </body>
