@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>🤦👇سگ‌ و شرفدار ترین ها به برنامه ایرانی</title>
+<title>سگ‌و شرفدار ترین ها به برنامه ایرانی</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 
@@ -23,10 +23,12 @@ body{
   background:radial-gradient(circle at center,#0b1220,#000);
   overflow:hidden;
   transition:0.4s;
+  color:#f9fafb;
 }
 
+/* لامپ: تاریک/روشن با فیلتر (روی کل صفحه) */
 body.light{
-  background:white;
+  filter:invert(1) hue-rotate(180deg);
 }
 
 /* ستاره‌ها */
@@ -36,29 +38,29 @@ canvas{
   z-index:-2;
 }
 
-/* متن‌ها */
+/* متن‌ها و محتوا */
 .wrapper{
   text-align:center;
   position:relative;
   z-index:10;
 }
 
+/* متن‌ها کمی بالاتر */
 .maker{
   font-size:11px;
-  color:#bbb;
-  margin-bottom:4px;
+  color:#cbd5f5;
+  margin-bottom:2px;
+  margin-top:-10px;
 }
 
 .title{
-  font-size:24px;
+  font-size:22px;
   font-weight:700;
-  color:white;
-  margin-bottom:10px;
+  margin-bottom:6px;
 }
 
-/* تغییر پس‌زمینه */
 .bg-toggle{
-  margin-top:6px;
+  margin-top:4px;
   font-size:11px;
   color:#00e5ff;
   cursor:pointer;
@@ -69,6 +71,14 @@ canvas{
   border-radius:999px;
   border:1px solid rgba(255,255,255,0.3);
   background:rgba(255,255,255,0.05);
+}
+
+/* کانتینر مثلث و لامپ */
+.orbit{
+  position:relative;
+  width:320px;
+  height:260px;
+  margin:40px auto 0; /* مثلث میاد پایین‌تر */
 }
 
 /* لامپ وسط */
@@ -92,11 +102,6 @@ canvas{
   align-items:center;
 }
 
-body.light .center{
-  background:#222;
-  color:white;
-}
-
 /* آیکن‌ها */
 .icon{
   position:absolute;
@@ -115,33 +120,27 @@ body.light .center{
   transition:0.3s;
 }
 
-body.light .icon{
-  background:rgba(0,0,0,0.1);
-  color:black;
-  border-color:rgba(0,0,0,0.2);
-}
-
-/* جایگذاری مثلث */
+/* مثلث متساوی‌الساقین، کمی پایین‌تر از قبل */
 .instagram{
-  top: calc(50% - 180px);
-  left: calc(50% - 35px);
+  top:20px;              /* بالا، ولی پایین‌تر از متن‌ها */
+  left:calc(50% - 35px);
 }
 
 .youtube{
-  top: calc(50% - 20px);
-  left: calc(50% - 150px);
+  top:120px;
+  left:calc(50% - 150px);
 }
 
 .telegram{
-  top: calc(50% - 20px);
-  left: calc(50% + 80px);
+  top:120px;
+  left:calc(50% + 80px);
 }
 
-/* متن پایین */
+/* متن پایین، وسط */
 .control{
-  margin-top:260px;
+  margin-top:18px;
   font-size:12px;
-  color:#bbb;
+  color:#cbd5f5;
 }
 </style>
 </head>
@@ -152,23 +151,33 @@ body.light .icon{
 
 <div class="wrapper">
 
-  <div class="maker">سازنده این ابر سایت: امیرعلی حیدریان🌚</div>
-  <div class="title">🤦👇سگ‌ و شرفدار ترین ها به برنامه ایرانی</div>
+  <div class="maker">سازنده این ابر سایت: امیرعلی حیدریان</div>
+  <div class="title">سگ‌و شرفدار ترین ها به برنامه ایرانی</div>
 
   <div class="bg-toggle" id="bgToggle">
     <i class="fa-solid fa-wand-magic-sparkles"></i>
     تغییر پس‌زمینه: نئونی / فضایی واقعی
   </div>
 
-  <!-- آیکن‌ها -->
-  <a class="icon instagram"><i class="fab fa-instagram" style="color:#ff2e9f;"></i></a>
-  <a class="icon youtube"><i class="fab fa-youtube" style="color:#ff0000;"></i></a>
-  <a class="icon telegram"><i class="fab fa-telegram" style="color:#2aabee;"></i></a>
+  <div class="orbit">
+    <!-- آیکن‌ها -->
+    <a class="icon instagram">
+      <i class="fab fa-instagram" style="color:#ff2e9f;"></i>
+    </a>
 
-  <!-- لامپ -->
-  <button class="center" id="lamp">
-    <i class="fa-solid fa-lightbulb"></i>
-  </button>
+    <a class="icon youtube">
+      <i class="fab fa-youtube" style="color:#ff0000;"></i>
+    </a>
+
+    <a class="icon telegram">
+      <i class="fab fa-telegram" style="color:#2aabee;"></i>
+    </a>
+
+    <!-- لامپ -->
+    <button class="center" id="lamp">
+      <i class="fa-solid fa-lightbulb"></i>
+    </button>
+  </div>
 
   <div class="control">روی لامپ بزن، تا صفحه تاریک / روشن بشه.</div>
 
@@ -210,12 +219,12 @@ function draw(){
 }
 draw();
 
-// لامپ → تاریک/روشن
+// لامپ → تاریک/روشن (فقط کلاس light روی body)
 document.getElementById("lamp").onclick=()=>{
   document.body.classList.toggle("light");
 };
 
-// تغییر پس‌زمینه
+// تغییر پس‌زمینه (نئونی / فضایی واقعی)
 document.getElementById("bgToggle").onclick=()=>{
   document.body.classList.toggle("space-bg");
 };
