@@ -9,6 +9,7 @@
 
 <style>
 :root{
+  --bg-mode:neon; /* neon | space */
   --bg-main:#020617;
   --accent-pink:#ff2e9f;
   --accent-cyan:#00e5ff;
@@ -34,9 +35,15 @@ body{
   background:radial-gradient(circle at top,#0f172a 0,#020617 45%,#000 100%);
   overflow:hidden;
   color:var(--text-main);
+  transition:background 0.6s ease;
 }
 
-/* nebula */
+/* حالت فضایی واقعی */
+body.space-bg{
+  background:radial-gradient(circle at center,#000010 0,#020617 35%,#000 100%);
+}
+
+/* nebula برای حالت نئونی */
 body::before{
   content:"";
   position:fixed;
@@ -48,6 +55,12 @@ body::before{
   filter:blur(3px);
   animation:nebula 18s ease-in-out infinite alternate;
   z-index:-3;
+  pointer-events:none;
+}
+
+body.space-bg::before{
+  opacity:0.15;
+  filter:blur(2px);
 }
 
 @keyframes nebula{
@@ -76,7 +89,13 @@ body::before{
 
 /* header */
 .header{
-  margin-bottom:22px;
+  margin-bottom:10px;
+}
+
+.maker{
+  font-size:11px;
+  color:var(--text-soft);
+  margin-bottom:4px;
 }
 
 .title{
@@ -98,12 +117,27 @@ body::before{
   color:var(--text-soft);
 }
 
+/* bg toggle button */
+.bg-toggle{
+  margin-top:8px;
+  font-size:11px;
+  color:var(--accent-cyan);
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 10px;
+  border-radius:999px;
+  border:1px solid rgba(148,163,184,0.6);
+  background:rgba(15,23,42,0.7);
+}
+
 /* orbit container */
 .orbit{
   position:relative;
   width:320px;
   height:320px;
-  margin:0 auto 16px;
+  margin:10px auto 16px;
   transform-style:preserve-3d;
   transition:transform 0.25s ease-out;
 }
@@ -126,7 +160,11 @@ body::before{
   z-index:-1;
 }
 
-/* rings */
+body.space-bg .orbit-glow{
+  opacity:0.35;
+}
+
+/* ring */
 .ring{
   position:absolute;
   inset:0;
@@ -135,14 +173,12 @@ body::before{
   animation:spin 18s linear infinite;
 }
 
-.ring.outer{ animation-duration:22s; }
-
 .ring::before{
   content:"";
   position:absolute;
   inset:0;
   border-radius:50%;
-  border:1px dashed rgba(148,163,184,0.3);
+  border:1px dashed rgba(148,163,184,0.35);
   transform:rotateX(62deg);
 }
 
@@ -211,7 +247,7 @@ body::before{
   text-decoration:none;
   backdrop-filter:blur(12px);
   -webkit-backdrop-filter:blur(12px);
-  font-size:26px;
+  font-size:28px;
   transform-style:preserve-3d;
   transition:transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, background 0.22s ease;
 }
@@ -300,46 +336,40 @@ body::before{
 
 <div class="wrapper" id="tiltWrapper">
   <div class="header">
+    <div class="maker">سازنده این ابر سایت😂🥲: امیرعلی حیدریان</div>
     <div class="title"><span>سایبری</span> مدار مرکز</div>
     <div class="subtitle">یک لانچر سه‌بعدی نئونی برای لینک‌ها و برنامه‌هات ✨</div>
+    <div class="bg-toggle" id="bgToggle">
+      <i class="fa-solid fa-wand-magic-sparkles"></i>
+      <span>تغییر پس‌زمینه: نئونی / فضایی واقعی</span>
+    </div>
   </div>
 
   <div class="orbit" id="orbitContainer">
     <div class="orbit-glow"></div>
 
-    <!-- inner ring -->
-    <div class="ring" id="ringInner" data-radius="95">
-      <a class="icon" data-app="instagram://user?username=instagram" data-web="https://instagram.com/instagram">
+    <!-- یک مدار با ۳ آیکن دقیقا روی خط مدار -->
+    <div class="ring" id="ringMain" data-radius="115">
+      <a class="icon"
+         data-app="instagram://user?username=instagram"
+         data-web="https://instagram.com/instagram">
         <i class="fab fa-instagram" style="color:#ff2e9f;"></i>
       </a>
-      <a class="icon" data-app="fb://profile" data-web="https://facebook.com">
-        <i class="fab fa-facebook-f" style="color:#1877f2;"></i>
-      </a>
-      <a class="icon" data-app="linkedin://" data-web="https://linkedin.com">
-        <i class="fab fa-linkedin-in" style="color:#0a66c2;"></i>
-      </a>
-      <a class="icon" data-app="discord://" data-web="https://discord.com">
-        <i class="fab fa-discord" style="color:#5865f2;"></i>
-      </a>
-    </div>
 
-    <!-- outer ring -->
-    <div class="ring outer" id="ringOuter" data-radius="135">
-      <a class="icon" data-app="vnd.youtube://" data-web="https://youtube.com">
-        <i class="fab fa-youtube" style="color:#ff0000;"></i>
-      </a>
-      <a class="icon" data-app="twitter://" data-web="https://twitter.com">
-        <i class="fab fa-x-twitter" style="color:#1d9bf0;"></i>
-      </a>
-      <a class="icon" data-app="tg://resolve?domain=telegram" data-web="https://t.me/telegram">
+      <a class="icon"
+         data-app="tg://resolve?domain=telegram"
+         data-web="https://t.me/telegram">
         <i class="fab fa-telegram" style="color:#2aabee;"></i>
       </a>
-      <a class="icon" data-app="github://" data-web="https://github.com">
-        <i class="fab fa-github" style="color:#ffffff;"></i>
+
+      <a class="icon"
+         data-app="vnd.youtube://"
+         data-web="https://youtube.com">
+        <i class="fab fa-youtube" style="color:#ff0000;"></i>
       </a>
     </div>
 
-    <!-- center button -->
+    <!-- دکمه وسط -->
     <button class="center" id="centerBtn">
       <span>⋯</span>
     </button>
@@ -349,7 +379,8 @@ body::before{
     <div class="info-left">
       <div class="info-title">کنترل مدار</div>
       <div class="info-text">
-        روی سیاره وسط بزن تا چرخش مدارها رو متوقف/شروع کنی.
+        روی سیاره وسط بزن تا چرخش مدار رو متوقف/شروع کنی.  
+        آیکن‌ها دقیقاً روی مدار می‌چرخن.
       </div>
     </div>
     <div class="info-chip">
@@ -360,7 +391,7 @@ body::before{
 </div>
 
 <script>
-// ===== STARFIELD (سبک و روون) =====
+// ===== STARFIELD =====
 const canvas=document.getElementById("bg");
 const ctx=canvas.getContext("2d");
 let stars=[];
@@ -403,23 +434,23 @@ function drawStars(){
 }
 drawStars();
 
-// ===== چیدن آیکن‌ها روی مدار بدون هم‌پوشانی =====
+// ===== چیدن ۳ آیکن دقیقا روی مدار =====
 function layoutRing(ring){
-  const radius=parseInt(ring.dataset.radius,10) || 100;
+  const radius=parseInt(ring.dataset.radius,10) || 110;
   const icons=[...ring.querySelectorAll(".icon")];
   const count=icons.length;
   if(count===0) return;
   const step=360/count;
 
   icons.forEach((icon,i)=>{
-    const angle=step*i;
+    const angle=step*i - 90; // یکی بالا، دو تا چپ و راست
     icon.style.transform=
       `rotateZ(${angle}deg) translateY(-${radius}px) rotateZ(${-angle}deg) translateZ(8px)`;
   });
 }
 
-layoutRing(document.getElementById("ringInner"));
-layoutRing(document.getElementById("ringOuter"));
+const ringMain=document.getElementById("ringMain");
+layoutRing(ringMain);
 
 // ===== باز کردن اپ → اگر نشد سایت =====
 function openSmart(appLink,webLink){
@@ -452,17 +483,13 @@ document.querySelectorAll(".icon").forEach(icon=>{
 });
 
 // ===== کنترل مدار =====
-const ringInner=document.getElementById("ringInner");
-const ringOuter=document.getElementById("ringOuter");
 const centerBtn=document.getElementById("centerBtn");
 let paused=false;
 
 centerBtn.addEventListener("click",()=>{
   paused=!paused;
-  [ringInner,ringOuter].forEach(r=>{
-    if(paused) r.classList.add("pause");
-    else r.classList.remove("pause");
-  });
+  if(paused) ringMain.classList.add("pause");
+  else ringMain.classList.remove("pause");
   centerBtn.classList.toggle("active",!paused);
 });
 
@@ -495,6 +522,12 @@ tiltWrapper.addEventListener("touchmove",(e)=>{
 
 tiltWrapper.addEventListener("touchend",()=>{
   orbitContainer.style.transform="rotateX(0deg) rotateY(0deg)";
+});
+
+// ===== تغییر پس‌زمینه (نئونی / فضایی واقعی) =====
+const bgToggle=document.getElementById("bgToggle");
+bgToggle.addEventListener("click",()=>{
+  document.body.classList.toggle("space-bg");
 });
 </script>
 
