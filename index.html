@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>سایت سگ و شرفدار ترین برنامه ها نسبت به برنامه های ایرانی</title>
+<title>سایت سگ و شرفدار ترین ها نسبت به برنامه ایرانی</title>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
 
@@ -26,19 +26,19 @@ body{
   transition:background 0.6s ease, color 0.4s ease;
 }
 
-/* حالت نئونی پیش‌فرض */
+/* حالت نئونی */
 body.neon{
   background:
     radial-gradient(circle at 10% 20%,#1d0535 0,#020617 55%),
     radial-gradient(circle at 80% 80%,#001b3f 0,#020617 55%);
 }
 
-/* حالت فضایی واقعی */
+/* حالت فضایی */
 body.space{
   background:#020617;
 }
 
-/* ⭐⭐⭐ ستاره‌های سه‌لایه متحرک ⭐⭐⭐ */
+/* ⭐ ستاره‌ها ⭐ */
 .stars{
   position:fixed;
   inset:0;
@@ -47,7 +47,6 @@ body.space{
   opacity:0;
   transition:opacity 0.6s ease;
 }
-
 .stars .layer1,
 .stars .layer2,
 .stars .layer3{
@@ -56,8 +55,6 @@ body.space{
   background-repeat:repeat;
   background-size:300px 300px;
 }
-
-/* لایه دور */
 .stars .layer1{
   background-image:
     radial-gradient(1px 1px at 20% 30%, #ffffff55, transparent),
@@ -65,8 +62,6 @@ body.space{
     radial-gradient(1px 1px at 50% 80%, #ffffff33, transparent);
   animation: starMove1 40s linear infinite;
 }
-
-/* لایه متوسط */
 .stars .layer2{
   background-image:
     radial-gradient(1.5px 1.5px at 10% 20%, #ffffffaa, transparent),
@@ -74,8 +69,6 @@ body.space{
     radial-gradient(1.4px 1.4px at 80% 70%, #ffffff77, transparent);
   animation: starMove2 25s linear infinite;
 }
-
-/* لایه نزدیک */
 .stars .layer3{
   background-image:
     radial-gradient(2px 2px at 30% 50%, #ffffffdd, transparent),
@@ -83,24 +76,11 @@ body.space{
     radial-gradient(2px 2px at 40% 80%, #ffffffbb, transparent);
   animation: starMove3 15s linear infinite;
 }
+body.space .stars{ opacity:1; }
 
-body.space .stars{
-  opacity:1;
-}
-
-/* انیمیشن‌ها */
-@keyframes starMove1{
-  0%{ transform:translate(0,0); }
-  100%{ transform:translate(-20px,-30px); }
-}
-@keyframes starMove2{
-  0%{ transform:translate(0,0); }
-  100%{ transform:translate(-40px,-60px); }
-}
-@keyframes starMove3{
-  0%{ transform:translate(0,0); }
-  100%{ transform:translate(-70px,-90px); }
-}
+@keyframes starMove1{ to{transform:translate(-20px,-30px);} }
+@keyframes starMove2{ to{transform:translate(-40px,-60px);} }
+@keyframes starMove3{ to{transform:translate(-70px,-90px);} }
 
 /* هاله نئونی */
 .glow-layer{
@@ -115,15 +95,7 @@ body.space .stars{
   transition:opacity 0.6s ease;
   z-index:-2;
 }
-body.space .glow-layer{
-  opacity:0.4;
-}
-
-/* هولوگرافیک شدید */
-body.holo .glow-layer{
-  opacity:1;
-  filter:blur(10px);
-}
+body.space .glow-layer{ opacity:0.4; }
 
 /* محتوای اصلی */
 .wrapper{
@@ -132,7 +104,6 @@ body.holo .glow-layer{
   z-index:10;
 }
 
-/* متن بالا */
 .maker{
   font-size:11px;
   color:#cbd5f5;
@@ -149,7 +120,6 @@ body.holo .glow-layer{
   color:transparent;
 }
 
-/* زیرعنوان */
 .subtitle{
   font-size:12px;
   color:#e5e7eb;
@@ -171,11 +141,22 @@ body.holo .glow-layer{
   background:rgba(15,23,42,0.7);
   backdrop-filter:blur(10px);
 }
-.bg-toggle i{
-  color:#22d3ee;
+.bg-toggle i{ color:#22d3ee; }
+
+/* ⭐ دکمه توقف/شروع چرخش ⭐ */
+.rotate-control{
+  margin-top:10px;
+  font-size:12px;
+  color:#fff;
+  cursor:pointer;
+  padding:8px 16px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.25);
+  background:rgba(15,23,42,.8);
+  backdrop-filter:blur(10px);
 }
 
-/* کانتینر سه‌بعدی */
+/* کانتینر */
 .orbit{
   position:relative;
   width:340px;
@@ -184,86 +165,73 @@ body.holo .glow-layer{
   perspective:900px;
 }
 
-/* مکعب شیشه‌ای ضخیم */
+/* مکعب‌ها */
 .cube{
   position:absolute;
   width:80px;
   height:80px;
   transform-style:preserve-3d;
-  transition:transform 0.4s ease, box-shadow 0.4s ease;
   cursor:pointer;
+
+  transition:
+    top 3.5s cubic-bezier(.22,.61,.36,1),
+    left 3.5s cubic-bezier(.22,.61,.36,1),
+    transform .6s ease,
+    box-shadow .4s ease;
 }
+
 .cube-inner{
   position:absolute;
   inset:0;
   border-radius:18px;
-  background:linear-gradient(145deg,rgba(15,23,42,0.9),rgba(30,64,175,0.9));
-  border:2px solid rgba(148,163,184,0.9);
+
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.12),rgba(30,64,175,.9));
+
+  border:2px solid rgba(255,255,255,.55);
+
   box-shadow:
-    0 0 25px rgba(59,130,246,0.7),
-    inset 0 0 18px rgba(15,23,42,0.9);
+    0 0 40px rgba(59,130,246,.9),
+    0 0 70px rgba(129,140,248,.5),
+    inset 0 3px 10px rgba(255,255,255,.25),
+    inset 0 -12px 18px rgba(15,23,42,.95);
+
   display:flex;
   align-items:center;
   justify-content:center;
-  color:white;
   font-size:32px;
+  color:white;
 }
 
-/* لبه‌های ضخیم شیشه‌ای */
-.cube::before,
-.cube::after{
+.cube-inner::before{
   content:"";
   position:absolute;
-  inset:-4px;
-  border-radius:20px;
-  border:2px solid rgba(148,163,184,0.4);
-  box-shadow:0 0 18px rgba(129,140,248,0.7);
-  opacity:0.7;
+  inset:6px;
+  border-radius:12px;
+  background:linear-gradient(180deg,rgba(255,255,255,.35),transparent 45%);
+  pointer-events:none;
 }
 
-/* حالت هولوگرافیک شدید */
-body.holo .cube-inner{
-  box-shadow:
-    0 0 35px rgba(56,189,248,0.9),
-    0 0 55px rgba(236,72,153,0.9),
-    inset 0 0 20px rgba(15,23,42,1);
-}
-body.holo .cube{
-  transform:rotateY(-18deg) rotateX(14deg);
-}
-
-/* هاور سه‌بعدی */
-.cube:hover{
-  transform:translateY(-6px) rotateY(-10deg) rotateX(8deg);
-  box-shadow:0 18px 35px rgba(15,23,42,0.9);
-}
-
-/* جای‌گذاری مکعب‌ها */
-.cube.instagram{
+/* جایگاه‌ها */
+.pos-top{
   top:0;
-  left:50%;
-  transform:translateX(-50%) rotateY(-12deg) rotateX(10deg);
+  left:130px;
 }
-.cube.youtube{
+.pos-left{
   top:120px;
   left:40px;
-  transform:rotateY(12deg) rotateX(8deg);
 }
-.cube.telegram{
+.pos-right{
   top:120px;
-  right:40px;
-  transform:rotateY(-12deg) rotateX(8deg);
+  left:220px;
 }
 
 /* آیکن‌ها */
-.cube-inner i{
-  text-shadow:0 0 12px rgba(255,255,255,0.7);
-}
-.cube.instagram i{color:#ff2e9f;}
-.cube.youtube i{color:#ff0000;}
-.cube.telegram i{color:#2aabee;}
+.cube.instagram i{ color:#ff2e9f; }
+.cube.youtube i{ color:#ff0000; }
+.cube.telegram i{ color:#2aabee; }
 
-/* لامپ هولوگرافیک وسط */
+/* لامپ */
 .center{
   position:absolute;
   top:50%;
@@ -274,7 +242,7 @@ body.holo .cube{
   border-radius:50%;
   border:none;
   cursor:pointer;
-  background:radial-gradient(circle at 30% 0%,#ffffff, #e5e7eb 40%, #0f172a 100%);
+  background:radial-gradient(circle at 30% 0%,#ffffff,#e5e7eb 40%,#0f172a 100%);
   box-shadow:
     0 0 40px rgba(250,250,250,0.9),
     0 0 80px rgba(56,189,248,0.9);
@@ -287,7 +255,6 @@ body.holo .cube{
   overflow:hidden;
 }
 
-/* حلقه هولوگرافیک دور لامپ */
 .center::before{
   content:"";
   position:absolute;
@@ -301,7 +268,6 @@ body.holo .cube{
   animation:spin 6s linear infinite;
 }
 
-/* اشکال هولوگرافیک داخل لامپ */
 .center::after{
   content:"";
   position:absolute;
@@ -315,7 +281,6 @@ body.holo .cube{
   transform:rotateX(60deg) rotateZ(25deg);
 }
 
-/* حالت هولوگرافیک شدید برای لامپ */
 body.holo .center{
   box-shadow:
     0 0 60px rgba(250,250,250,1),
@@ -323,17 +288,13 @@ body.holo .center{
     0 0 160px rgba(56,189,248,1);
 }
 
-/* متن پایین */
 .control{
   margin-top:18px;
   font-size:11px;
   color:#cbd5f5;
 }
 
-/* انیمیشن‌ها */
-@keyframes spin{
-  to{transform:rotate(360deg);}
-}
+@keyframes spin{ to{transform:rotate(360deg);} }
 </style>
 </head>
 
@@ -341,7 +302,6 @@ body.holo .center{
 
 <div class="glow-layer"></div>
 
-<!-- ⭐⭐ ستاره‌های سه‌لایه ⭐⭐ -->
 <div class="stars">
   <div class="layer1"></div>
   <div class="layer2"></div>
@@ -349,75 +309,104 @@ body.holo .center{
 </div>
 
 <div class="wrapper">
-  <div class="maker">سازنده این ابر سایت کوصیشر🌚👇: امیرعلی حیدریان</div>
 
-  <div class="title">
-    سایت سگ و شرفدار ترین برنامه ها نسبت به برنامه های ایرانی
-  </div>
+  <div class="maker">سازنده این ابر سایت کوصیشر🌚🥲👇: امیرعلی حیدریان</div>
 
-  <div class="subtitle">
-    نئونی–فضایی سه‌بعدی • مکعب‌های شیشه‌ای ضخیم • هولوگرافیک
-  </div>
+  <div class="title">سایت سگ و شرفدار ترین ها نسبت به برنامه های ایرانی</div>
+
+  <div class="subtitle">نئونی–فضایی سه‌بعدی • مکعب‌های شیشه‌ای ضخیم • هولوگرافیک</div>
 
   <div class="bg-toggle" id="bgToggle">
     <i class="fa-solid fa-wand-magic-sparkles"></i>
     تغییر پس‌زمینه: نئونی / فضایی واقعی
   </div>
 
+  <!-- دکمه توقف/شروع -->
+  <button class="rotate-control" id="rotateBtn">
+    <i class="fa-solid fa-pause"></i>
+    توقف چرخش
+  </button>
+
   <div class="orbit">
 
-    <!-- اینستاگرام -->
-    <a class="cube instagram" href="https://instagram.com" target="_blank" title="اینستاگرام">
-      <div class="cube-inner">
-        <i class="fab fa-instagram"></i>
-      </div>
+    <a class="cube instagram pos-top" href="https://instagram.com" target="_blank">
+      <div class="cube-inner"><i class="fab fa-instagram"></i></div>
     </a>
 
-    <!-- یوتیوب -->
-    <a class="cube youtube" href="https://youtube.com" target="_blank" title="یوتیوب">
-      <div class="cube-inner">
-        <i class="fab fa-youtube"></i>
-      </div>
+    <a class="cube youtube pos-left" href="https://youtube.com" target="_blank">
+      <div class="cube-inner"><i class="fab fa-youtube"></i></div>
     </a>
 
-    <!-- تلگرام -->
-    <a class="cube telegram" href="https://t.me" target="_blank" title="تلگرام">
-      <div class="cube-inner">
-        <i class="fab fa-telegram"></i>
-      </div>
+    <a class="cube telegram pos-right" href="https://t.me" target="_blank">
+      <div class="cube-inner"><i class="fab fa-telegram"></i></div>
     </a>
 
-    <!-- لامپ هولوگرافیک -->
-    <button class="center" id="lamp" title="هولوگرام سه‌بعدی">
+    <button class="center" id="lamp">
       <i class="fa-solid fa-lightbulb"></i>
     </button>
+
   </div>
 
   <div class="control">
     روی لامپ بزن تا حالت هولوگرافیک شدید فعال/غیرفعال شود.  
-    روی دکمه بالا بزن تا پس‌زمینه بین نئونی و فضایی واقعی عوض شود.
+    روی دکمه بالا بزن تا چرخش آیکون‌ها متوقف/شروع شود.
   </div>
+
 </div>
 
 <script>
-// تغییر پس‌زمینه نئونی / فضایی واقعی
-const body = document.body;
-const bgToggle = document.getElementById("bgToggle");
-const lamp = document.getElementById("lamp");
-
-bgToggle.onclick = () => {
-  if(body.classList.contains("neon")){
-    body.classList.remove("neon");
-    body.classList.add("space");
-  }else{
-    body.classList.remove("space");
-    body.classList.add("neon");
-  }
+/* تغییر پس‌زمینه */
+document.getElementById("bgToggle").onclick = () => {
+  document.body.classList.toggle("neon");
+  document.body.classList.toggle("space");
 };
 
-// لامپ → هولوگرافیک شدید (سه‌بعدی‌تر و نور بیشتر)
-lamp.onclick = () => {
-  body.classList.toggle("holo");
+/* هولوگرافیک */
+document.getElementById("lamp").onclick = () => {
+  document.body.classList.toggle("holo");
+};
+
+/* ⭐ چرخش مثلثی فوق‌روان ⭐ */
+const insta = document.querySelector(".instagram");
+const youtube = document.querySelector(".youtube");
+const telegram = document.querySelector(".telegram");
+
+const rotateBtn = document.getElementById("rotateBtn");
+
+let running = true;
+
+/* ترتیب جایگاه‌ها */
+let positions = ["pos-top","pos-left","pos-right"];
+
+function rotateTriangle(){
+
+  const temp = positions[2];
+  positions[2] = positions[1];
+  positions[1] = positions[0];
+  positions[0] = temp;
+
+  insta.classList.remove("pos-top","pos-left","pos-right");
+  youtube.classList.remove("pos-top","pos-left","pos-right");
+  telegram.classList.remove("pos-top","pos-left","pos-right");
+
+  insta.classList.add(positions[0]);
+  youtube.classList.add(positions[1]);
+  telegram.classList.add(positions[2]);
+}
+
+let timer = setInterval(rotateTriangle,3500);
+
+rotateBtn.onclick = () => {
+
+  if(running){
+    clearInterval(timer);
+    rotateBtn.innerHTML = '<i class="fa-solid fa-play"></i> شروع چرخش';
+  }else{
+    timer = setInterval(rotateTriangle,3500);
+    rotateBtn.innerHTML = '<i class="fa-solid fa-pause"></i> توقف چرخش';
+  }
+
+  running = !running;
 };
 </script>
 
