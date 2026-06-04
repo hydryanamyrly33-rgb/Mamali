@@ -57,7 +57,6 @@ body.space{
   background-size:300px 300px;
 }
 
-/* لایه دور */
 .stars .layer1{
   background-image:
     radial-gradient(1px 1px at 20% 30%, #ffffff55, transparent),
@@ -66,7 +65,6 @@ body.space{
   animation: starMove1 40s linear infinite;
 }
 
-/* لایه متوسط */
 .stars .layer2{
   background-image:
     radial-gradient(1.5px 1.5px at 10% 20%, #ffffffaa, transparent),
@@ -75,7 +73,6 @@ body.space{
   animation: starMove2 25s linear infinite;
 }
 
-/* لایه نزدیک */
 .stars .layer3{
   background-image:
     radial-gradient(2px 2px at 30% 50%, #ffffffdd, transparent),
@@ -88,7 +85,6 @@ body.space .stars{
   opacity:1;
 }
 
-/* انیمیشن‌ها */
 @keyframes starMove1{
   0%{ transform:translate(0,0); }
   100%{ transform:translate(-20px,-30px); }
@@ -306,7 +302,6 @@ body.holo .cube{
   overflow:hidden;
 }
 
-/* حلقه هولوگرافیک دور لامپ */
 .center::before{
   content:"";
   position:absolute;
@@ -320,7 +315,6 @@ body.holo .cube{
   animation:spin 6s linear infinite;
 }
 
-/* اشکال هولوگرافیک داخل لامپ */
 .center::after{
   content:"";
   position:absolute;
@@ -334,7 +328,6 @@ body.holo .cube{
   transform:rotateX(60deg) rotateZ(25deg);
 }
 
-/* حالت هولوگرافیک شدید برای لامپ */
 body.holo .center{
   box-shadow:
     0 0 60px rgba(250,250,250,1),
@@ -342,14 +335,12 @@ body.holo .center{
     0 0 160px rgba(56,189,248,1);
 }
 
-/* متن پایین */
 .control{
   margin-top:18px;
   font-size:11px;
   color:#cbd5f5;
 }
 
-/* انیمیشن‌ها */
 @keyframes spin{
   to{transform:rotate(360deg);}
 }
@@ -360,7 +351,6 @@ body.holo .center{
 
 <div class="glow-layer"></div>
 
-<!-- ⭐⭐ ستاره‌های سه‌لایه ⭐⭐ -->
 <div class="stars">
   <div class="layer1"></div>
   <div class="layer2"></div>
@@ -383,7 +373,6 @@ body.holo .center{
     تغییر پس‌زمینه: نئونی / فضایی واقعی
   </div>
 
-  <!-- دکمه توقف/شروع چرخش -->
   <button id="rotateToggle">
     <i class="fa-solid fa-rotate"></i>
     توقف / شروع چرخش آیکون‌ها
@@ -391,29 +380,25 @@ body.holo .center{
 
   <div class="orbit">
 
-    <!-- اینستاگرام -->
-    <a class="cube instagram" href="https://instagram.com" target="_blank" title="اینستاگرام">
+    <a class="cube instagram" href="https://instagram.com" target="_blank">
       <div class="cube-inner">
         <i class="fab fa-instagram"></i>
       </div>
     </a>
 
-    <!-- یوتیوب -->
-    <a class="cube youtube" href="https://youtube.com" target="_blank" title="یوتیوب">
+    <a class="cube youtube" href="https://youtube.com" target="_blank">
       <div class="cube-inner">
         <i class="fab fa-youtube"></i>
       </div>
     </a>
 
-    <!-- تلگرام -->
-    <a class="cube telegram" href="https://t.me" target="_blank" title="تلگرام">
+    <a class="cube telegram" href="https://t.me" target="_blank">
       <div class="cube-inner">
         <i class="fab fa-telegram"></i>
       </div>
     </a>
 
-    <!-- لامپ هولوگرافیک -->
-    <button class="center" id="lamp" title="هولوگرام سه‌بعدی">
+    <button class="center" id="lamp">
       <i class="fa-solid fa-lightbulb"></i>
     </button>
   </div>
@@ -425,31 +410,27 @@ body.holo .center{
 </div>
 
 <script>
-// تغییر پس‌زمینه نئونی / فضایی واقعی
+// تغییر پس‌زمینه
 const body = document.body;
-const bgToggle = document.getElementById("bgToggle");
-const lamp = document.getElementById("lamp");
-
-bgToggle.onclick = () => {
-  if(body.classList.contains("neon")){
-    body.classList.remove("neon");
-    body.classList.add("space");
-  }else{
-    body.classList.remove("space");
-    body.classList.add("neon");
-  }
+document.getElementById("bgToggle").onclick = () => {
+  body.classList.toggle("neon");
+  body.classList.toggle("space");
 };
 
-// لامپ → هولوگرافیک شدید
-lamp.onclick = () => {
+// هولوگرافیک
+document.getElementById("lamp").onclick = () => {
   body.classList.toggle("holo");
 };
 
 /* ⭐ چرخش مثلثی آیکون‌ها ⭐ */
-const icons = [
-  document.querySelector(".cube.instagram"),
-  document.querySelector(".cube.youtube"),
-  document.querySelector(".cube.telegram")
+const ig = document.querySelector(".cube.instagram");
+const yt = document.querySelector(".cube.youtube");
+const tg = document.querySelector(".cube.telegram");
+
+const positions = [
+  { top: ig.style.top, left: ig.style.left, right: ig.style.right },
+  { top: yt.style.top, left: yt.style.left, right: yt.style.right },
+  { top: tg.style.top, left: tg.style.left, right: tg.style.right }
 ];
 
 let rotating = true;
@@ -457,26 +438,24 @@ let rotating = true;
 function rotateIcons(){
   if(!rotating) return;
 
-  const pos1 = { top: icons[0].style.top, left: icons[0].style.left, right: icons[0].style.right };
-  const pos2 = { top: icons[1].style.top, left: icons[1].style.left, right: icons[1].style.right };
-  const pos3 = { top: icons[2].style.top, left: icons[2].style.left, right: icons[2].style.right };
+  ig.style.top = positions[1].top;
+  ig.style.left = positions[1].left;
+  ig.style.right = positions[1].right;
 
-  icons[0].style.top = pos2.top;
-  icons[0].style.left = pos2.left;
-  icons[0].style.right = pos2.right;
+  yt.style.top = positions[2].top;
+  yt.style.left = positions[2].left;
+  yt.style.right = positions[2].right;
 
-  icons[1].style.top = pos3.top;
-  icons[1].style.left = pos3.left;
-  icons[1].style.right = pos3.right;
+  tg.style.top = positions[0].top;
+  tg.style.left = positions[0].left;
+  tg.style.right = positions[0].right;
 
-  icons[2].style.top = pos1.top;
-  icons[2].style.left = pos1.left;
-  icons[2].style.right = pos1.right;
+  const temp = positions.shift();
+  positions.push(temp);
 }
 
 setInterval(rotateIcons, 2000);
 
-// دکمه توقف/شروع
 document.getElementById("rotateToggle").onclick = () => {
   rotating = !rotating;
 };
