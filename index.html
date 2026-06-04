@@ -180,6 +180,7 @@ body.space .glow-layer{ opacity:0.4; }
     box-shadow .4s ease;
 }
 
+/* ⭐ تبدیل نرم مربع ↔ دایره ⭐ */
 .cube-inner{
   position:absolute;
   inset:0;
@@ -201,6 +202,20 @@ body.space .glow-layer{ opacity:0.4; }
   justify-content:center;
   font-size:32px;
   color:white;
+
+  transition:
+    border-radius 0.9s ease,
+    box-shadow 0.9s ease,
+    background 0.9s ease;
+}
+
+body.round-icons .cube-inner{
+  border-radius:50%;
+  box-shadow:
+    0 0 40px rgba(59,130,246,.95),
+    0 0 70px rgba(129,140,248,.55),
+    inset 0 3px 10px rgba(255,255,255,.25),
+    inset 0 -12px 18px rgba(15,23,42,.95);
 }
 
 .cube-inner::before{
@@ -281,13 +296,6 @@ body.space .glow-layer{ opacity:0.4; }
   transform:rotateX(60deg) rotateZ(25deg);
 }
 
-body.holo .center{
-  box-shadow:
-    0 0 60px rgba(250,250,250,1),
-    0 0 120px rgba(236,72,153,1),
-    0 0 160px rgba(56,189,248,1);
-}
-
 .control{
   margin-top:18px;
   font-size:11px;
@@ -310,7 +318,7 @@ body.holo .center{
 
 <div class="wrapper">
 
-  <div class="maker"> سازنده این ابر سایت کوصیشر🌚👇:  امیرعلی سیگمابوی</div>
+  <div class="maker">سازنده این ابر سایت کوصیشر🌚👇: امیرعلی سیگمابوی</div>
 
   <div class="title">سایت سگ و شرفدار ترین برنامه ها نسبت به برنامه های ایرانی</div>
 
@@ -348,8 +356,7 @@ body.holo .center{
   </div>
 
   <div class="control">
-    روی لامپ بزن تا حالت هولوگرافیک شدید فعال/غیرفعال شود.  
-    روی دکمه بالا بزن تا چرخش آیکون‌ها متوقف/شروع شود.
+   روی لامپ بزن تا آیکون‌ها بین حالت مربع و دایره تغییر کونه.
   </div>
 
 </div>
@@ -361,12 +368,12 @@ document.getElementById("bgToggle").onclick = () => {
   document.body.classList.toggle("space");
 };
 
-/* هولوگرافیک */
+/* ⭐ تبدیل مربع ↔ دایره ⭐ */
 document.getElementById("lamp").onclick = () => {
-  document.body.classList.toggle("holo");
+  document.body.classList.toggle("round-icons");
 };
 
-/* ⭐ چرخش مثلثی فوق‌روان ⭐ */
+/* ⭐ چرخش مثلثی ⭐ */
 const insta = document.querySelector(".instagram");
 const youtube = document.querySelector(".youtube");
 const telegram = document.querySelector(".telegram");
@@ -375,7 +382,6 @@ const rotateBtn = document.getElementById("rotateBtn");
 
 let running = true;
 
-/* ترتیب جایگاه‌ها */
 let positions = ["pos-top","pos-left","pos-right"];
 
 function rotateTriangle(){
