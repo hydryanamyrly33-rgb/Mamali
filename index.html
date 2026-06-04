@@ -358,10 +358,10 @@ body.holo .center{
 </div>
 
 <div class="wrapper">
-  <div class="maker">سازنده این ابر سایت کوصیشر🌚👇: امیرعلی حیدریان</div>
+  <div class="maker">سازنده این ابر سایت کوصیشر🌚💩👇: امیرعلی حیدریان</div>
 
   <div class="title">
-    سایت سگ و شرفدار ترین برنامه ها نسبت به برنامه های ایرانی
+    سایت سگ و شرفدار ترین برنامه ها نسبت به برنامه های های ایرانی
   </div>
 
   <div class="subtitle">
@@ -411,15 +411,14 @@ body.holo .center{
 
 <script>
 // تغییر پس‌زمینه
-const body = document.body;
 document.getElementById("bgToggle").onclick = () => {
-  body.classList.toggle("neon");
-  body.classList.toggle("space");
+  document.body.classList.toggle("neon");
+  document.body.classList.toggle("space");
 };
 
 // هولوگرافیک
 document.getElementById("lamp").onclick = () => {
-  body.classList.toggle("holo");
+  document.body.classList.toggle("holo");
 };
 
 /* ⭐ چرخش مثلثی آیکون‌ها ⭐ */
@@ -427,10 +426,16 @@ const ig = document.querySelector(".cube.instagram");
 const yt = document.querySelector(".cube.youtube");
 const tg = document.querySelector(".cube.telegram");
 
-const positions = [
-  { top: ig.style.top, left: ig.style.left, right: ig.style.right },
-  { top: yt.style.top, left: yt.style.left, right: yt.style.right },
-  { top: tg.style.top, left: tg.style.left, right: tg.style.right }
+// گرفتن پوزیشن واقعی از CSS
+function getPos(el){
+  const s = getComputedStyle(el);
+  return { top:s.top, left:s.left, right:s.right };
+}
+
+let positions = [
+  getPos(ig),
+  getPos(yt),
+  getPos(tg)
 ];
 
 let rotating = true;
@@ -456,6 +461,7 @@ function rotateIcons(){
 
 setInterval(rotateIcons, 2000);
 
+// دکمه توقف/شروع
 document.getElementById("rotateToggle").onclick = () => {
   rotating = !rotating;
 };
