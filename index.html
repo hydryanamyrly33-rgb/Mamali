@@ -175,6 +175,25 @@ body.holo .glow-layer{
   color:#22d3ee;
 }
 
+/* دکمه توقف/شروع چرخش */
+#rotateToggle{
+  margin-top:6px;
+  font-size:11px;
+  color:#f9fafb;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:4px 12px;
+  border-radius:999px;
+  border:1px solid rgba(248,250,252,0.35);
+  background:rgba(15,23,42,0.7);
+  backdrop-filter:blur(10px);
+}
+#rotateToggle i{
+  color:#a855f7;
+}
+
 /* کانتینر سه‌بعدی */
 .orbit{
   position:relative;
@@ -364,6 +383,12 @@ body.holo .center{
     تغییر پس‌زمینه: نئونی / فضایی واقعی
   </div>
 
+  <!-- دکمه توقف/شروع چرخش -->
+  <button id="rotateToggle">
+    <i class="fa-solid fa-rotate"></i>
+    توقف / شروع چرخش آیکون‌ها
+  </button>
+
   <div class="orbit">
 
     <!-- اینستاگرام -->
@@ -415,9 +440,45 @@ bgToggle.onclick = () => {
   }
 };
 
-// لامپ → هولوگرافیک شدید (سه‌بعدی‌تر و نور بیشتر)
+// لامپ → هولوگرافیک شدید
 lamp.onclick = () => {
   body.classList.toggle("holo");
+};
+
+/* ⭐ چرخش مثلثی آیکون‌ها ⭐ */
+const icons = [
+  document.querySelector(".cube.instagram"),
+  document.querySelector(".cube.youtube"),
+  document.querySelector(".cube.telegram")
+];
+
+let rotating = true;
+
+function rotateIcons(){
+  if(!rotating) return;
+
+  const pos1 = { top: icons[0].style.top, left: icons[0].style.left, right: icons[0].style.right };
+  const pos2 = { top: icons[1].style.top, left: icons[1].style.left, right: icons[1].style.right };
+  const pos3 = { top: icons[2].style.top, left: icons[2].style.left, right: icons[2].style.right };
+
+  icons[0].style.top = pos2.top;
+  icons[0].style.left = pos2.left;
+  icons[0].style.right = pos2.right;
+
+  icons[1].style.top = pos3.top;
+  icons[1].style.left = pos3.left;
+  icons[1].style.right = pos3.right;
+
+  icons[2].style.top = pos1.top;
+  icons[2].style.left = pos1.left;
+  icons[2].style.right = pos1.right;
+}
+
+setInterval(rotateIcons, 2000);
+
+// دکمه توقف/شروع
+document.getElementById("rotateToggle").onclick = () => {
+  rotating = !rotating;
 };
 </script>
 
