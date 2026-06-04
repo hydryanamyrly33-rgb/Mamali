@@ -206,8 +206,11 @@ body.holo .glow-layer{
   height:80px;
   transform-style:preserve-3d;
   transition:transform 0.4s ease, box-shadow 0.4s ease;
-  cursor:pointer;
+
+  /* ⭐⭐ این دو خط باعث حرکت فوق‌روان می‌شود ⭐⭐ */
+  transition: top 1.2s ease, left 1.2s ease, right 1.2s ease, transform 0.4s ease;
 }
+
 .cube-inner{
   position:absolute;
   inset:0;
@@ -358,10 +361,10 @@ body.holo .center{
 </div>
 
 <div class="wrapper">
-  <div class="maker">سازنده این ابر سایت کوصیشر🌚💩👇: امیرعلی حیدریان</div>
+  <div class="maker">سازنده این ابر سایت کوصیشر🌚👇: امیرعلی حیدریان</div>
 
   <div class="title">
-    سایت سگ و شرفدار ترین برنامه ها نسبت به برنامه های های ایرانی
+    سایت سگ و شرفدار ترین برنامه ها نسبت به برنامه های ایرانی
   </div>
 
   <div class="subtitle">
@@ -421,12 +424,11 @@ document.getElementById("lamp").onclick = () => {
   document.body.classList.toggle("holo");
 };
 
-/* ⭐ چرخش مثلثی آیکون‌ها ⭐ */
+/* ⭐ چرخش مثلثی فوق‌روان ⭐ */
 const ig = document.querySelector(".cube.instagram");
 const yt = document.querySelector(".cube.youtube");
 const tg = document.querySelector(".cube.telegram");
 
-// گرفتن پوزیشن واقعی از CSS
 function getPos(el){
   const s = getComputedStyle(el);
   return { top:s.top, left:s.left, right:s.right };
@@ -461,7 +463,6 @@ function rotateIcons(){
 
 setInterval(rotateIcons, 2000);
 
-// دکمه توقف/شروع
 document.getElementById("rotateToggle").onclick = () => {
   rotating = !rotating;
 };
