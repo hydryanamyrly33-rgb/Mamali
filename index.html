@@ -97,6 +97,23 @@ body.space .stars{ opacity:1; }
 }
 body.space .glow-layer{ opacity:0.4; }
 
+/* نور دنبال‌کننده انگشت */
+#mouseGlow{
+  position:fixed;
+  width:300px;
+  height:300px;
+  border-radius:50%;
+  pointer-events:none;
+  background:
+    radial-gradient(
+      circle,
+      rgba(56,189,248,.22),
+      transparent 70%
+    );
+  transform:translate(-50%,-50%);
+  z-index:-1;
+}
+
 /* محتوای اصلی */
 .wrapper{
   text-align:center;
@@ -165,6 +182,13 @@ body.space .glow-layer{ opacity:0.4; }
   perspective:900px;
 }
 
+/* انیمیشن شناور شدن */
+@keyframes floating{
+  0%{ transform:translateY(0px); }
+  50%{ transform:translateY(-10px); }
+  100%{ transform:translateY(0px); }
+}
+
 /* مکعب‌ها */
 .cube{
   position:absolute;
@@ -178,9 +202,27 @@ body.space .glow-layer{ opacity:0.4; }
     left 3.5s cubic-bezier(.22,.61,.36,1),
     transform .6s ease,
     box-shadow .4s ease;
+
+  animation:floating 4s ease-in-out infinite;
+}
+.cube.instagram{ animation-delay:0s; }
+.cube.youtube{ animation-delay:1s; }
+.cube.telegram{ animation-delay:2s; }
+
+/* درخشش نبضی */
+@keyframes pulseGlow{
+  0%{
+    box-shadow:0 0 25px rgba(59,130,246,.6);
+  }
+  50%{
+    box-shadow:0 0 60px rgba(59,130,246,1);
+  }
+  100%{
+    box-shadow:0 0 25px rgba(59,130,246,.6);
+  }
 }
 
-/* ⭐ تبدیل نرم مربع ↔ دایره ⭐ */
+/* ⭐ تبدیل نرم مربع ↔ دایره + شیشه‌ای ⭐ */
 .cube-inner{
   position:absolute;
   inset:0;
@@ -207,6 +249,8 @@ body.space .glow-layer{ opacity:0.4; }
     border-radius 0.9s ease,
     box-shadow 0.9s ease,
     background 0.9s ease;
+
+  animation:pulseGlow 3s infinite;
 }
 
 body.round-icons .cube-inner{
@@ -216,6 +260,21 @@ body.round-icons .cube-inner{
     0 0 70px rgba(129,140,248,.55),
     inset 0 3px 10px rgba(255,255,255,.25),
     inset 0 -12px 18px rgba(15,23,42,.95);
+
+  backdrop-filter:blur(18px);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,.18),
+      rgba(255,255,255,.05)
+    );
+
+  border:2px solid rgba(255,255,255,.45);
+}
+
+body.round-icons .cube{
+  transform:scale(1.08);
 }
 
 .cube-inner::before{
@@ -223,7 +282,12 @@ body.round-icons .cube-inner{
   position:absolute;
   inset:6px;
   border-radius:12px;
-  background:linear-gradient(180deg,rgba(255,255,255,.35),transparent 45%);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.55),
+      rgba(255,255,255,.05)
+    );
   pointer-events:none;
 }
 
@@ -305,11 +369,14 @@ body.round-icons .cube-inner{
 @keyframes spin{ to{transform:rotate(360deg);} }
 </style>
 </head>
-
 <body class="neon">
 
 <div class="glow-layer"></div>
 
+<!-- نور دنبال‌کننده انگشت -->
+<div id="mouseGlow"></div>
+
+<!-- ⭐⭐ ستاره‌های سه‌لایه ⭐⭐ -->
 <div class="stars">
   <div class="layer1"></div>
   <div class="layer2"></div>
@@ -320,7 +387,7 @@ body.round-icons .cube-inner{
 
   <div class="maker">سازنده این ابر سایت کوصیشر🌚👇: امیرعلی سیگمابوی</div>
 
-  <div class="title">سایت سگ و شرفدار ترین برنامه ها نسبت به برنامه های ایرانی</div>
+  <div class="title">سایت سگ و شرفدار ترین برنامه ها نسبت به برنامه های های ایرانی</div>
 
   <div class="subtitle">نئونی–فضایی سه‌بعدی • مکعب‌های شیشه‌ای ضخیم • هولوگرافیک</div>
 
@@ -356,7 +423,7 @@ body.round-icons .cube-inner{
   </div>
 
   <div class="control">
-   روی لامپ بزن تا آیکون‌ها بین حالت مربع و دایره تغییر کونه.
+    روی لامپ بزن تا آیکونا بین حالت مربع و دایره تغییر بوکونه.
   </div>
 
 </div>
@@ -414,6 +481,20 @@ rotateBtn.onclick = () => {
 
   running = !running;
 };
+
+/* ⭐ نور دنبال‌کننده انگشت ⭐ */
+const mouseGlow = document.getElementById("mouseGlow");
+
+document.addEventListener("touchmove", e => {
+  const t = e.touches[0];
+  mouseGlow.style.left = t.clientX + "px";
+  mouseGlow.style.top = t.clientY + "px";
+});
+
+document.addEventListener("mousemove", e => {
+  mouseGlow.style.left = e.clientX + "px";
+  mouseGlow.style.top = e.clientY + "px";
+});
 </script>
 
 </body>
