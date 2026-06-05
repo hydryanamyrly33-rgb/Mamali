@@ -15,6 +15,11 @@
   font-family:"Vazirmatn",system-ui,sans-serif;
 }
 
+:root{
+  --lightX:50%;
+  --lightY:0%;
+}
+
 body{
   height:100vh;
   display:flex;
@@ -119,6 +124,8 @@ body.space .glow-layer{ opacity:0.4; }
   text-align:center;
   position:relative;
   z-index:10;
+  transform-style:preserve-3d;
+  transition:transform .25s ease;
 }
 
 .maker{
@@ -160,7 +167,7 @@ body.space .glow-layer{ opacity:0.4; }
 }
 .bg-toggle i{ color:#22d3ee; }
 
-/* ⭐ دکمه توقف/شروع چرخش ⭐ */
+/* دکمه‌های کنترل */
 .rotate-control{
   margin-top:10px;
   font-size:12px;
@@ -216,13 +223,18 @@ body.space .glow-layer{ opacity:0.4; }
   }
 }
 
-/* ⭐ پایهٔ مربع شیشه‌ای (VisionOS-style) ⭐ */
+/* پایهٔ مربع شیشه‌ای (VisionOS-style) */
 .cube-inner{
   position:absolute;
   inset:0;
   border-radius:18px;
 
   background:
+    radial-gradient(
+      circle at var(--lightX) var(--lightY),
+      rgba(255,255,255,.35),
+      transparent 40%
+    ),
     linear-gradient(
       145deg,
       rgba(255,255,255,.22),
@@ -289,7 +301,7 @@ body.space .glow-layer{ opacity:0.4; }
   pointer-events:none;
 }
 
-/* ⭐ حالت Glass Orb در round-icons ⭐ */
+/* حالت Glass Orb در round-icons */
 body.round-icons .cube-inner{
   border-radius:50%;
 
@@ -312,7 +324,7 @@ body.round-icons .cube-inner{
     0 0 80px rgba(56,189,248,.35);
 }
 
-/* انعکاس نور بالای دکمه‌های دایره‌ای */
+/* انعکاس نور بالای دایره‌ها */
 body.round-icons .cube-inner::after{
   content:"";
   position:absolute;
@@ -323,6 +335,11 @@ body.round-icons .cube-inner::after{
   border-radius:50%;
   background:rgba(255,255,255,.55);
   filter:blur(6px);
+}
+
+/* حالت Premium برای دایره‌ها */
+body.round-icons .cube{
+  transform:scale(1.08);
 }
 
 /* افکت فشاری هنگام لمس */
@@ -406,6 +423,27 @@ body.round-icons .cube-inner::after{
 }
 
 @keyframes spin{ to{transform:rotate(360deg);} }
+
+/* شهاب‌سنگ‌ها */
+.meteor{
+  position:fixed;
+  width:150px;
+  height:2px;
+  background:linear-gradient(90deg,#fff,transparent);
+  transform:rotate(-35deg);
+  animation:meteorMove 2s linear forwards;
+}
+
+@keyframes meteorMove{
+  from{
+    top:-100px;
+    left:100%;
+  }
+  to{
+    top:100%;
+    left:-200px;
+  }
+}
 </style>
 </head>
 
@@ -423,9 +461,12 @@ body.round-icons .cube-inner::after{
   <div class="layer3"></div>
 </div>
 
+<!-- شهاب‌سنگ‌ها -->
+<div id="meteor-container"></div>
+
 <div class="wrapper">
 
-  <div class="maker">سازنده این ابر سایت کوصیشر🌚👇: امیرعلی حیدریان</div>
+  <div class="maker">سازنده این ابر سایت کوصیشر🌚👇: امیرعلی سیگمابوی</div>
 
   <div class="title">سایت سگ و شرفدار ترین برنامه ها نسبت به برنامه های ایرانی</div>
 
@@ -440,6 +481,12 @@ body.round-icons .cube-inner::after{
   <button class="rotate-control" id="rotateBtn">
     <i class="fa-solid fa-pause"></i>
     توقف چرخش
+  </button>
+
+  <!-- دکمه سنسور ژیروسکوپ -->
+  <button class="rotate-control" id="gyroBtn">
+    <i class="fa-solid fa-mobile-screen"></i>
+    سنسور: خاموش
   </button>
 
   <div class="orbit">
@@ -469,15 +516,38 @@ body.round-icons .cube-inner::after{
 </div>
 
 <script>
+/* بازیابی تنظیمات از localStorage */
+const savedRound = localStorage.getItem("roundIcons");
+const savedSpace = localStorage.getItem("spaceMode");
+const savedGyro = localStorage.getItem("gyroEnabled");
+
+if(savedRound === "true"){
+  document.body.classList.add("round-icons");
+}
+if(savedSpace === "true"){
+  document.body.classList.remove("neon");
+  document.body.classList.add("space");
+}
+
 /* تغییر پس‌زمینه */
-document.getElementById("bgToggle").onclick = () => {
+const bgToggle = document.getElementById("bgToggle");
+bgToggle.onclick = () => {
   document.body.classList.toggle("neon");
   document.body.classList.toggle("space");
+  localStorage.setItem(
+    "spaceMode",
+    document.body.classList.contains("space")
+  );
 };
 
 /* تبدیل مربع ↔ دایره */
-document.getElementById("lamp").onclick = () => {
+const lamp = document.getElementById("lamp");
+lamp.onclick = () => {
   document.body.classList.toggle("round-icons");
+  localStorage.setItem(
+    "roundIcons",
+    document.body.classList.contains("round-icons")
+  );
 };
 
 /* چرخش مثلثی نرم */
@@ -522,18 +592,66 @@ rotateBtn.onclick = () => {
   running = !running;
 };
 
-/* نور دنبال‌کننده انگشت */
+/* نور دنبال‌کننده انگشت + نور زنده روی آیکون‌ها */
 const mouseGlow = document.getElementById("mouseGlow");
 
 document.addEventListener("touchmove", e => {
   const t = e.touches[0];
   mouseGlow.style.left = t.clientX + "px";
   mouseGlow.style.top = t.clientY + "px";
+
+  document.documentElement.style.setProperty("--lightX", t.clientX + "px");
+  document.documentElement.style.setProperty("--lightY", t.clientY + "px");
 });
 
 document.addEventListener("mousemove", e => {
   mouseGlow.style.left = e.clientX + "px";
   mouseGlow.style.top = e.clientY + "px";
+
+  document.documentElement.style.setProperty("--lightX", e.clientX + "px");
+  document.documentElement.style.setProperty("--lightY", e.clientY + "px");
+});
+
+/* شهاب‌سنگ‌ها */
+setInterval(()=>{
+  const meteor = document.createElement("div");
+  meteor.className = "meteor";
+  document.body.appendChild(meteor);
+  setTimeout(()=>{ meteor.remove(); },2000);
+},15000);
+
+/* سنسور ژیروسکوپ */
+let gyroEnabled = false;
+const gyroBtn = document.getElementById("gyroBtn");
+
+if(savedGyro === "true"){
+  gyroEnabled = true;
+  gyroBtn.innerHTML = '<i class="fa-solid fa-mobile-screen"></i> سنسور: روشن';
+}
+
+gyroBtn.onclick = async () => {
+  gyroEnabled = !gyroEnabled;
+
+  gyroBtn.innerHTML = gyroEnabled
+    ? '<i class="fa-solid fa-mobile-screen"></i> سنسور: روشن'
+    : '<i class="fa-solid fa-mobile-screen"></i> سنسور: خاموش';
+
+  localStorage.setItem("gyroEnabled", gyroEnabled);
+};
+
+window.addEventListener("deviceorientation",(e)=>{
+  if(!gyroEnabled) return;
+
+  const x = e.gamma || 0;
+  const y = e.beta || 0;
+
+  document.querySelectorAll(".cube-inner").forEach(cube=>{
+    cube.style.transform =
+      `rotateY(${x/3}deg) rotateX(${-y/8}deg)`;
+  });
+
+  document.querySelector(".wrapper").style.transform =
+    `rotateY(${x/15}deg) rotateX(${-y/20}deg)`;
 });
 </script>
 
