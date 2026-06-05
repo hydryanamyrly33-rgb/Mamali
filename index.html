@@ -180,6 +180,26 @@ body.space .glow-layer{ opacity:0.4; }
   backdrop-filter:blur(10px);
 }
 
+/* پنل تنظیمات افکت‌ها */
+.effects-panel{
+  display:none;
+  margin-top:12px;
+  padding:14px;
+  border-radius:18px;
+  background:rgba(15,23,42,.85);
+  backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.15);
+}
+.effects-panel.show{
+  display:block;
+}
+.effects-panel label{
+  display:flex;
+  gap:10px;
+  margin:10px 0;
+  font-size:13px;
+}
+
 /* کانتینر */
 .orbit{
   position:relative;
@@ -221,6 +241,11 @@ body.space .glow-layer{ opacity:0.4; }
       translateY(0px)
       rotateZ(0deg);
   }
+}
+
+/* امکان خاموش کردن شناوری */
+.float-disabled .cube-inner{
+  animation:none !important;
 }
 
 /* پایهٔ مربع شیشه‌ای (VisionOS-style) + نور زنده */
@@ -429,10 +454,15 @@ body.round-icons .cube{
   position:fixed;
   width:180px;
   height:2px;
-  background:linear-gradient(90deg,#fff,transparent);
+  background:
+    linear-gradient(
+      90deg,
+      white,
+      transparent
+    );
   transform:rotate(-35deg);
-  z-index:-1;
   animation:meteorMove 2s linear forwards;
+  z-index:-1;
 }
 
 @keyframes meteorMove{
@@ -463,7 +493,7 @@ body.round-icons .cube{
 </div>
 
 <!-- شهاب‌سنگ‌ها -->
-<div id="meteor-container"></div>
+<div id="meteorContainer"></div>
 
 <div class="wrapper">
 
@@ -484,11 +514,35 @@ body.round-icons .cube{
     توقف چرخش
   </button>
 
-  <!-- دکمه سنسور ژیروسکوپ -->
-  <button class="rotate-control" id="gyroBtn">
-    <i class="fa-solid fa-mobile-screen"></i>
-    سنسور: خاموش
+  <!-- دکمه تنظیمات جلوه‌ها -->
+  <button class="rotate-control" id="effectsBtn">
+    ⚙️ تنظیمات جلوه‌ها
   </button>
+
+  <!-- پنل تنظیمات افکت‌ها -->
+  <div class="effects-panel" id="effectsPanel">
+
+    <label>
+      <input type="checkbox" id="toggleMeteor" checked>
+      شهاب فضایی
+    </label>
+
+    <label>
+      <input type="checkbox" id="toggleGlow" checked>
+      نور دنبال‌کننده
+    </label>
+
+    <label>
+      <input type="checkbox" id="toggleFloat" checked>
+      شناوری آیکون‌ها
+    </label>
+
+    <label>
+      <input type="checkbox" id="toggleRotate" checked>
+      چرخش آیکون‌ها
+    </label>
+
+  </div>
 
   <div class="orbit">
 
@@ -511,13 +565,13 @@ body.round-icons .cube{
   </div>
 
   <div class="control">
-    روی لامپ بزن تا آیکون‌ها بین حالت مربع و دایره تغییر کنند.
+    رو لامپ بزن تا آیکونا بین حالت مربع و دایره تغییر کونه.
   </div>
 
 </div>
 
 <script>
-/* ذخیره و بازیابی تنظیمات */
+/* ذخیره و بازیابی تنظیمات پس‌زمینه و دایره‌ها */
 const savedSpace = localStorage.getItem("spaceMode");
 if(savedSpace === "true"){
   document.body.classList.remove("neon");
@@ -593,8 +647,10 @@ rotateBtn.onclick = () => {
 
 /* نور دنبال‌کننده انگشت + نور زنده روی شیشه‌ها */
 const mouseGlow = document.getElementById("mouseGlow");
+let glowEnabled = true;
 
 document.addEventListener("touchmove", e => {
+  if(!glowEnabled) return;
   const t = e.touches[0];
   mouseGlow.style.left = t.clientX + "px";
   mouseGlow.style.top = t.clientY + "px";
@@ -604,6 +660,7 @@ document.addEventListener("touchmove", e => {
 });
 
 document.addEventListener("mousemove", e => {
+  if(!glowEnabled) return;
   mouseGlow.style.left = e.clientX + "px";
   mouseGlow.style.top = e.clientY + "px";
 
@@ -611,96 +668,80 @@ document.addEventListener("mousemove", e => {
   document.documentElement.style.setProperty("--lightY", e.clientY + "px");
 });
 
-/* شهاب‌سنگ‌ها */
+/* شهاب‌سنگ‌ها با امکان خاموش شدن + ذخیره تنظیمات */
+let meteorEnabled = true;
+const savedMeteor = localStorage.getItem("meteorEnabled");
+if(savedMeteor !== null){
+  meteorEnabled = savedMeteor === "true";
+}
+
 setInterval(()=>{
+  if(!meteorEnabled) return;
+
   const meteor = document.createElement("div");
   meteor.className = "meteor";
   document.body.appendChild(meteor);
   setTimeout(()=>{ meteor.remove(); },2000);
 },12000);
 
-/* سنسور ژیروسکوپ با مجوز */
-let gyroEnabled = false;
-const gyroBtn = document.getElementById("gyroBtn");
+/* پنل تنظیمات جلوه‌ها */
+const effectsBtn = document.getElementById("effectsBtn");
+const effectsPanel = document.getElementById("effectsPanel");
+effectsBtn.onclick = ()=>{
+  effectsPanel.classList.toggle("show");
+};
 
-async function enableGyro(){
+/* کنترل شهاب فضایی از پنل */
+const toggleMeteor = document.getElementById("toggleMeteor");
+toggleMeteor.checked = meteorEnabled;
+toggleMeteor.onchange = function(){
+  meteorEnabled = this.checked;
+  localStorage.setItem("meteorEnabled", meteorEnabled);
+};
 
-  try{
+/* کنترل نور دنبال‌کننده از پنل */
+const toggleGlow = document.getElementById("toggleGlow");
+toggleGlow.checked = glowEnabled;
+toggleGlow.onchange = function(){
+  glowEnabled = this.checked;
+  mouseGlow.style.display = glowEnabled ? "block" : "none";
+};
 
-    if(
-      typeof DeviceOrientationEvent !== "undefined" &&
-      typeof DeviceOrientationEvent.requestPermission === "function"
-    ){
+/* کنترل شناوری از پنل */
+let floatEnabled = true;
+const toggleFloat = document.getElementById("toggleFloat");
+toggleFloat.checked = floatEnabled;
+toggleFloat.onchange = function(){
+  floatEnabled = this.checked;
+  document.body.classList.toggle(
+    "float-disabled",
+    !floatEnabled
+  );
+};
 
-      const permission =
-      await DeviceOrientationEvent.requestPermission();
+/* کنترل چرخش از پنل */
+const toggleRotate = document.getElementById("toggleRotate");
+toggleRotate.checked = true;
+toggleRotate.onchange = function(){
 
-      if(permission !== "granted"){
-        return false;
-      }
+  if(this.checked){
 
+    if(!running){
+      timer = setInterval(rotateTriangle,3500);
+      running = true;
+      rotateBtn.innerHTML = '<i class="fa-solid fa-pause"></i> توقف چرخش';
     }
-
-    return true;
-
-  }catch(err){
-
-    console.log(err);
-    return false;
-
-  }
-
-}
-
-gyroBtn.onclick = async ()=>{
-
-  if(!gyroEnabled){
-
-    const ok = await enableGyro();
-
-    if(!ok){
-      alert("مرورگر اجازه استفاده از سنسور را نداد.");
-      return;
-    }
-
-    gyroEnabled = true;
-
-    gyroBtn.innerHTML =
-    '<i class="fa-solid fa-mobile-screen"></i> سنسور: روشن';
 
   }else{
 
-    gyroEnabled = false;
-
-    gyroBtn.innerHTML =
-    '<i class="fa-solid fa-mobile-screen"></i> سنسور: خاموش';
+    clearInterval(timer);
+    running = false;
+    rotateBtn.innerHTML = '<i class="fa-solid fa-play"></i> شروع چرخش';
 
   }
 
 };
-
-window.addEventListener("deviceorientation",(e)=>{
-
-  if(!gyroEnabled) return;
-
-  const x = e.gamma || 0;
-  const y = e.beta || 0;
-
-  document.querySelectorAll(".cube-inner").forEach(cube=>{
-
-    cube.style.transform =
-    `translateY(0px)
-     rotateY(${x/4}deg)
-     rotateX(${-y/10}deg)`;
-
-  });
-
-  document.querySelector(".wrapper").style.transform =
-  `rotateY(${x/20}deg)
-   rotateX(${-y/30}deg)`;
-
-});
 </script>
 
 </body>
-</html>
+        </html>
