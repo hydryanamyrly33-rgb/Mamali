@@ -182,14 +182,7 @@ body.space .glow-layer{ opacity:0.4; }
   perspective:900px;
 }
 
-/* انیمیشن شناور شدن */
-@keyframes floating{
-  0%{ transform:translateY(0px); }
-  50%{ transform:translateY(-10px); }
-  100%{ transform:translateY(0px); }
-}
-
-/* مکعب‌ها */
+/* مکعب‌ها (جایگاه + چرخش مثلثی) */
 .cube{
   position:absolute;
   width:80px;
@@ -202,34 +195,39 @@ body.space .glow-layer{ opacity:0.4; }
     left 3.5s cubic-bezier(.22,.61,.36,1),
     transform .6s ease,
     box-shadow .4s ease;
-
-  animation:floating 4s ease-in-out infinite;
 }
-.cube.instagram{ animation-delay:0s; }
-.cube.youtube{ animation-delay:1s; }
-.cube.telegram{ animation-delay:2s; }
 
-/* درخشش نبضی */
-@keyframes pulseGlow{
+/* افکت شناور سه‌بعدی روی خود دکمه شیشه‌ای */
+@keyframes float3d{
   0%{
-    box-shadow:0 0 25px rgba(59,130,246,.6);
+    transform:
+      translateY(0px)
+      rotateZ(0deg);
   }
   50%{
-    box-shadow:0 0 60px rgba(59,130,246,1);
+    transform:
+      translateY(-8px)
+      rotateZ(2deg);
   }
   100%{
-    box-shadow:0 0 25px rgba(59,130,246,.6);
+    transform:
+      translateY(0px)
+      rotateZ(0deg);
   }
 }
 
-/* ⭐ تبدیل نرم مربع ↔ دایره + شیشه‌ای ⭐ */
+/* ⭐ پایهٔ مربع شیشه‌ای (VisionOS-style) ⭐ */
 .cube-inner{
   position:absolute;
   inset:0;
   border-radius:18px;
 
   background:
-    linear-gradient(145deg,rgba(255,255,255,.12),rgba(30,64,175,.9));
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,.22),
+      rgba(30,64,175,.92)
+    );
 
   border:2px solid rgba(255,255,255,.55);
 
@@ -245,38 +243,38 @@ body.space .glow-layer{ opacity:0.4; }
   font-size:32px;
   color:white;
 
+  backdrop-filter:blur(16px);
+
   transition:
     border-radius 0.9s ease,
     box-shadow 0.9s ease,
-    background 0.9s ease;
+    background 0.9s ease,
+    transform 0.25s ease;
 
-  animation:pulseGlow 3s infinite;
+  animation:float3d 5s ease-in-out infinite;
 }
 
-body.round-icons .cube-inner{
-  border-radius:50%;
+/* نور مخصوص هر برنامه */
+.instagram .cube-inner{
   box-shadow:
-    0 0 40px rgba(59,130,246,.95),
-    0 0 70px rgba(129,140,248,.55),
-    inset 0 3px 10px rgba(255,255,255,.25),
-    inset 0 -12px 18px rgba(15,23,42,.95);
-
-  backdrop-filter:blur(18px);
-
-  background:
-    linear-gradient(
-      145deg,
-      rgba(255,255,255,.18),
-      rgba(255,255,255,.05)
-    );
-
-  border:2px solid rgba(255,255,255,.45);
+    0 0 35px #ff2e9f,
+    0 0 70px #ff2e9f55,
+    inset 0 0 15px rgba(255,255,255,.15);
+}
+.youtube .cube-inner{
+  box-shadow:
+    0 0 35px #ff0000,
+    0 0 70px #ff000055,
+    inset 0 0 15px rgba(255,255,255,.15);
+}
+.telegram .cube-inner{
+  box-shadow:
+    0 0 35px #2aabee,
+    0 0 70px #2aabee55,
+    inset 0 0 15px rgba(255,255,255,.15);
 }
 
-body.round-icons .cube{
-  transform:scale(1.08);
-}
-
+/* انعکاس شیشه‌ای عمومی */
 .cube-inner::before{
   content:"";
   position:absolute;
@@ -291,7 +289,48 @@ body.round-icons .cube{
   pointer-events:none;
 }
 
-/* جایگاه‌ها */
+/* ⭐ حالت Glass Orb در round-icons ⭐ */
+body.round-icons .cube-inner{
+  border-radius:50%;
+
+  background:
+    radial-gradient(
+      circle at 30% 25%,
+      rgba(255,255,255,.65),
+      rgba(255,255,255,.15) 30%,
+      rgba(30,64,175,.95) 100%
+    );
+
+  border:2px solid rgba(255,255,255,.45);
+
+  backdrop-filter:blur(18px);
+
+  box-shadow:
+    inset 0 10px 20px rgba(255,255,255,.25),
+    inset 0 -15px 25px rgba(0,0,0,.35),
+    0 0 35px rgba(59,130,246,.8),
+    0 0 80px rgba(56,189,248,.35);
+}
+
+/* انعکاس نور بالای دکمه‌های دایره‌ای */
+body.round-icons .cube-inner::after{
+  content:"";
+  position:absolute;
+  top:10%;
+  left:18%;
+  width:40%;
+  height:18%;
+  border-radius:50%;
+  background:rgba(255,255,255,.55);
+  filter:blur(6px);
+}
+
+/* افکت فشاری هنگام لمس */
+.cube:active .cube-inner{
+  transform:scale(.92);
+}
+
+/* جایگاه‌ها برای چرخش مثلثی */
 .pos-top{
   top:0;
   left:130px;
@@ -369,6 +408,7 @@ body.round-icons .cube{
 @keyframes spin{ to{transform:rotate(360deg);} }
 </style>
 </head>
+
 <body class="neon">
 
 <div class="glow-layer"></div>
@@ -385,9 +425,9 @@ body.round-icons .cube{
 
 <div class="wrapper">
 
-  <div class="maker">سازنده این ابر سایت کوصیشر🌚👇: امیرعلی سیگمابوی</div>
+  <div class="maker">سازنده این ابر سایت کوصیشر🌚👇: امیرعلی حیدریان</div>
 
-  <div class="title">سایت سگ و شرفدار ترین برنامه ها نسبت به برنامه های های ایرانی</div>
+  <div class="title">سایت سگ و شرفدار ترین برنامه ها نسبت به برنامه های ایرانی</div>
 
   <div class="subtitle">نئونی–فضایی سه‌بعدی • مکعب‌های شیشه‌ای ضخیم • هولوگرافیک</div>
 
@@ -423,7 +463,7 @@ body.round-icons .cube{
   </div>
 
   <div class="control">
-    روی لامپ بزن تا آیکونا بین حالت مربع و دایره تغییر بوکونه.
+    روی لامپ بزن تا آیکون‌ها بین حالت مربع و دایره تغییر کنند.
   </div>
 
 </div>
@@ -435,12 +475,12 @@ document.getElementById("bgToggle").onclick = () => {
   document.body.classList.toggle("space");
 };
 
-/* ⭐ تبدیل مربع ↔ دایره ⭐ */
+/* تبدیل مربع ↔ دایره */
 document.getElementById("lamp").onclick = () => {
   document.body.classList.toggle("round-icons");
 };
 
-/* ⭐ چرخش مثلثی ⭐ */
+/* چرخش مثلثی نرم */
 const insta = document.querySelector(".instagram");
 const youtube = document.querySelector(".youtube");
 const telegram = document.querySelector(".telegram");
@@ -482,7 +522,7 @@ rotateBtn.onclick = () => {
   running = !running;
 };
 
-/* ⭐ نور دنبال‌کننده انگشت ⭐ */
+/* نور دنبال‌کننده انگشت */
 const mouseGlow = document.getElementById("mouseGlow");
 
 document.addEventListener("touchmove", e => {
