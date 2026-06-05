@@ -180,18 +180,29 @@ body.space .glow-layer{ opacity:0.4; }
   backdrop-filter:blur(10px);
 }
 
-/* پنل تنظیمات افکت‌ها */
+/* دکمه غیرفعال */
+.rotate-control:disabled{
+  opacity:.45;
+  cursor:not-allowed;
+}
+
+/* پنل تنظیمات جلوه‌ها */
 .effects-panel{
-  display:none;
+  opacity:0;
+  max-height:0;
+  overflow:hidden;
+  transition:.4s ease;
   margin-top:12px;
-  padding:14px;
+  padding:0 14px;
   border-radius:18px;
   background:rgba(15,23,42,.85);
   backdrop-filter:blur(14px);
   border:1px solid rgba(255,255,255,.15);
 }
 .effects-panel.show{
-  display:block;
+  opacity:1;
+  max-height:500px;
+  padding:14px;
 }
 .effects-panel label{
   display:flex;
@@ -209,14 +220,13 @@ body.space .glow-layer{ opacity:0.4; }
   perspective:900px;
 }
 
-/* مکعب‌ها (جایگاه + چرخش مثلثی) */
+/* مکعب‌ها */
 .cube{
   position:absolute;
   width:80px;
   height:80px;
   transform-style:preserve-3d;
   cursor:pointer;
-
   transition:
     top 3.5s cubic-bezier(.22,.61,.36,1),
     left 3.5s cubic-bezier(.22,.61,.36,1),
@@ -224,44 +234,29 @@ body.space .glow-layer{ opacity:0.4; }
     box-shadow .4s ease;
 }
 
-/* افکت شناور سه‌بعدی روی خود دکمه شیشه‌ای */
+/* افکت شناور */
 @keyframes float3d{
-  0%{
-    transform:
-      translateY(0px)
-      rotateZ(0deg);
-  }
-  50%{
-    transform:
-      translateY(-8px)
-      rotateZ(2deg);
-  }
-  100%{
-    transform:
-      translateY(0px)
-      rotateZ(0deg);
-  }
+  0%{ transform:translateY(0px) rotateZ(0deg); }
+  50%{ transform:translateY(-8px) rotateZ(2deg); }
+  100%{ transform:translateY(0px) rotateZ(0deg); }
 }
 
-/* امکان خاموش کردن شناوری */
 .float-disabled .cube-inner{
   animation:none !important;
 }
 
-/* پایهٔ مربع شیشه‌ای (VisionOS-style) + نور زنده */
+/* شیشه‌ای + نور زنده */
 .cube-inner{
   position:absolute;
   inset:0;
   border-radius:18px;
 
   background:
-    radial-gradient(
-      circle at var(--lightX) var(--lightY),
+    radial-gradient(circle at var(--lightX) var(--lightY),
       rgba(255,255,255,.35),
       transparent 40%
     ),
-    linear-gradient(
-      145deg,
+    linear-gradient(145deg,
       rgba(255,255,255,.22),
       rgba(30,64,175,.92)
     );
@@ -282,11 +277,7 @@ body.space .glow-layer{ opacity:0.4; }
 
   backdrop-filter:blur(16px);
 
-  transition:
-    border-radius 0.9s ease,
-    box-shadow 0.9s ease,
-    background 0.9s ease,
-    transform 0.25s ease;
+  transition:border-radius .9s ease, box-shadow .9s ease, background .9s ease, transform .25s ease;
 
   animation:float3d 5s ease-in-out infinite;
 }
@@ -311,37 +302,30 @@ body.space .glow-layer{ opacity:0.4; }
     inset 0 0 15px rgba(255,255,255,.15);
 }
 
-/* انعکاس شیشه‌ای عمومی */
+/* انعکاس شیشه‌ای */
 .cube-inner::before{
   content:"";
   position:absolute;
   inset:6px;
   border-radius:12px;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(255,255,255,.55),
-      rgba(255,255,255,.05)
-    );
+  background:linear-gradient(180deg,
+    rgba(255,255,255,.55),
+    rgba(255,255,255,.05)
+  );
   pointer-events:none;
 }
 
-/* حالت Glass Orb در round-icons */
+/* حالت دایره‌ای */
 body.round-icons .cube-inner{
   border-radius:50%;
-
   background:
-    radial-gradient(
-      circle at 30% 25%,
+    radial-gradient(circle at 30% 25%,
       rgba(255,255,255,.65),
       rgba(255,255,255,.15) 30%,
       rgba(30,64,175,.95) 100%
     );
-
   border:2px solid rgba(255,255,255,.45);
-
   backdrop-filter:blur(18px);
-
   box-shadow:
     inset 0 10px 20px rgba(255,255,255,.25),
     inset 0 -15px 25px rgba(0,0,0,.35),
@@ -349,7 +333,6 @@ body.round-icons .cube-inner{
     0 0 80px rgba(56,189,248,.35);
 }
 
-/* انعکاس نور بالای دایره‌ها */
 body.round-icons .cube-inner::after{
   content:"";
   position:absolute;
@@ -362,29 +345,19 @@ body.round-icons .cube-inner::after{
   filter:blur(6px);
 }
 
-/* حالت Premium برای دایره‌ها */
 body.round-icons .cube{
   transform:scale(1.08);
 }
 
-/* افکت فشاری هنگام لمس */
+/* افکت فشاری */
 .cube:active .cube-inner{
   transform:scale(.92);
 }
 
-/* جایگاه‌ها برای چرخش مثلثی */
-.pos-top{
-  top:0;
-  left:130px;
-}
-.pos-left{
-  top:120px;
-  left:40px;
-}
-.pos-right{
-  top:120px;
-  left:220px;
-}
+/* جایگاه‌ها */
+.pos-top{ top:0; left:130px; }
+.pos-left{ top:120px; left:40px; }
+.pos-right{ top:120px; left:220px; }
 
 /* آیکن‌ها */
 .cube.instagram i{ color:#ff2e9f; }
@@ -424,7 +397,7 @@ body.round-icons .cube{
   border-top-color:#22d3ee;
   border-right-color:#a855f7;
   border-left-color:#ec4899;
-  opacity:0.9;
+  opacity:.9;
   animation:spin 6s linear infinite;
 }
 
@@ -441,39 +414,49 @@ body.round-icons .cube{
   transform:rotateX(60deg) rotateZ(25deg);
 }
 
-.control{
-  margin-top:18px;
-  font-size:11px;
-  color:#cbd5f5;
-}
-
 @keyframes spin{ to{transform:rotate(360deg);} }
 
-/* شهاب‌سنگ‌ها */
+/* شهاب‌سنگ */
 .meteor{
   position:fixed;
   width:180px;
   height:2px;
-  background:
-    linear-gradient(
-      90deg,
-      white,
-      transparent
-    );
+  background:linear-gradient(90deg,white,transparent);
   transform:rotate(-35deg);
   animation:meteorMove 2s linear forwards;
   z-index:-1;
 }
 
 @keyframes meteorMove{
-  from{
-    top:-100px;
-    left:110%;
-  }
-  to{
-    top:110%;
-    left:-200px;
-  }
+  from{ top:-100px; left:110%; }
+  to{ top:110%; left:-200px; }
+}
+
+/* پیام شیشه‌ای */
+#glassMessage{
+  position:fixed;
+  top:25px;
+  left:50%;
+  transform:translateX(-50%) translateY(-20px);
+  padding:14px 20px;
+  border-radius:18px;
+  background:rgba(15,23,42,.85);
+  backdrop-filter:blur(18px);
+  border:1px solid rgba(255,255,255,.2);
+  color:white;
+  font-size:13px;
+  z-index:99999;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .4s ease, transform .4s ease;
+  box-shadow:
+    0 0 25px rgba(56,189,248,.25),
+    0 0 50px rgba(129,140,248,.18);
+}
+
+#glassMessage.show{
+  opacity:1;
+  transform:translateX(-50%) translateY(0);
 }
 </style>
 </head>
@@ -481,23 +464,19 @@ body.round-icons .cube{
 <body class="neon">
 
 <div class="glow-layer"></div>
-
-<!-- نور دنبال‌کننده انگشت -->
 <div id="mouseGlow"></div>
 
-<!-- ⭐⭐ ستاره‌های سه‌لایه ⭐⭐ -->
 <div class="stars">
   <div class="layer1"></div>
   <div class="layer2"></div>
   <div class="layer3"></div>
 </div>
 
-<!-- شهاب‌سنگ‌ها -->
 <div id="meteorContainer"></div>
 
 <div class="wrapper">
 
-  <div class="maker">سازنده این ابر سایت کوصیشر🌚👇: امیرعلی سیگمابوی</div>
+  <div class="maker">🗣️سازنده این ابر سایت کوصیشر🌚👇: امیرعلی سیگمابوی</div>
 
   <div class="title">سایت سگ و شرفدار ترین برنامه ها نسبت به برنامه های ایرانی</div>
 
@@ -508,18 +487,15 @@ body.round-icons .cube{
     تغییر پس‌زمینه: نئونی / فضایی واقعی
   </div>
 
-  <!-- دکمه توقف/شروع -->
   <button class="rotate-control" id="rotateBtn">
     <i class="fa-solid fa-pause"></i>
     توقف چرخش
   </button>
 
-  <!-- دکمه تنظیمات جلوه‌ها -->
   <button class="rotate-control" id="effectsBtn">
     ⚙️ تنظیمات جلوه‌ها
   </button>
 
-  <!-- پنل تنظیمات افکت‌ها -->
   <div class="effects-panel" id="effectsPanel">
 
     <label>
@@ -547,7 +523,8 @@ body.round-icons .cube{
   <div class="orbit">
 
     <a class="cube instagram pos-top" href="https://instagram.com" target="_blank">
-      <div class="cube-inner"><i class="fab fa-instagram"></i></div>
+      <div class="
+        <div class="cube-inner"><i class="fab fa-instagram"></i></div>
     </a>
 
     <a class="cube youtube pos-left" href="https://youtube.com" target="_blank">
@@ -569,6 +546,9 @@ body.round-icons .cube{
   </div>
 
 </div>
+
+<!-- پیام شیشه‌ای -->
+<div id="glassMessage"></div>
 
 <script>
 /* ذخیره و بازیابی تنظیمات پس‌زمینه و دایره‌ها */
@@ -632,7 +612,31 @@ function rotateTriangle(){
 
 let timer = setInterval(rotateTriangle,3500);
 
+/* پیام شیشه‌ای با جلوگیری از تایمرهای تکراری */
+let glassTimeout;
+
+function showGlassMessage(text){
+  const msg = document.getElementById("glassMessage");
+
+  clearTimeout(glassTimeout);
+
+  msg.textContent = text;
+  msg.classList.add("show");
+
+  glassTimeout = setTimeout(()=>{
+    msg.classList.remove("show");
+  },4000);
+}
+
+/* دکمه شروع/توقف چرخش با بررسی toggleRotate */
 rotateBtn.onclick = () => {
+
+  const rotateEnabled = document.getElementById("toggleRotate").checked;
+
+  if(!rotateEnabled){
+    showGlassMessage("ابتدا گزینه «چرخش آیکون‌ها» را در تنظیمات جلوه‌ها فعال کنید.");
+    return;
+  }
 
   if(running){
     clearInterval(timer);
@@ -668,7 +672,7 @@ document.addEventListener("mousemove", e => {
   document.documentElement.style.setProperty("--lightY", e.clientY + "px");
 });
 
-/* شهاب‌سنگ‌ها با امکان خاموش شدن + ذخیره تنظیمات */
+/* شهاب‌سنگ‌ها با موقعیت تصادفی + ذخیره تنظیمات */
 let meteorEnabled = true;
 const savedMeteor = localStorage.getItem("meteorEnabled");
 if(savedMeteor !== null){
@@ -680,7 +684,12 @@ setInterval(()=>{
 
   const meteor = document.createElement("div");
   meteor.className = "meteor";
+
+  meteor.style.top = Math.random()*30 + "vh";
+  meteor.style.left = (80 + Math.random()*30) + "vw";
+
   document.body.appendChild(meteor);
+
   setTimeout(()=>{ meteor.remove(); },2000);
 },12000);
 
@@ -705,7 +714,16 @@ toggleGlow.checked = glowEnabled;
 toggleGlow.onchange = function(){
   glowEnabled = this.checked;
   mouseGlow.style.display = glowEnabled ? "block" : "none";
+  localStorage.setItem("glowEnabled", glowEnabled);
 };
+
+/* بازیابی نور دنبال‌کننده */
+const savedGlow = localStorage.getItem("glowEnabled");
+if(savedGlow !== null){
+  glowEnabled = savedGlow === "true";
+  toggleGlow.checked = glowEnabled;
+  mouseGlow.style.display = glowEnabled ? "block" : "none";
+}
 
 /* کنترل شناوری از پنل */
 let floatEnabled = true;
@@ -713,16 +731,24 @@ const toggleFloat = document.getElementById("toggleFloat");
 toggleFloat.checked = floatEnabled;
 toggleFloat.onchange = function(){
   floatEnabled = this.checked;
-  document.body.classList.toggle(
-    "float-disabled",
-    !floatEnabled
-  );
+  document.body.classList.toggle("float-disabled", !floatEnabled);
+  localStorage.setItem("floatEnabled", floatEnabled);
 };
+
+/* بازیابی شناوری */
+const savedFloat = localStorage.getItem("floatEnabled");
+if(savedFloat !== null){
+  floatEnabled = savedFloat === "true";
+  toggleFloat.checked = floatEnabled;
+  document.body.classList.toggle("float-disabled", !floatEnabled);
+}
 
 /* کنترل چرخش از پنل */
 const toggleRotate = document.getElementById("toggleRotate");
 toggleRotate.checked = true;
 toggleRotate.onchange = function(){
+
+  rotateBtn.disabled = !this.checked;
 
   if(this.checked){
 
@@ -740,8 +766,16 @@ toggleRotate.onchange = function(){
 
   }
 
+  localStorage.setItem("rotateEnabled", this.checked);
 };
+
+/* بازیابی چرخش */
+const savedRotate = localStorage.getItem("rotateEnabled");
+if(savedRotate !== null){
+  toggleRotate.checked = savedRotate === "true";
+  rotateBtn.disabled = !toggleRotate.checked;
+}
 </script>
 
 </body>
-        </html>
+</html>
