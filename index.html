@@ -476,7 +476,7 @@ body.round-icons .cube{
 
 <div class="wrapper">
 
-  <div class="maker">🗣️سازنده این ابر سایت کوصیشر🌚👇: امیرعلی سیگمابوی</div>
+  <div class="maker">سازنده این ابر سایت کوصیشر🌚👇: امیرعلی سیگمابوی</div>
 
   <div class="title">سایت سگ و شرفدار ترین برنامه ها نسبت به برنامه های ایرانی</div>
 
@@ -522,9 +522,11 @@ body.round-icons .cube{
 
   <div class="orbit">
 
+    <!-- ✅ اینستاگرامِ درست‌شده، بدون div خراب -->
     <a class="cube instagram pos-top" href="https://instagram.com" target="_blank">
-      <div class="
-        <div class="cube-inner"><i class="fab fa-instagram"></i></div>
+      <div class="cube-inner">
+        <i class="fab fa-instagram"></i>
+      </div>
     </a>
 
     <a class="cube youtube pos-left" href="https://youtube.com" target="_blank">
@@ -549,7 +551,6 @@ body.round-icons .cube{
 
 <!-- پیام شیشه‌ای -->
 <div id="glassMessage"></div>
-
 <script>
 /* ذخیره و بازیابی تنظیمات پس‌زمینه و دایره‌ها */
 const savedSpace = localStorage.getItem("spaceMode");
@@ -769,13 +770,20 @@ toggleRotate.onchange = function(){
   localStorage.setItem("rotateEnabled", this.checked);
 };
 
-/* بازیابی چرخش */
+/* ⭐ اصلاح مهم رفیقت — بازیابی واقعی وضعیت چرخش */
 const savedRotate = localStorage.getItem("rotateEnabled");
+
 if(savedRotate !== null){
+
   toggleRotate.checked = savedRotate === "true";
+
+  if(!toggleRotate.checked){
+    clearInterval(timer);
+    running = false;
+    rotateBtn.innerHTML =
+      '<i class="fa-solid fa-play"></i> شروع چرخش';
+  }
+
   rotateBtn.disabled = !toggleRotate.checked;
 }
-</script>
-
-</body>
-</html>
+    </script>
