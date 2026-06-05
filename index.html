@@ -17,7 +17,7 @@
 
 :root{
   --lightX:50%;
-  --lightY:0%;
+  --lightY:50%;
 }
 
 body{
@@ -223,7 +223,7 @@ body.space .glow-layer{ opacity:0.4; }
   }
 }
 
-/* پایهٔ مربع شیشه‌ای (VisionOS-style) */
+/* پایهٔ مربع شیشه‌ای (VisionOS-style) + نور زنده */
 .cube-inner{
   position:absolute;
   inset:0;
@@ -427,20 +427,21 @@ body.round-icons .cube{
 /* شهاب‌سنگ‌ها */
 .meteor{
   position:fixed;
-  width:150px;
+  width:180px;
   height:2px;
   background:linear-gradient(90deg,#fff,transparent);
   transform:rotate(-35deg);
+  z-index:-1;
   animation:meteorMove 2s linear forwards;
 }
 
 @keyframes meteorMove{
   from{
     top:-100px;
-    left:100%;
+    left:110%;
   }
   to{
-    top:100%;
+    top:110%;
     left:-200px;
   }
 }
@@ -516,17 +517,15 @@ body.round-icons .cube{
 </div>
 
 <script>
-/* بازیابی تنظیمات از localStorage */
-const savedRound = localStorage.getItem("roundIcons");
+/* ذخیره و بازیابی تنظیمات */
 const savedSpace = localStorage.getItem("spaceMode");
-const savedGyro = localStorage.getItem("gyroEnabled");
-
-if(savedRound === "true"){
-  document.body.classList.add("round-icons");
-}
 if(savedSpace === "true"){
   document.body.classList.remove("neon");
   document.body.classList.add("space");
+}
+
+if(localStorage.getItem("roundIcons")==="true"){
+  document.body.classList.add("round-icons");
 }
 
 /* تغییر پس‌زمینه */
@@ -592,7 +591,7 @@ rotateBtn.onclick = () => {
   running = !running;
 };
 
-/* نور دنبال‌کننده انگشت + نور زنده روی آیکون‌ها */
+/* نور دنبال‌کننده انگشت + نور زنده روی شیشه‌ها */
 const mouseGlow = document.getElementById("mouseGlow");
 
 document.addEventListener("touchmove", e => {
@@ -618,40 +617,88 @@ setInterval(()=>{
   meteor.className = "meteor";
   document.body.appendChild(meteor);
   setTimeout(()=>{ meteor.remove(); },2000);
-},15000);
+},12000);
 
-/* سنسور ژیروسکوپ */
+/* سنسور ژیروسکوپ با مجوز */
 let gyroEnabled = false;
 const gyroBtn = document.getElementById("gyroBtn");
 
-if(savedGyro === "true"){
-  gyroEnabled = true;
-  gyroBtn.innerHTML = '<i class="fa-solid fa-mobile-screen"></i> سنسور: روشن';
+async function enableGyro(){
+
+  try{
+
+    if(
+      typeof DeviceOrientationEvent !== "undefined" &&
+      typeof DeviceOrientationEvent.requestPermission === "function"
+    ){
+
+      const permission =
+      await DeviceOrientationEvent.requestPermission();
+
+      if(permission !== "granted"){
+        return false;
+      }
+
+    }
+
+    return true;
+
+  }catch(err){
+
+    console.log(err);
+    return false;
+
+  }
+
 }
 
-gyroBtn.onclick = async () => {
-  gyroEnabled = !gyroEnabled;
+gyroBtn.onclick = async ()=>{
 
-  gyroBtn.innerHTML = gyroEnabled
-    ? '<i class="fa-solid fa-mobile-screen"></i> سنسور: روشن'
-    : '<i class="fa-solid fa-mobile-screen"></i> سنسور: خاموش';
+  if(!gyroEnabled){
 
-  localStorage.setItem("gyroEnabled", gyroEnabled);
+    const ok = await enableGyro();
+
+    if(!ok){
+      alert("مرورگر اجازه استفاده از سنسور را نداد.");
+      return;
+    }
+
+    gyroEnabled = true;
+
+    gyroBtn.innerHTML =
+    '<i class="fa-solid fa-mobile-screen"></i> سنسور: روشن';
+
+  }else{
+
+    gyroEnabled = false;
+
+    gyroBtn.innerHTML =
+    '<i class="fa-solid fa-mobile-screen"></i> سنسور: خاموش';
+
+  }
+
 };
 
 window.addEventListener("deviceorientation",(e)=>{
+
   if(!gyroEnabled) return;
 
   const x = e.gamma || 0;
   const y = e.beta || 0;
 
   document.querySelectorAll(".cube-inner").forEach(cube=>{
+
     cube.style.transform =
-      `rotateY(${x/3}deg) rotateX(${-y/8}deg)`;
+    `translateY(0px)
+     rotateY(${x/4}deg)
+     rotateX(${-y/10}deg)`;
+
   });
 
   document.querySelector(".wrapper").style.transform =
-    `rotateY(${x/15}deg) rotateX(${-y/20}deg)`;
+  `rotateY(${x/20}deg)
+   rotateX(${-y/30}deg)`;
+
 });
 </script>
 
