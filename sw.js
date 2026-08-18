@@ -1,10 +1,11 @@
-const CACHE_NAME = 'mamali-orbit-v2.2.0';
+const APP_VERSION = '3.0.0';
+const CACHE_NAME = 'mamali-orbit-v3.0.0';
 const OFFLINE_DOCUMENT = './index.html';
 const APP_SHELL = [
   './',
   OFFLINE_DOCUMENT,
-  './assets/styles.css?v=2.2.0',
-  './assets/app.js?v=2.2.0',
+  './assets/styles.css?v=3.0.0',
+  './assets/app.js?v=3.0.0',
   './assets/favicon.svg',
   './assets/social-preview.svg',
   './assets/icons/icon-192.png',
@@ -16,7 +17,7 @@ const APP_SHELL = [
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL)));
-  self.skipWaiting();
+  // A new worker waits until the user confirms the update in Update Center.
 });
 
 self.addEventListener('activate', event => {
@@ -27,6 +28,13 @@ self.addEventListener('activate', event => {
   );
 });
 
+self.addEventListener('message', event => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
+  if (event.data?.type === 'GET_VERSION' && event.ports[0]) {
+    event.ports[0].postMessage({ version: APP_VERSION });
+  }
+});
+
 self.addEventListener('fetch', event => {
   const request = event.request;
   if (request.method !== 'GET') return;
@@ -34,8 +42,15 @@ self.addEventListener('fetch', event => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  // Online-first: always revalidate with the network. The cache is only the
-  // resilience layer used when the device is offline or the network fails.
+  // Update metadata must always prove a live connection. It never falls back
+  // to Cache, so the interface can reliably become disabled while offline.
+  if (url.pathname.endsWith('/version.json')) {
+    event.respondWith(fetch(request, { cache: 'no-store' }));
+    return;
+  }
+
+  // Online-first app shell: newest network response online, cache only when
+  // the device is offline or the network request genuinely fails.
   event.respondWith((async () => {
     try {
       const response = await fetch(request, { cache: 'no-cache' });

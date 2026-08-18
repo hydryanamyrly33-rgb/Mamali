@@ -2,7 +2,7 @@
   "id": "/Mamali/",
   "name": "ماملی — منظومه اجتماعی سه‌بعدی",
   "short_name": "ماملی",
-  "description": "یک لانچر اجتماعی سه‌بعدی، سریع و نصب‌شونده با اجرای مستقیم اپ‌های اینستاگرام، یوتیوب و تلگرام.",
+  "description": "لانچر اجتماعی سه‌بعدی قابل نصب روی Android و Windows با بروزرسانی زنده، اجرای مستقل و پشتیبانی آفلاین.",
   "lang": "fa",
   "dir": "rtl",
   "start_url": "/Mamali/",
@@ -12,8 +12,11 @@
   "orientation": "any",
   "background_color": "#050712",
   "theme_color": "#080b18",
-  "categories": ["social", "entertainment", "utilities"],
+  "categories": ["social", "entertainment", "utilities", "productivity"],
   "prefer_related_applications": false,
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  },
   "icons": [
     {
       "src": "assets/icons/icon-192.png",
@@ -40,14 +43,21 @@
       "sizes": "1440x1000",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "راهنمای نصب اپ اندروید ماملی"
+      "label": "نصب و بروزرسانی ماملی روی Android و Windows"
+    },
+    {
+      "src": "assets/screenshots/windows-install-wide.png",
+      "sizes": "1440x1000",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "نصب برنامه Mamali روی Windows 10 و 11"
     },
     {
       "src": "assets/screenshots/android-install-narrow.png",
       "sizes": "390x844",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "نصب ماملی روی موبایل اندروید"
+      "label": "نسخه موبایل ماملی با Update Center زنده"
     }
   ],
   "shortcuts": [
@@ -59,10 +69,17 @@
       "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
-      "name": "راهنمای نصب اندروید",
+      "name": "نصب روی Android و Windows",
       "short_name": "نصب اپ",
-      "description": "آموزش نصب نسخه PWA روی اندروید",
+      "description": "راهنمای نصب برنامه روی گوشی و ویندوز",
       "url": "/Mamali/#android-app",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "بررسی بروزرسانی",
+      "short_name": "بروزرسانی",
+      "description": "اتصال به کانال پایدار و دریافت آخرین نسخه",
+      "url": "/Mamali/#updateCenter",
       "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]

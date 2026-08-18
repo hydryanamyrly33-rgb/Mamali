@@ -1,73 +1,115 @@
-# Mamali Orbit
+# Mamali Orbit 3.0
 
-مرکز فرمان اجتماعی سه‌بعدی، سریع و قابل نصب برای GitHub Pages.
+مرکز فرمان اجتماعی سه‌بعدی، چندسکویی و قابل نصب روی Android و Windows.
 
 **نسخه زنده:** [hydryanamyrly33-rgb.github.io/Mamali](https://hydryanamyrly33-rgb.github.io/Mamali/)
 
-## قابلیت‌های اصلی
+## قابلیت‌های اصلی نسخه ۳.۰
 
 - موتور مدار سه‌بعدی بومی با CSS 3D و `requestAnimationFrame`
-- کنترل با Drag، لمس و کلیدهای جهت‌دار
-- پس‌زمینه Canvas با کیفیت تطبیقی
+- گوشی سه‌بعدی چندلایه با عمق، انعکاس، لبه‌های فیزیکی و مدارهای نوری
+- حرکت گوشی با Hover، Drag موس و لمس انگشت، به‌همراه اینرسی و بازگشت فنری
+- ساعت واقعی دستگاه کاربر با Time Zone محلی مرورگر
+- نصب مستقیم به‌صورت اپ مستقل روی **Android و Windows 10/11**
+- مرکز بروزرسانی زنده با تشخیص SemVer، اعلان نسخه جدید و فعال‌سازی با تأیید کاربر
+- غیرفعال‌شدن هوشمند Update Center هنگام قطع اینترنت
+- راهبرد Online-first؛ دریافت نسخه تازه آنلاین و استفاده از Cache فقط هنگام قطعی
 - سه تم Neon، Aurora و Solar
-- پنل تنظیمات سینمایی با ورود مرحله‌ای، موج انرژی، سوییچ‌های متحرک و ذخیره امن در `localStorage`
-- پشتیبانی از `prefers-reduced-motion`، حالت اقتصادی و Forced Colors
+- پنل تنظیمات سینمایی با موج انرژی، سوییچ‌های متحرک و ذخیره در `localStorage`
 - Command Palette با میانبر `Ctrl/⌘ + K`
-- **اجرای مستقیم اپ‌های Instagram، YouTube و Telegram** با fallback امن وب
-- PWA آنلاین و همیشه به‌روز با آیکون‌های Android، حالت Standalone و پشتیبان آفلاین
-- راهنمای تعاملی نصب Android درون خود برنامه
+- اجرای مستقیم Instagram، YouTube و Telegram با fallback امن وب
 - بدون Framework، تبلیغات، Tracker، Analytics یا وابستگی CDN
-- CSP محدود، لینک‌های امن، Responsive کامل و SEO
+- CSP محدود، Responsive کامل، SEO و دسترس‌پذیری
+
+## اپ Android و Windows
+
+Mamali یک **Progressive Web App استاندارد** است. همان پروژه روی دو سیستم‌عامل مثل اپ مستقل نصب می‌شود:
+
+### Android
+
+1. نسخه زنده را در Google Chrome باز کنید.
+2. دکمه «نصب اپ اندروید» یا گزینه **Install app** را بزنید.
+3. آیکون Mamali به Launcher اضافه می‌شود.
+4. برنامه بدون نوار مرورگر و در پنجره مستقل اجرا می‌شود.
+
+### Windows 10/11
+
+1. سایت را در Microsoft Edge یا Google Chrome باز کنید.
+2. آیکون Install در نوار آدرس یا گزینه **Apps → Install Mamali** را انتخاب کنید.
+3. Mamali وارد Start Menu می‌شود و می‌توان آن را به Taskbar پین کرد.
+4. برنامه در پنجره مستقل، با آیکون و میانبرهای Manifest اجرا می‌شود.
+
+این نسخه یک فایل EXE سنتی نیست؛ نسخه Windows از قابلیت نصب PWA خود Edge/Chrome استفاده می‌کند. نتیجه برای کاربر یک اپ دسکتاپ مستقل در Start Menu است، اما بروزرسانی و امنیت آن بدون Installer جداگانه مدیریت می‌شود.
+
+## بروزرسانی زنده واقعی
+
+نسخه ۳.۰ از سه لایه برای بروزرسانی استفاده می‌کند:
+
+1. **`version.json`** آخرین نسخه پایدار، نسخه قبلی، تاریخ انتشار، پلتفرم‌ها و Release Noteها را منتشر می‌کند.
+2. **`UpdateManager`** در `assets/app.js` به‌طور خودکار و هنگام بازگشت اینترنت نسخه سرور را بررسی می‌کند.
+3. **Service Worker** جدید در حالت `waiting` می‌ماند تا کاربر دکمه بروزرسانی را بزند؛ سپس پیام `SKIP_WAITING` دریافت می‌کند، فعال می‌شود و برنامه را با نسخه جدید راه‌اندازی می‌کند.
+
+رفتار Update Center:
+
+- آنلاین و به‌روز: وضعیت سبز و بررسی دوره‌ای خودکار
+- نسخه جدید: اعلان شناور، نمایش شماره جدید و دکمه «بروزرسانی»
+- هنگام بروزرسانی: فعال‌سازی Worker جدید و Reload کنترل‌شده
+- آفلاین: خاکستری، غیرفعال و بدون درخواست جعلی
+- اتصال مجدد: بررسی خودکار نسخه بدون نیاز به بازکردن سایت اصلی
+
+کاربر برای نسخه‌های بعدی نیازی به حذف برنامه و نصب دوباره ندارد.
+
+## نسخه‌گذاری هوشمند SemVer
+
+نسخه برنامه در حال حاضر `3.0.0` است و از الگوی عددی زیر استفاده می‌کند:
+
+- `major` برای تغییر بزرگ: `3.0.0 → 4.0.0`
+- `minor` برای قابلیت جدید: `3.0.0 → 3.1.0`
+- `patch` برای رفع اشکال: `3.0.0 → 3.0.1`
+
+اسکریپت انتشار، نسخه JavaScript، Service Worker، Cache، URLهای نسخه‌دار، HTML و `version.json` را هماهنگ تغییر می‌دهد:
+
+```bash
+node scripts/release.mjs major
+node scripts/release.mjs minor
+node scripts/release.mjs patch
+# یا نسخه دقیق
+node scripts/release.mjs 3.2.0
+```
+
+پس از اجرای اسکریپت باید Release Noteهای `version.json` تکمیل، تست‌ها اجرا و تغییرات Deploy شوند.
+
+## Online-first و پشتیبان آفلاین
+
+Service Worker ابتدا شبکه را با `cache: no-cache` بررسی می‌کند و پاسخ تازه را ذخیره می‌کند. فقط اگر درخواست شبکه شکست بخورد، پاسخ Cache برگردانده می‌شود.
+
+`version.json` عمداً هرگز از Cache پاسخ داده نمی‌شود؛ بنابراین Update Center فقط وقتی سبز و فعال است که واقعاً به سرور وصل باشد.
+
+فایل‌های JavaScript و CSS نیز با شماره نسخه بارگذاری می‌شوند تا HTML جدید هیچ‌وقت با کد قدیمی ترکیب نشود.
+
+## گوشی سه‌بعدی تعاملی
+
+`DeviceTiltController` مختصات اشاره‌گر یا لمس را به این متغیرها تبدیل می‌کند:
+
+- جابه‌جایی سه‌بعدی X/Y
+- چرخش X/Y/Z
+- عمق و Scale هنگام Drag
+- جهت سایه و نور محیط
+- Parallax مدارهای اطراف
+- سرعت و اینرسی پس از رهاکردن
+- بازگشت فنری به موقعیت اصلی
+
+در حالت Reduced Motion، اینرسی حذف و گوشی بدون حرکت اضافه Reset می‌شود.
 
 ## App Linkهای بومی
 
-هر سه پورتال از یک لانچر یکپارچه به نام `openNativeApp` در `assets/app.js` عبور می‌کنند:
-
 | سرویس | Android | iOS / Scheme | Fallback وب |
 |---|---|---|---|
-| Instagram | Chrome `intent:` + پکیج `com.instagram.android` | `instagram://app` | `https://www.instagram.com/` |
-| YouTube | Chrome `intent:` + پکیج `com.google.android.youtube` | `youtube://` | `https://www.youtube.com/` |
-| Telegram | `tg://resolve?domain=Mr_CaceRo` | همان Scheme | `https://t.me/Mr_CaceRo` |
+| Instagram | `intent:` + `com.instagram.android` | `instagram://app` | `instagram.com` |
+| YouTube | `intent:` + `com.google.android.youtube` | `youtube://` | `youtube.com` |
+| Telegram | `tg://resolve?domain=Mr_CaceRo` | همان Scheme | `t.me/Mr_CaceRo` |
 
-در Android، `intent:` شامل `S.browser_fallback_url` است؛ بنابراین اگر اپ نصب باشد مستقیماً اجرا می‌شود و در غیر این صورت Chrome نسخه وب را باز می‌کند. Schemeهای iOS/سایر سیستم‌ها نیز با رویدادهای `blur` و `visibilitychange` بررسی می‌شوند و در صورت پیدا نشدن اپ، پس از مکث کوتاه به نسخه وب می‌روند.
-
-مرورگرها برای جلوگیری از سوءاستفاده فقط اجازه می‌دهند App Link در پاسخ مستقیم به کلیک کاربر اجرا شود؛ به همین دلیل انتقال داخل Handler همان کلیک انجام می‌شود و خودکار نیست.
-
-## اپ Android چگونه ساخته شده؟
-
-این پروژه یک **Progressive Web App (PWA)** است. برای قابل نصب شدن، چهار لایه دارد:
-
-1. **HTTPS** — GitHub Pages پروژه را با اتصال امن ارائه می‌کند.
-2. **Web App Manifest** — نام اپ، `start_url`، حالت `standalone`، رنگ‌ها، میانبرها و آیکون‌های ۱۹۲ و ۵۱۲ پیکسلی را تعریف می‌کند.
-3. **Service Worker** — با راهبرد Online-first همیشه نسخه آنلاین را دوباره اعتبارسنجی می‌کند و فقط هنگام قطع شبکه سراغ Cache آفلاین می‌رود.
-4. **Responsive App Shell** — رابط در پنجره مستقل، بدون نوار مرورگر و روی اندازه‌های مختلف درست کار می‌کند.
-
-### نصب روی Android
-
-1. نسخه زنده را در **Google Chrome** باز کنید.
-2. دکمه «نصب اپ اندروید» داخل سایت را بزنید.
-3. اگر Prompt خودکار در دسترس نبود، منوی سه‌نقطه Chrome و سپس **Install app** یا **Add to Home screen** را انتخاب کنید.
-4. آیکون Mamali به Launcher اضافه می‌شود و برنامه در پنجره‌ای مستقل اجرا خواهد شد.
-
-رویداد `beforeinstallprompt` در `assets/app.js` ذخیره می‌شود تا دکمه اختصاصی سایت Prompt بومی Android را باز کند. رویداد `appinstalled` نیز موفقیت نصب را ثبت و وضعیت دکمه‌ها را به‌روز می‌کند. در iOS، راهنمای دستی **Share → Add to Home Screen** نمایش داده می‌شود.
-
-### آنلاین در حالت عادی، آفلاین فقط هنگام نیاز
-
-نسخه نصب‌شده یک اپ آنلاین است و قابلیت‌های اینترنتی آن محدود نمی‌شوند. Service Worker نسخه `2.2.0` برای HTML، JavaScript، CSS و سایر فایل‌های داخلی ابتدا شبکه را بررسی می‌کند و پاسخ تازه را در Cache می‌گذارد. فقط اگر درخواست شبکه شکست بخورد، پاسخ ذخیره‌شده برگردانده می‌شود. همچنین URL نسخه‌دار CSS و JavaScript مانع ترکیب HTML جدید با کد قدیمی بعد از انتشار می‌شود.
-
-در نتیجه:
-
-- هنگام اتصال، کاربر همیشه تازه‌ترین نسخه GitHub Pages را می‌گیرد.
-- هنگام قطع اینترنت، App Shell ذخیره‌شده همچنان اجرا می‌شود.
-- پس از انتشار جدید، فایل قدیمی Service Worker باعث غیرفعال‌شدن دکمه‌های تازه نمی‌شود.
-
-### تفاوت PWA و APK
-
-- **PWA** از مرورگر نصب می‌شود، حجم کمی دارد و هر انتشار GitHub به‌طور خودکار نسخه نصب‌شده را به‌روز می‌کند.
-- **APK/AAB** بسته بومی Android برای نصب مستقیم یا انتشار در Google Play است.
-- اگر در آینده انتشار Play Store لازم باشد، همین PWA را می‌توان با **Trusted Web Activity (TWA)** و ابزارهایی مانند Bubblewrap به AAB تبدیل کرد؛ برای نصب فعلی Android نیازی به APK نیست.
-
-همین توضیحات در بخش «اپ Android» و Dialog «جزئیات فنی نصب» داخل رابط برنامه نیز وجود دارد.
+Android Intentها شامل `S.browser_fallback_url` هستند. همه App Linkها فقط در پاسخ مستقیم به کلیک کاربر اجرا می‌شوند.
 
 ## ساختار پروژه
 
@@ -75,21 +117,15 @@
 .
 ├── .github/workflows/quality.yml
 ├── index.html
-├── 404.html
 ├── manifest.webmanifest
+├── version.json
 ├── sw.js
-├── robots.txt
-├── sitemap.xml
+├── scripts/
+│   └── release.mjs
 ├── assets/
 │   ├── app.js
 │   ├── styles.css
-│   ├── favicon.svg
-│   ├── social-preview.svg
 │   ├── icons/
-│   │   ├── icon-192.png
-│   │   ├── icon-512.png
-│   │   ├── icon-maskable-512.png
-│   │   └── apple-touch-icon.png
 │   └── screenshots/
 └── tests/
     └── smoke.mjs
@@ -97,28 +133,23 @@
 
 ## اجرای محلی
 
-به‌دلیل Service Worker پروژه را با HTTP اجرا کنید:
-
 ```bash
 python3 -m http.server 8080
 ```
 
-سپس `http://localhost:8080` را باز کنید. توجه کنید Prompt نصب کامل فقط روی HTTPS یا `localhost` و در مرورگر سازگار ظاهر می‌شود.
-
-## شخصی‌سازی مقصدها
-
-همه مقصدها در `SITE_CONFIG.apps` ابتدای `assets/app.js` متمرکز هستند. برای تغییر حساب یا کانال، Scheme، Android Intent و fallback همان سرویس را با هم به‌روزرسانی کنید. ویژگی‌های `data-native-app` در `index.html` شناسه سرویس هر کارت را مشخص می‌کنند.
+سپس `http://localhost:8080` را باز کنید. قابلیت Service Worker و نصب روی HTTPS یا localhost فعال است.
 
 ## بررسی کیفیت
 
 ```bash
 node --check assets/app.js
 node --check sw.js
+node --check scripts/release.mjs
 node tests/smoke.mjs
 ```
 
-این بررسی‌ها با هر Push و Pull Request توسط GitHub Actions هم اجرا می‌شوند. Smoke Test وجود آیکون‌های PWA، تنظیمات Manifest، سه App Link، fallbackهای Android و راهنمای داخل برنامه را بررسی می‌کند.
+GitHub Actions همین بررسی‌ها را در هر Push و Pull Request اجرا می‌کند. Smoke Test هماهنگی نسخه، Windows/Android PWA، Update Center، Service Worker، App Linkها، آیکون‌ها و Manifest را بررسی می‌کند.
 
 ## حریم خصوصی
 
-تنظیمات فقط داخل مرورگر ذخیره می‌شوند. سایت هیچ داده‌ای را به سرور ارسال نمی‌کند و هیچ ابزار ردیابی یا تحلیل رفتار ندارد.
+ساعت از زمان محلی مرورگر خوانده می‌شود و هیچ داده‌ای ارسال نمی‌کند. تنظیمات فقط روی دستگاه ذخیره می‌شوند. Update Center صرفاً فایل عمومی `version.json` را می‌خواند و هیچ شناسه، حساب کاربری یا اطلاعات تحلیلی ارسال نمی‌شود.

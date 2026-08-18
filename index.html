@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="مامَلی اوربیت؛ یک مرکز فرمان اجتماعی سه‌بعدی، سریع، خصوصی و قابل نصب برای ورود به اینستاگرام، یوتیوب و اپلیکیشن تلگرام.">
-  <meta name="keywords" content="Mamali, ماملی, social orbit, رابط سه‌بعدی, تلگرام, اینستاگرام, یوتیوب">
+  <meta name="description" content="ماملی اوربیت ۳؛ اپ اجتماعی سه‌بعدی قابل نصب روی Android و Windows با گوشی تعاملی، بروزرسانی زنده و اجرای آفلاین.">
+  <meta name="keywords" content="Mamali, ماملی, Windows PWA, Android PWA, بروزرسانی زنده, رابط سه‌بعدی, تلگرام, اینستاگرام, یوتیوب">
   <meta name="author" content="Amirali">
   <meta name="theme-color" content="#050816">
   <meta name="color-scheme" content="dark">
@@ -15,23 +15,23 @@
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="preload" href="assets/styles.css?v=2.2.0" as="style">
-  <link rel="stylesheet" href="assets/styles.css?v=2.2.0">
+  <link rel="preload" href="assets/styles.css?v=3.0.0" as="style">
+  <link rel="stylesheet" href="assets/styles.css?v=3.0.0">
 
   <meta property="og:type" content="website">
   <meta property="og:locale" content="fa_IR">
   <meta property="og:site_name" content="Mamali Orbit">
-  <meta property="og:title" content="Mamali Orbit — مرکز فرمان اجتماعی آینده">
-  <meta property="og:description" content="سه پورتال اجتماعی در یک تجربه نئونی، سه‌بعدی و کاملاً خصوصی.">
+  <meta property="og:title" content="Mamali Orbit 3.0 — اپ سه‌بعدی Android و Windows">
+  <meta property="og:description" content="لانچر اجتماعی سه‌بعدی با گوشی تعاملی، بروزرسانی زنده و نصب مستقیم روی موبایل و ویندوز.">
   <meta property="og:url" content="https://hydryanamyrly33-rgb.github.io/Mamali/">
   <meta property="og:image" content="https://hydryanamyrly33-rgb.github.io/Mamali/assets/social-preview.svg">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Mamali Orbit">
-  <meta name="twitter:description" content="مرکز فرمان اجتماعی سه‌بعدی و قابل نصب.">
+  <meta name="twitter:title" content="Mamali Orbit 3.0">
+  <meta name="twitter:description" content="اپ سه‌بعدی قابل نصب روی Android و Windows با بروزرسانی زنده.">
   <meta name="twitter:image" content="https://hydryanamyrly33-rgb.github.io/Mamali/assets/social-preview.svg">
 
   <title>Mamali Orbit — مرکز فرمان اجتماعی سه‌بعدی</title>
-  <script type="module" src="assets/app.js?v=2.2.0"></script>
+  <script type="module" src="assets/app.js?v=3.0.0"></script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">پرش به محتوای اصلی</a>
@@ -53,7 +53,7 @@
     <nav class="nav" aria-label="پیمایش اصلی">
       <a href="#portals">پورتال‌ها</a>
       <a href="#capabilities">قابلیت‌ها</a>
-      <a href="#android-app">اپ اندروید</a>
+      <a href="#android-app">نصب و بروزرسانی</a>
       <button class="nav__command" id="commandButton" type="button" aria-keyshortcuts="Control+K Meta+K">
         فرمان سریع
         <kbd>⌘ K</kbd>
@@ -77,7 +77,7 @@
           <span class="live-dot" aria-hidden="true"></span>
           سیستم آنلاین است
           <span class="eyebrow__divider" aria-hidden="true"></span>
-          نسخه ۲.۲
+          نسخه <strong data-app-version>۳.۰.۰</strong>
         </div>
 
         <h1 id="hero-title" class="reveal">
@@ -96,7 +96,7 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
           </a>
           <button class="button button--ghost install-trigger" id="installButton" type="button">
-            نصب اپ روی دستگاه
+            <span data-install-label>نصب اپ روی دستگاه</span>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14"/></svg>
           </button>
         </div>
@@ -217,50 +217,105 @@
     </section>
 
     <section class="android-section section" id="android-app" aria-labelledby="android-title">
-      <div class="android-visual" data-glass aria-hidden="true">
-        <div class="phone-frame">
-          <div class="phone-frame__camera"></div>
-          <div class="phone-frame__screen">
-            <div class="phone-frame__status"><span>۱۲:۴۸</span><span>● 5G ▰</span></div>
-            <img src="assets/icons/icon-192.png" width="96" height="96" alt="" loading="lazy" decoding="async">
-            <strong>Mamali Orbit</strong>
-            <small>اپ اجتماعی سه‌بعدی</small>
-            <div class="phone-frame__install"><span>✓</span> آماده نصب روی Android</div>
+      <div class="android-visual" id="deviceShowcase" data-glass aria-hidden="true">
+        <span class="device-showcase__label">INTERACTIVE DEVICE / DRAG TO ORBIT</span>
+        <div class="phone-stage">
+          <div class="phone-frame" id="interactivePhone">
+            <span class="phone-frame__edge phone-frame__edge--volume"></span>
+            <span class="phone-frame__edge phone-frame__edge--power"></span>
+            <div class="phone-frame__camera"></div>
+            <div class="phone-frame__screen">
+              <div class="phone-frame__status">
+                <time id="deviceClock" datetime="00:00">--:--</time>
+                <span class="phone-frame__network"><i></i> 5G ▰</span>
+              </div>
+              <span class="phone-frame__glass"></span>
+              <img src="assets/icons/icon-192.png" width="96" height="96" alt="" loading="lazy" decoding="async">
+              <strong>Mamali Orbit</strong>
+              <small>Android · Windows · PWA</small>
+              <div class="phone-frame__install"><span>✓</span> نسخه <b data-app-version>۳.۰.۰</b> آماده اجرا</div>
+            </div>
           </div>
+          <div class="device-gesture"><span>↔</span> با موس یا انگشت بکشید</div>
         </div>
         <span class="android-visual__orbit android-visual__orbit--one"></span>
         <span class="android-visual__orbit android-visual__orbit--two"></span>
+        <span class="android-visual__orbit android-visual__orbit--three"></span>
       </div>
 
       <div class="android-copy">
-        <span class="section__kicker">ANDROID APP / PWA</span>
-        <h2 id="android-title">همین سایت، یک اپ واقعی روی گوشی شماست.</h2>
+        <span class="section__kicker">ANDROID / WINDOWS / LIVE UPDATE</span>
+        <h2 id="android-title">یک اپ واقعی؛ روی گوشی و ویندوز.</h2>
         <p>
-          ماملی یک اپ آنلاین کامل است که از Chrome روی اندروید نصب می‌شود و همیشه تازه‌ترین نسخه را از اینترنت می‌گیرد؛
-          اگر اتصال قطع شود، نسخه امن ذخیره‌شده را به‌عنوان پشتیبان آفلاین اجرا می‌کند.
+          ماملی روی Android و Windows مستقیماً نصب می‌شود، در پنجره مستقل و از Start Menu اجرا می‌شود،
+          همیشه به نسخه آنلاین متصل است و هنگام قطع اینترنت از نسخه امن ذخیره‌شده استفاده می‌کند.
         </p>
 
-        <div class="android-stack" role="group" aria-label="اجزای فنی اپ اندروید">
-          <span><strong>HTTPS</strong><small>میزبانی امن</small></span>
-          <span><strong>MANIFEST</strong><small>هویت اپ</small></span>
-          <span><strong>192 / 512</strong><small>آیکون اندروید</small></span>
-          <span><strong>ONLINE-FIRST</strong><small>آفلاین به‌عنوان پشتیبان</small></span>
+        <div class="android-stack" role="group" aria-label="اجزای فنی اپ چندسکویی">
+          <span><strong>HTTPS</strong><small>اتصال امن</small></span>
+          <span><strong>ANDROID</strong><small>Chrome PWA</small></span>
+          <span><strong>WINDOWS</strong><small>Edge / Chrome</small></span>
+          <span><strong>ONLINE-FIRST</strong><small>آفلاین پشتیبان</small></span>
         </div>
 
-        <ol class="install-steps">
-          <li><span>۱</span><div><strong>بازکردن در Chrome</strong><small>نسخه زنده ماملی را در Chrome اندروید باز کنید.</small></div></li>
-          <li><span>۲</span><div><strong>زدن دکمه نصب</strong><small>روی «نصب اپ روی دستگاه» یا گزینه Install app در منوی مرورگر بزنید.</small></div></li>
-          <li><span>۳</span><div><strong>اجرای مستقل</strong><small>آیکون M به صفحه اصلی اضافه می‌شود و اپ بدون نوار مرورگر اجرا خواهد شد.</small></div></li>
-        </ol>
+        <div class="platform-tabs" role="tablist" aria-label="راهنمای نصب سیستم‌عامل">
+          <button id="androidTab" type="button" role="tab" aria-selected="true" aria-controls="androidPanel" data-platform-tab="android">
+            <span aria-hidden="true">◫</span> Android
+          </button>
+          <button id="windowsTab" type="button" role="tab" aria-selected="false" aria-controls="windowsPanel" data-platform-tab="windows" tabindex="-1">
+            <span aria-hidden="true">⊞</span> Windows
+          </button>
+        </div>
+
+        <div class="platform-panel" id="androidPanel" role="tabpanel" aria-labelledby="androidTab" data-platform-panel="android">
+          <ol class="install-steps">
+            <li><span>۱</span><div><strong>بازکردن در Chrome</strong><small>نسخه زنده ماملی را در Chrome اندروید باز کنید.</small></div></li>
+            <li><span>۲</span><div><strong>نصب روی گوشی</strong><small>دکمه نصب یا گزینه Install app در منوی مرورگر را بزنید.</small></div></li>
+            <li><span>۳</span><div><strong>اجرای مستقل</strong><small>آیکون M وارد Launcher می‌شود و اپ بدون نوار مرورگر اجرا خواهد شد.</small></div></li>
+          </ol>
+        </div>
+
+        <div class="platform-panel" id="windowsPanel" role="tabpanel" aria-labelledby="windowsTab" data-platform-panel="windows" hidden>
+          <ol class="install-steps">
+            <li><span>۱</span><div><strong>بازکردن در Edge یا Chrome</strong><small>ماملی را در مرورگر Windows 10 یا 11 باز کنید.</small></div></li>
+            <li><span>۲</span><div><strong>نصب اپ Windows</strong><small>روی آیکون Install در نوار آدرس یا دکمه نصب همین بخش بزنید.</small></div></li>
+            <li><span>۳</span><div><strong>Start Menu و Taskbar</strong><small>اپ مثل یک برنامه دسکتاپ مستقل اجرا و قابل Pin شدن می‌شود.</small></div></li>
+          </ol>
+        </div>
 
         <div class="android-copy__actions">
           <button class="button button--primary install-trigger" id="installButtonSecondary" type="button">
-            نصب اپ اندروید
+            <span data-install-label>نصب اپ روی دستگاه</span>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14"/></svg>
           </button>
-          <button class="button button--ghost open-install-guide" type="button" data-open-dialog="installDialog" aria-haspopup="dialog" aria-controls="installDialog">جزئیات فنی نصب</button>
+          <button class="button button--ghost open-install-guide" type="button" data-open-dialog="installDialog" aria-haspopup="dialog" aria-controls="installDialog">راهنمای Android و Windows</button>
         </div>
-        <p class="android-note">حالت اصلی برنامه آنلاین و همیشه به‌روز است؛ کش آفلاین فقط هنگام قطع اینترنت وارد عمل می‌شود. این نسخه PWA است و برای انتشار در Google Play می‌توان آن را با Trusted Web Activity بسته‌بندی کرد.</p>
+
+        <section class="update-center" id="updateCenter" data-state="checking" aria-labelledby="updateCenterTitle">
+          <div class="update-center__head">
+            <div class="update-center__identity">
+              <span class="update-center__pulse" aria-hidden="true"></span>
+              <div><small>LIVE UPDATE CHANNEL</small><strong id="updateCenterTitle">مرکز بروزرسانی زنده</strong></div>
+            </div>
+            <span class="update-center__connection" id="updateConnection"><i></i> آنلاین</span>
+          </div>
+          <div class="update-center__versions">
+            <span><small>نسخه نصب‌شده</small><strong data-app-version>۳.۰.۰</strong></span>
+            <span aria-hidden="true">←</span>
+            <span><small>آخرین نسخه</small><strong id="latestVersion">در حال بررسی</strong></span>
+          </div>
+          <div class="update-center__track" aria-hidden="true"><span id="updateProgress"></span></div>
+          <p id="updateStatus" aria-live="polite">در حال اتصال به کانال بروزرسانی…</p>
+          <div class="update-center__actions">
+            <button class="button button--primary" id="applyUpdateButton" type="button">بررسی بروزرسانی</button>
+            <button class="button button--ghost" id="checkUpdateButton" type="button" aria-label="بررسی دوباره بروزرسانی">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7L20 8.6M20 4v4.6h-4.6"/></svg>
+              بررسی دوباره
+            </button>
+          </div>
+        </section>
+
+        <p class="android-note">نسخه ۳.۰ از بروزرسانی زنده SemVer استفاده می‌کند؛ اگر نسخه جدید برسد، بدون حذف برنامه با یک لمس فعال می‌شود. در حالت آفلاین، بخش بروزرسانی خاکستری و غیرفعال خواهد بود.</p>
       </div>
     </section>
 
@@ -274,8 +329,8 @@
         <p>ماملی برای اجرا به حساب کاربری، دیتابیس یا سرور واسط نیاز ندارد. همین موضوع آن را سریع، کم‌ریسک و قابل میزبانی روی GitHub Pages می‌کند.</p>
       </div>
       <dl>
-        <div><dt>فایل خارجی</dt><dd>۰</dd></div>
-        <div><dt>تنظیم شخصی</dt><dd>۷</dd></div>
+        <div><dt>نسخه پایدار</dt><dd data-app-version>۳.۰.۰</dd></div>
+        <div><dt>پلتفرم نصب</dt><dd>۲</dd></div>
         <div><dt>حالت رنگ</dt><dd>۳</dd></div>
       </dl>
     </section>
@@ -303,7 +358,7 @@
       </button>
     </form>
 
-    <div class="settings__body">
+    <div class="settings__body" role="region" tabindex="0" aria-label="گزینه‌های تنظیمات تجربه">
       <label class="setting-row" data-setting-code="PARTICLES">
         <span><strong>ذرات پس‌زمینه</strong><small>ستاره‌ها و اتصال‌های زنده</small></span>
         <input id="particlesSetting" type="checkbox" role="switch" checked>
@@ -350,17 +405,17 @@
     <form method="dialog" class="dialog__header">
       <div>
         <span class="dialog__kicker">INSTALLATION CENTER</span>
-        <h2 id="installGuideTitle">ماملی چطور اپ اندروید می‌شود؟</h2>
+        <h2 id="installGuideTitle">نصب ماملی روی Android و Windows</h2>
       </div>
       <button class="icon-button" value="close" aria-label="بستن راهنمای نصب">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg>
       </button>
     </form>
 
-    <div class="install-guide__body">
+    <div class="install-guide__body" role="region" tabindex="0" aria-label="راهنمای نصب و بروزرسانی برنامه">
       <div class="install-guide__intro">
         <img src="assets/icons/icon-192.png" width="72" height="72" alt="آیکون اپ ماملی" loading="lazy" decoding="async">
-        <div><strong>Mamali Orbit for Android</strong><small>Progressive Web App · نسخه نصب‌شونده</small></div>
+        <div><strong>Mamali Orbit 3.0</strong><small>Android · Windows · بروزرسانی زنده</small></div>
       </div>
 
       <section aria-labelledby="androidGuideHeading">
@@ -370,6 +425,16 @@
           <li>دکمه «نصب اپ اندروید» را بزنید؛ اگر نمایش داده نشد، منوی سه‌نقطه Chrome را باز کنید.</li>
           <li>گزینه <strong>Install app</strong> یا <strong>Add to Home screen</strong> را انتخاب و نصب را تأیید کنید.</li>
           <li>اپ با آیکون اختصاصی M در Launcher قرار می‌گیرد و مستقل از مرورگر اجرا می‌شود.</li>
+        </ol>
+      </section>
+
+      <section aria-labelledby="windowsGuideHeading">
+        <h3 id="windowsGuideHeading">نصب روی Windows 10/11</h3>
+        <ol>
+          <li>سایت را با <strong>Microsoft Edge</strong> یا <strong>Google Chrome</strong> باز کنید.</li>
+          <li>آیکون Install در انتهای نوار آدرس یا گزینه <strong>Apps → Install Mamali</strong> را انتخاب کنید.</li>
+          <li>پس از نصب، Mamali از Start Menu در پنجره مستقل اجرا و به Taskbar قابل Pin است.</li>
+          <li>همان بروزرسانی زنده و حالت آفلاین Android روی نسخه Windows نیز فعال است.</li>
         </ol>
       </section>
 
@@ -384,14 +449,14 @@
       </section>
 
       <aside class="install-guide__notice">
-        <strong>PWA با APK چه فرقی دارد؟</strong>
-        <p>PWA مستقیماً از مرورگر نصب و خودکار از GitHub به‌روزرسانی می‌شود. APK یک بسته بومی اندروید است. در صورت نیاز، همین PWA را می‌توان با Trusted Web Activity به بسته مناسب Google Play تبدیل کرد.</p>
+        <strong>نسخه Windows و Android چطور کار می‌کند؟</strong>
+        <p>هر دو نسخه از PWA استاندارد استفاده می‌کنند: روی Windows مثل یک برنامه مستقل در Start Menu و روی Android در Launcher نصب می‌شود. حذف و نصب دوباره لازم نیست؛ Update Center نسخه جدید را شناسایی و Service Worker آن را جایگزین می‌کند.</p>
       </aside>
     </div>
 
     <div class="dialog__footer">
       <a class="button button--ghost" href="https://hydryanamyrly33-rgb.github.io/Mamali/" target="_blank" rel="noopener noreferrer">بازکردن نسخه زنده</a>
-      <button class="button button--primary install-trigger" id="installButtonDialog" type="button">نصب همین حالا</button>
+      <button class="button button--primary install-trigger" id="installButtonDialog" type="button"><span data-install-label>نصب همین حالا</span></button>
     </div>
   </dialog>
 
@@ -405,6 +470,15 @@
     <div class="command__results" id="commandResults" role="listbox" aria-label="فرمان‌ها"></div>
     <p class="command__hint">با ↑ ↓ انتخاب کنید و Enter را بزنید</p>
   </dialog>
+
+  <aside class="update-banner" id="updateBanner" aria-labelledby="updateBannerTitle" hidden>
+    <span class="update-banner__icon" aria-hidden="true">↻</span>
+    <div><strong id="updateBannerTitle">بروزرسانی جدید آماده است</strong><small id="updateBannerCopy">آخرین نسخه ماملی دریافت شد.</small></div>
+    <button class="button button--primary" id="applyUpdateBanner" type="button">بروزرسانی</button>
+    <button class="icon-button" id="dismissUpdateBanner" type="button" aria-label="بعداً بروزرسانی می‌کنم">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg>
+    </button>
+  </aside>
 
   <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
   <div class="sr-only" id="systemAnnouncer" aria-live="polite"></div>

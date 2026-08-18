@@ -1,0 +1,14 @@
+{
+  "version": "3.0.0",
+  "previous_version": "2.2.0",
+  "channel": "stable",
+  "released_at": "2026-08-19T00:00:00+03:30",
+  "minimum_supported_version": "2.2.0",
+  "platforms": ["android", "windows", "web"],
+  "notes": [
+    "گوشی سه‌بعدی تعاملی با کنترل لمسی و موس",
+    "نصب مستقیم برنامه روی Windows و Android",
+    "مرکز بروزرسانی زنده با فعال‌سازی بدون حذف برنامه",
+    "ساعت واقعی دستگاه و طراحی پیشرفته‌تر"
+  ]
+}
