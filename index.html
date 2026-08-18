@@ -15,8 +15,8 @@
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="preload" href="assets/styles.css" as="style">
-  <link rel="stylesheet" href="assets/styles.css">
+  <link rel="preload" href="assets/styles.css?v=2.2.0" as="style">
+  <link rel="stylesheet" href="assets/styles.css?v=2.2.0">
 
   <meta property="og:type" content="website">
   <meta property="og:locale" content="fa_IR">
@@ -31,7 +31,7 @@
   <meta name="twitter:image" content="https://hydryanamyrly33-rgb.github.io/Mamali/assets/social-preview.svg">
 
   <title>Mamali Orbit — مرکز فرمان اجتماعی سه‌بعدی</title>
-  <script type="module" src="assets/app.js"></script>
+  <script type="module" src="assets/app.js?v=2.2.0"></script>
 </head>
 <body>
   <a class="skip-link" href="#main-content">پرش به محتوای اصلی</a>
@@ -77,7 +77,7 @@
           <span class="live-dot" aria-hidden="true"></span>
           سیستم آنلاین است
           <span class="eyebrow__divider" aria-hidden="true"></span>
-          نسخه ۲.۱
+          نسخه ۲.۲
         </div>
 
         <h1 id="hero-title" class="reveal">
@@ -236,15 +236,15 @@
         <span class="section__kicker">ANDROID APP / PWA</span>
         <h2 id="android-title">همین سایت، یک اپ واقعی روی گوشی شماست.</h2>
         <p>
-          ماملی با استاندارد Progressive Web App ساخته شده؛ یعنی از Chrome روی اندروید نصب می‌شود،
-          آیکون اختصاصی دارد، در پنجره مستقل اجرا می‌شود و حتی بدون اینترنت هم بالا می‌آید.
+          ماملی یک اپ آنلاین کامل است که از Chrome روی اندروید نصب می‌شود و همیشه تازه‌ترین نسخه را از اینترنت می‌گیرد؛
+          اگر اتصال قطع شود، نسخه امن ذخیره‌شده را به‌عنوان پشتیبان آفلاین اجرا می‌کند.
         </p>
 
         <div class="android-stack" role="group" aria-label="اجزای فنی اپ اندروید">
           <span><strong>HTTPS</strong><small>میزبانی امن</small></span>
           <span><strong>MANIFEST</strong><small>هویت اپ</small></span>
           <span><strong>192 / 512</strong><small>آیکون اندروید</small></span>
-          <span><strong>OFFLINE</strong><small>Service Worker</small></span>
+          <span><strong>ONLINE-FIRST</strong><small>آفلاین به‌عنوان پشتیبان</small></span>
         </div>
 
         <ol class="install-steps">
@@ -258,9 +258,9 @@
             نصب اپ اندروید
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14"/></svg>
           </button>
-          <button class="button button--ghost open-install-guide" type="button">جزئیات فنی نصب</button>
+          <button class="button button--ghost open-install-guide" type="button" data-open-dialog="installDialog" aria-haspopup="dialog" aria-controls="installDialog">جزئیات فنی نصب</button>
         </div>
-        <p class="android-note">این نسخه یک PWA نصب‌شونده است، نه فایل APK مستقل؛ برای انتشار در Google Play می‌توان همین پروژه را بعداً با Trusted Web Activity بسته‌بندی کرد.</p>
+        <p class="android-note">حالت اصلی برنامه آنلاین و همیشه به‌روز است؛ کش آفلاین فقط هنگام قطع اینترنت وارد عمل می‌شود. این نسخه PWA است و برای انتشار در Google Play می‌توان آن را با Trusted Web Activity بسته‌بندی کرد.</p>
       </div>
     </section>
 
@@ -291,38 +291,40 @@
   </footer>
 
   <dialog class="settings" id="settingsDialog" aria-labelledby="settingsTitle">
-    <form method="dialog" class="dialog__header">
+    <div class="settings__energy" aria-hidden="true"><span></span><span></span><span></span></div>
+    <form method="dialog" class="dialog__header settings__header">
       <div>
         <span class="dialog__kicker">SYSTEM CONTROL</span>
         <h2 id="settingsTitle">تنظیمات تجربه</h2>
+        <span class="settings__signal"><i></i> کنترل زنده سیستم</span>
       </div>
-      <button class="icon-button" value="close" aria-label="بستن تنظیمات">
+      <button class="icon-button settings__close" value="close" aria-label="بستن تنظیمات">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg>
       </button>
     </form>
 
     <div class="settings__body">
-      <label class="setting-row">
+      <label class="setting-row" data-setting-code="PARTICLES">
         <span><strong>ذرات پس‌زمینه</strong><small>ستاره‌ها و اتصال‌های زنده</small></span>
         <input id="particlesSetting" type="checkbox" role="switch" checked>
       </label>
-      <label class="setting-row">
+      <label class="setting-row" data-setting-code="GLOW">
         <span><strong>درخشش پویا</strong><small>واکنش نور به اشاره‌گر</small></span>
         <input id="glowSetting" type="checkbox" role="switch" checked>
       </label>
-      <label class="setting-row">
+      <label class="setting-row" data-setting-code="ORBIT">
         <span><strong>حرکت خودکار</strong><small>چرخش آرام پورتال‌ها</small></span>
         <input id="motionSetting" type="checkbox" role="switch" checked>
       </label>
-      <label class="setting-row">
+      <label class="setting-row" data-setting-code="ACCESS">
         <span><strong>کاهش حرکت</strong><small>مناسب حساسیت حرکتی و مصرف کمتر</small></span>
         <input id="reducedMotionSetting" type="checkbox" role="switch">
       </label>
-      <label class="setting-row">
+      <label class="setting-row" data-setting-code="AUDIO">
         <span><strong>صدای رابط</strong><small>بازخورد صوتی مینیمال</small></span>
         <input id="soundSetting" type="checkbox" role="switch">
       </label>
-      <label class="setting-select">
+      <label class="setting-select" data-setting-code="RENDER">
         <span><strong>کیفیت گرافیکی</strong><small>تعادل جزئیات و مصرف باتری</small></span>
         <select id="qualitySetting">
           <option value="auto">خودکار</option>
@@ -332,9 +334,15 @@
       </label>
     </div>
 
-    <div class="dialog__footer">
-      <button class="button button--danger" id="resetSettings" type="button">بازنشانی تنظیمات</button>
-      <form method="dialog"><button class="button button--primary" value="done">انجام شد</button></form>
+    <div class="dialog__footer settings__footer">
+      <button class="button button--danger settings-action" id="resetSettings" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.3-5.7L4 8.6M4 4v4.6h4.6"/></svg>
+        <span>بازنشانی تنظیمات</span>
+      </button>
+      <form method="dialog"><button class="button button--primary settings-action settings-action--confirm" value="done">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4.2 4.2L19 6.5"/></svg>
+        <span>ذخیره و اعمال</span>
+      </button></form>
     </div>
   </dialog>
 
@@ -369,7 +377,7 @@
         <h3 id="pwaTechHeading">چه چیزی آن را قابل نصب کرده؟</h3>
         <dl class="tech-list">
           <div><dt>Web App Manifest</dt><dd>نام، رنگ، مسیر اجرا، حالت Standalone و آیکون‌های ۱۹۲ و ۵۱۲ پیکسلی</dd></div>
-          <div><dt>Service Worker</dt><dd>کش فایل‌های اصلی، اجرای آفلاین و به‌روزرسانی خودکار نسخه</dd></div>
+          <div><dt>Service Worker</dt><dd>دریافت آنلاین تازه‌ترین نسخه و استفاده از کش فقط هنگام قطع اینترنت</dd></div>
           <div><dt>HTTPS</dt><dd>میزبانی امن GitHub Pages؛ شرط اجرای Service Worker و نصب مطمئن</dd></div>
           <div><dt>Responsive UI</dt><dd>رابط تطبیقی برای نمایشگر، لمس، صفحه‌کلید و حالت اپ</dd></div>
         </dl>

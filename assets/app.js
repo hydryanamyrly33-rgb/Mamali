@@ -519,10 +519,25 @@ function setupDialogs() {
   const commandDialog = $('#commandDialog');
   const installDialog = $('#installDialog');
 
-  $('#settingsButton').addEventListener('click', () => {
+  const settingsButton = $('#settingsButton');
+  settingsButton.addEventListener('click', () => {
+    settingsButton.classList.remove('is-launching');
+    void settingsButton.offsetWidth;
+    settingsButton.classList.add('is-launching');
+    window.setTimeout(() => settingsButton.classList.remove('is-launching'), 650);
     sound.play('tap');
-    settingsDialog.showModal();
+    if (!settingsDialog.open) settingsDialog.showModal();
   });
+
+  for (const trigger of $$('[data-open-dialog]')) {
+    trigger.addEventListener('click', () => {
+      const target = document.getElementById(trigger.dataset.openDialog);
+      if (target instanceof HTMLDialogElement && !target.open) {
+        sound.play('open');
+        target.showModal();
+      }
+    });
+  }
 
   for (const dialog of [settingsDialog, commandDialog, installDialog]) {
     dialog.addEventListener('click', event => {
@@ -532,6 +547,15 @@ function setupDialogs() {
       if (!inside) dialog.close();
     });
   }
+
+  const animateSettingControl = control => {
+    const row = control.closest('.setting-row, .setting-select');
+    if (!row) return;
+    row.classList.remove('is-switching');
+    void row.offsetWidth;
+    row.classList.add('is-switching');
+    window.setTimeout(() => row.classList.remove('is-switching'), 650);
+  };
 
   const bindings = [
     ['particlesSetting', 'particles'],
@@ -544,6 +568,7 @@ function setupDialogs() {
   for (const [id, key] of bindings) {
     $(`#${id}`).addEventListener('change', event => {
       settings[key] = event.target.checked;
+      animateSettingControl(event.target);
       if (key === 'sound' && settings.sound) sound.ensureContext();
       applySettings({ notify: true });
       sound.play('toggle');
@@ -552,15 +577,20 @@ function setupDialogs() {
 
   $('#qualitySetting').addEventListener('change', event => {
     settings.quality = event.target.value;
+    animateSettingControl(event.target);
     applySettings({ notify: true });
     cosmos.resize();
   });
 
   $('#resetSettings').addEventListener('click', () => {
+    settingsDialog.classList.remove('is-resetting');
+    void settingsDialog.offsetWidth;
+    settingsDialog.classList.add('is-resetting');
+    window.setTimeout(() => settingsDialog.classList.remove('is-resetting'), 720);
     settings = { ...defaults };
     SafeStorage.remove(SITE_CONFIG.storageKey);
     applySettings({ notify: true });
-    toast('همه تنظیمات به حالت اولیه برگشتند.');
+    toast('همه تنظیمات با موج بازنشانی به حالت اولیه برگشتند.');
     sound.play('toggle');
   });
 }
@@ -775,12 +805,6 @@ function setupInstall() {
     });
   }
 
-  for (const button of $$('.open-install-guide')) {
-    button.addEventListener('click', () => {
-      if (!guide.open) guide.showModal();
-    });
-  }
-
   standaloneQuery.addEventListener?.('change', event => {
     installed = event.matches;
     updateInstallState();
@@ -799,9 +823,11 @@ function setupInstall() {
 function registerServiceWorker() {
   if (!('serviceWorker' in navigator) || !window.isSecureContext) return;
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => {
-      // The site remains fully functional without offline support.
-    });
+    navigator.serviceWorker.register('./sw.js', { scope: './' })
+      .then(registration => registration.update())
+      .catch(() => {
+        // The online application remains functional without offline support.
+      });
   });
 }
 

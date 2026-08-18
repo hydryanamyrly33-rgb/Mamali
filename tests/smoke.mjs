@@ -30,6 +30,7 @@ for (const file of requiredFiles) {
 
 const html = await readFile('index.html', 'utf8');
 const app = await readFile('assets/app.js', 'utf8');
+const serviceWorker = await readFile('sw.js', 'utf8');
 const manifest = JSON.parse(await readFile('manifest.webmanifest', 'utf8'));
 
 const requiredHtmlPatterns = [
@@ -44,6 +45,9 @@ const requiredHtmlPatterns = [
   ['Telegram native app portal', /data-native-app="telegram"[^>]+href="tg:\/\/resolve\?domain=/i],
   ['Unified app action label', />بازکردن اپ\s*</i],
   ['Android install section', /id="android-app"/i],
+  ['Install guide trigger', /data-open-dialog="installDialog"/i],
+  ['Versioned application script', /assets\/app\.js\?v=2\.2\.0/i],
+  ['Animated settings controls', /data-setting-code="PARTICLES"/i],
   ['In-app PWA explanation', /PWA با APK چه فرقی دارد؟/i],
 ];
 
@@ -87,6 +91,20 @@ const requiredAppPatterns = [
 ];
 for (const [label, pattern] of requiredAppPatterns) {
   if (!pattern.test(app)) failures.push(`الزام App Link پیدا نشد: ${label}`);
+}
+
+const requiredServiceWorkerPatterns = [
+  ['Service Worker v2.2.0', /mamali-orbit-v2\.2\.0/],
+  ['Versioned CSS cache', /styles\.css\?v=2\.2\.0/],
+  ['Versioned JS cache', /app\.js\?v=2\.2\.0/],
+  ['Online-first network request', /fetch\(request, \{ cache: 'no-cache' \}\)/],
+  ['Offline cached fallback', /caches\.match\(request\)/],
+];
+for (const [label, pattern] of requiredServiceWorkerPatterns) {
+  if (!pattern.test(serviceWorker)) failures.push(`الزام Service Worker پیدا نشد: ${label}`);
+}
+if (serviceWorker.indexOf("fetch(request, { cache: 'no-cache' })") > serviceWorker.indexOf('caches.match(request)')) {
+  failures.push('Service Worker باید قبل از Cache شبکه را بررسی کند.');
 }
 
 if (failures.length) {

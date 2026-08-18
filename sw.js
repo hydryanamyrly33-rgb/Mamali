@@ -1,9 +1,10 @@
-const CACHE_NAME = 'mamali-orbit-v2.1.0';
+const CACHE_NAME = 'mamali-orbit-v2.2.0';
+const OFFLINE_DOCUMENT = './index.html';
 const APP_SHELL = [
   './',
-  './index.html',
-  './assets/styles.css',
-  './assets/app.js',
+  OFFLINE_DOCUMENT,
+  './assets/styles.css?v=2.2.0',
+  './assets/app.js?v=2.2.0',
   './assets/favicon.svg',
   './assets/social-preview.svg',
   './assets/icons/icon-192.png',
@@ -33,28 +34,24 @@ self.addEventListener('fetch', event => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  if (request.mode === 'navigate') {
-    event.respondWith(
-      fetch(request)
-        .then(response => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
-          return response;
-        })
-        .catch(() => caches.match('./index.html')),
-    );
-    return;
-  }
-
-  event.respondWith(
-    caches.match(request).then(cached => {
-      const network = fetch(request)
-        .then(response => {
-          if (response.ok) caches.open(CACHE_NAME).then(cache => cache.put(request, response.clone()));
-          return response;
-        })
-        .catch(() => cached);
-      return cached || network;
-    }),
-  );
+  // Online-first: always revalidate with the network. The cache is only the
+  // resilience layer used when the device is offline or the network fails.
+  event.respondWith((async () => {
+    try {
+      const response = await fetch(request, { cache: 'no-cache' });
+      if (response.ok) {
+        const update = caches.open(CACHE_NAME).then(cache => cache.put(request, response.clone()));
+        event.waitUntil(update);
+      }
+      return response;
+    } catch {
+      const cached = await caches.match(request);
+      if (cached) return cached;
+      if (request.mode === 'navigate') {
+        const offlineDocument = await caches.match(OFFLINE_DOCUMENT);
+        if (offlineDocument) return offlineDocument;
+      }
+      return Response.error();
+    }
+  })());
 });
