@@ -1,0 +1,25 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/Mamali/",
+      "permanent": false
+    },
+    {
+      "source": "/Mamali",
+      "destination": "/Mamali/",
+      "permanent": false
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/Mamali/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/Mamali/:path*",
+      "destination": "/:path*"
+    }
+  ]
+}

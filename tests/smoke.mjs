@@ -16,6 +16,7 @@ const requiredFiles = [
   'assets/screenshots/windows-install-wide.png',
   'assets/screenshots/android-install-narrow.png',
   'manifest.webmanifest',
+  'vercel.json',
   'version.json',
   'scripts/release.mjs',
   'sw.js',
@@ -36,6 +37,7 @@ const app = await readFile('assets/app.js', 'utf8');
 const serviceWorker = await readFile('sw.js', 'utf8');
 const releaseScript = await readFile('scripts/release.mjs', 'utf8');
 const manifest = JSON.parse(await readFile('manifest.webmanifest', 'utf8'));
+const vercel = JSON.parse(await readFile('vercel.json', 'utf8'));
 const release = JSON.parse(await readFile('version.json', 'utf8'));
 const escapedVersion = release.version.replaceAll('.', '\\.');
 
@@ -97,6 +99,8 @@ if (manifest.display !== 'standalone') failures.push('PWA باید standalone ب
 if (manifest.prefer_related_applications !== false) failures.push('prefer_related_applications باید false باشد.');
 if (!manifest.launch_handler) failures.push('launch_handler مخصوص تجربه Windows تعریف نشده است.');
 if (!(manifest.shortcuts || []).some(item => item.url?.includes('#updateCenter'))) failures.push('میانبر بروزرسانی مانیفست تعریف نشده است.');
+if (!(vercel.redirects || []).some(rule => rule.source === '/' && rule.destination === '/Mamali/')) failures.push('Vercel باید ریشه دامنه را به مسیر پایدار /Mamali/ هدایت کند.');
+if (!(vercel.rewrites || []).some(rule => rule.source === '/Mamali/:path*' && rule.destination === '/:path*')) failures.push('Vercel باید فایل‌های PWA مسیر /Mamali/ را Rewrite کند.');
 
 const icons = manifest.icons || [];
 if (!icons.some(icon => icon.sizes === '192x192' && icon.src.includes('icon-192.png'))) failures.push('آیکون 192x192 در مانیفست تعریف نشده است.');
