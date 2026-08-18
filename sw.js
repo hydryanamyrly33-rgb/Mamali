@@ -1,11 +1,11 @@
-const APP_VERSION = '3.1.1';
-const CACHE_NAME = 'mamali-orbit-v3.1.1';
+const APP_VERSION = '3.2.0';
+const CACHE_NAME = 'mamali-orbit-v3.2.0';
 const OFFLINE_DOCUMENT = './index.html';
 const APP_SHELL = [
   './',
   OFFLINE_DOCUMENT,
-  './assets/styles.css?v=3.1.1',
-  './assets/app.js?v=3.1.1',
+  './assets/styles.css?v=3.2.0',
+  './assets/app.js?v=3.2.0',
   './assets/favicon.svg',
   './assets/social-preview.svg',
   './assets/icons/icon-192.png',
@@ -21,11 +21,14 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys()
-      .then(keys => Promise.all(keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))))
-      .then(() => self.clients.claim()),
-  );
+  event.waitUntil((async () => {
+    if (self.registration.navigationPreload) await self.registration.navigationPreload.enable();
+    const keys = await caches.keys();
+    await Promise.all(keys
+      .filter(key => key.startsWith('mamali-orbit-') && key !== CACHE_NAME)
+      .map(key => caches.delete(key)));
+    await self.clients.claim();
+  })());
 });
 
 self.addEventListener('message', event => {
@@ -53,8 +56,9 @@ self.addEventListener('fetch', event => {
   // the device is offline or the network request genuinely fails.
   event.respondWith((async () => {
     try {
-      const response = await fetch(request, { cache: 'no-cache' });
-      if (response.ok) {
+      const preload = request.mode === 'navigate' ? await event.preloadResponse : null;
+      const response = preload || await fetch(request, { cache: 'no-cache' });
+      if (response?.ok) {
         const update = caches.open(CACHE_NAME).then(cache => cache.put(request, response.clone()));
         event.waitUntil(update);
       }

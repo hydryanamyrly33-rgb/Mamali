@@ -34,6 +34,7 @@ for (const file of requiredFiles) {
 
 const html = await readFile('index.html', 'utf8');
 const app = await readFile('assets/app.js', 'utf8');
+const styles = await readFile('assets/styles.css', 'utf8');
 const serviceWorker = await readFile('sw.js', 'utf8');
 const releaseScript = await readFile('scripts/release.mjs', 'utf8');
 const manifest = JSON.parse(await readFile('manifest.webmanifest', 'utf8'));
@@ -62,6 +63,17 @@ const requiredHtmlPatterns = [
   ['Live Update Center', /id="updateCenter"/i],
   ['Update notification banner', /id="updateBanner"/i],
   ['Real device clock', /id="deviceClock"/i],
+  ['Clock seconds and local timezone', /id="deviceSeconds"[\s\S]+id="deviceTimezone"/i],
+  ['Orbit control dock below portals', /class="scene-controls-dock"[\s\S]+id="motionButton"/i],
+  ['Android quick selector', /data-platform-choice="android"/i],
+  ['Windows quick selector', /data-platform-choice="windows"/i],
+  ['Android link copy action', /id="copyAndroidLink"/i],
+  ['Automatic update magnet', /id="updateMagnet"[\s\S]+AUTO-PULL ENGINE/i],
+  ['Prism theme setting', /id="themeSetting"[\s\S]+value="prism"/i],
+  ['Free phone movement setting', /id="deviceMotionSetting"[\s\S]+value="free"/i],
+  ['Phone depth setting', /id="phoneDepth"[^>]+type="range"/i],
+  ['Automatic update setting', /id="autoUpdateSetting"/i],
+  ['Official-color Google emblem', /class="google-g"[\s\S]+#FFC107[\s\S]+#FF3D00[\s\S]+#4CAF50[\s\S]+#1976D2/i],
   ['Interactive phone', /id="interactivePhone"/i],
   ['Animated settings controls', /data-setting-code="PARTICLES"/i],
   ['Full-screen authentication gate', /id="authGate"[^>]+aria-labelledby="authTitle"/i],
@@ -92,7 +104,7 @@ const secretPatterns = [
   /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/,
 ];
 for (const pattern of secretPatterns) {
-  if (pattern.test(`${html}\n${app}\n${serviceWorker}\n${releaseScript}`)) failures.push(`الگوی Secret مشکوک پیدا شد: ${pattern}`);
+  if (pattern.test(`${html}\n${styles}\n${app}\n${serviceWorker}\n${releaseScript}`)) failures.push(`الگوی Secret مشکوک پیدا شد: ${pattern}`);
 }
 
 if (manifest.start_url !== '/Mamali/') failures.push('start_url مانیفست باید /Mamali/ باشد.');
@@ -121,9 +133,17 @@ const requiredAppPatterns = [
   ['Generic native launcher', /function openNativeApp\(/],
   ['Interactive 3D device controller', /class DeviceTiltController/],
   ['Real local clock', /function setupDeviceClock\(/],
+  ['Second-aligned clock', /1000 - \(Date\.now\(\) % 1000\)/],
+  ['Persistent independent platform selection', /mamali-install-platform[\s\S]+installplatformchange/],
+  ['Android link clipboard action', /copyAndroidLink[\s\S]+clipboard\.writeText/],
+  ['Free phone movement profiles', /free:\s*\{[^}]+maxX:\s*116/],
+  ['Configurable phone depth', /--phone-depth[\s\S]+settings\.phoneDepth/],
   ['Windows platform detection', /return 'windows'/],
   ['Semantic version comparison', /function compareVersions\(/],
   ['Live update manager', /class UpdateManager/],
+  ['Rapid 30-second update polling', /updateInterval:\s*30 \* 1000/],
+  ['Online-only automatic update countdown', /scheduleAutoApply\(\)[\s\S]+!navigator\.onLine[\s\S]+updateAutoApplyDelay/],
+  ['Automatic update preference sync', /syncAutoMode\(\)/],
   ['Online and offline listeners', /addEventListener\('offline'/],
   ['Supplied Google OAuth client ID', /737314975140-nhilm65a3mr9bsemufr4e83cmhisq77e\.apps\.googleusercontent\.com/],
   ['Google Identity Services integration', /accounts\.google\.com\/gsi\/client\?hl=fa/],
@@ -136,6 +156,8 @@ const requiredAppPatterns = [
   ['Only Google expiry metadata retained', /lastGoogleExpiry:\s*payload\.exp \* 1000/],
   ['Authentication before protected app init', /await authManager\.init\(\)/],
 ];
+if ((html.match(/class="feature-card"/g) || []).length !== 6) failures.push('شبکه قابلیت‌ها باید دقیقاً شش کارت داشته باشد.');
+
 for (const [label, pattern] of requiredAppPatterns) {
   if (!pattern.test(app)) failures.push(`الزام App پیدا نشد: ${label}`);
 }

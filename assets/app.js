@@ -1,12 +1,13 @@
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
-const APP_VERSION = '3.1.1';
+const APP_VERSION = '3.2.0';
 
 const SITE_CONFIG = Object.freeze({
   version: APP_VERSION,
   versionEndpoint: './version.json',
-  updateInterval: 5 * 60 * 1000,
+  updateInterval: 30 * 1000,
+  updateAutoApplyDelay: 6500,
   googleClientId: '737314975140-nhilm65a3mr9bsemufr4e83cmhisq77e.apps.googleusercontent.com',
   googleIdentityScript: 'https://accounts.google.com/gsi/client?hl=fa',
   googleJwksEndpoint: 'https://www.googleapis.com/oauth2/v3/certs',
@@ -36,7 +37,7 @@ const SITE_CONFIG = Object.freeze({
     },
   },
   storageKey: 'mamali-orbit-settings-v2',
-  themes: ['neon', 'aurora', 'solar'],
+  themes: ['neon', 'aurora', 'solar', 'prism'],
 });
 
 const toPersianDigits = value => String(value).replace(/\d/g, digit => '۰۱۲۳۴۵۶۷۸۹'[Number(digit)]);
@@ -84,6 +85,9 @@ const defaults = Object.freeze({
   motion: !systemReducedMotion,
   reducedMotion: systemReducedMotion,
   sound: false,
+  autoUpdate: true,
+  deviceMotion: 'free',
+  phoneDepth: 100,
   quality: 'auto',
 });
 
@@ -663,10 +667,17 @@ function applySettings({ notify = false } = {}) {
   $('#motionSetting').checked = Boolean(settings.motion);
   $('#reducedMotionSetting').checked = Boolean(settings.reducedMotion);
   $('#soundSetting').checked = Boolean(settings.sound);
+  $('#autoUpdateSetting').checked = settings.autoUpdate !== false;
+  $('#themeSetting').value = SITE_CONFIG.themes.includes(settings.theme) ? settings.theme : defaults.theme;
+  $('#deviceMotionSetting').value = ['soft', 'balanced', 'free'].includes(settings.deviceMotion) ? settings.deviceMotion : defaults.deviceMotion;
+  $('#phoneDepth').value = String(Math.min(145, Math.max(55, Number(settings.phoneDepth) || defaults.phoneDepth)));
+  $('#phoneDepthValue').value = toPersianDigits($('#phoneDepth').value);
   $('#qualitySetting').value = ['auto', 'high', 'low'].includes(settings.quality) ? settings.quality : 'auto';
 
   orbit?.syncMotion();
   cosmos?.configure();
+  deviceTilt?.configure();
+  updateManager?.syncAutoMode();
   saveSettings();
   if (notify) announce('تنظیمات تجربه به‌روزرسانی شد.');
 }
@@ -906,8 +917,9 @@ class OrbitEngine {
     const button = $('#motionButton');
     if (!button) return;
     button.setAttribute('aria-pressed', String(!auto));
-    button.setAttribute('aria-label', auto ? 'توقف حرکت خودکار' : 'شروع حرکت خودکار');
-    $('span', button).textContent = auto ? 'توقف' : 'حرکت';
+    button.setAttribute('aria-label', auto ? 'توقف چرخش خودکار مدار' : 'شروع چرخش خودکار مدار');
+    const label = $('.orbit-motion-control__copy strong', button);
+    if (label) label.textContent = auto ? 'توقف چرخش' : 'شروع چرخش';
   }
 
   frame(time) {
@@ -962,15 +974,18 @@ class DeviceTiltController {
     this.root = root;
     this.phone = $('.phone-frame', root);
     this.dragging = false;
+    this.hovering = false;
     this.pointerId = null;
     this.x = 0;
     this.y = 0;
-    this.rx = 4;
-    this.ry = -10;
+    this.rx = 0;
+    this.ry = 0;
     this.rz = 0;
     this.velocityX = 0;
     this.velocityY = 0;
     this.animationFrame = 0;
+    this.profile = null;
+    this.configure();
     this.bind();
     this.apply();
   }
@@ -979,12 +994,31 @@ class DeviceTiltController {
     return Math.min(Math.max(value, min), max);
   }
 
+  configure() {
+    const profiles = {
+      soft: { dragX: .52, dragY: .45, maxX: 66, maxY: 48, hoverX: 12, hoverY: 8, tiltX: 6, tiltY: 8, inertia: .78 },
+      balanced: { dragX: .7, dragY: .58, maxX: 88, maxY: 64, hoverX: 21, hoverY: 14, tiltX: 9, tiltY: 12, inertia: .83 },
+      free: { dragX: .88, dragY: .72, maxX: 116, maxY: 82, hoverX: 31, hoverY: 21, tiltX: 12, tiltY: 16, inertia: .87 },
+    };
+    this.profile = profiles[settings.deviceMotion] || profiles.free;
+    const depth = this.clamp(Number(settings.phoneDepth) || defaults.phoneDepth, 55, 145) / 100;
+    this.root.style.setProperty('--phone-depth', depth.toFixed(2));
+    this.root.style.setProperty('--phone-z', `${(32 + depth * 14).toFixed(1)}px`);
+    this.root.style.setProperty('--shadow-y', `${(34 + depth * 12).toFixed(1)}px`);
+    this.root.style.setProperty('--shadow-blur', `${(72 + depth * 20).toFixed(1)}px`);
+    this.root.classList.toggle('is-free-moving', !settings.reducedMotion);
+    this.root.classList.toggle('is-motion-reduced', Boolean(settings.reducedMotion));
+    if (!this.dragging && !this.hovering) this.reset({ immediate: true });
+  }
+
   bind() {
     this.phone.addEventListener('pointerdown', event => {
+      if (settings.reducedMotion) return;
       if (event.button !== 0 && event.pointerType === 'mouse') return;
       event.preventDefault();
       cancelAnimationFrame(this.animationFrame);
       this.dragging = true;
+      this.hovering = false;
       this.pointerId = event.pointerId;
       this.startX = event.clientX;
       this.startY = event.clientY;
@@ -992,37 +1026,46 @@ class DeviceTiltController {
       this.baseY = this.y;
       this.lastX = this.x;
       this.lastY = this.y;
-      this.root.classList.add('is-dragging');
+      this.root.classList.add('is-dragging', 'is-tracking');
       this.phone.setPointerCapture(event.pointerId);
     });
 
+    this.root.addEventListener('pointerenter', event => {
+      if (settings.reducedMotion || event.pointerType !== 'mouse' || this.dragging) return;
+      this.hovering = true;
+      this.root.classList.add('is-tracking');
+    });
+
     this.root.addEventListener('pointermove', event => {
+      if (settings.reducedMotion) return;
+      const profile = this.profile;
       if (this.dragging && event.pointerId === this.pointerId) {
         const deltaX = event.clientX - this.startX;
         const deltaY = event.clientY - this.startY;
-        this.x = this.clamp(this.baseX + deltaX * .62, -62, 62);
-        this.y = this.clamp(this.baseY + deltaY * .52, -48, 48);
+        this.x = this.clamp(this.baseX + deltaX * profile.dragX, -profile.maxX, profile.maxX);
+        this.y = this.clamp(this.baseY + deltaY * profile.dragY, -profile.maxY, profile.maxY);
         this.velocityX = this.x - this.lastX;
         this.velocityY = this.y - this.lastY;
         this.lastX = this.x;
         this.lastY = this.y;
-        this.ry = this.clamp(-10 + deltaX * .12, -24, 22);
-        this.rx = this.clamp(4 - deltaY * .1, -17, 20);
-        this.rz = this.clamp(deltaX * .018, -4, 4);
-        this.apply(1.035);
+        this.ry = this.clamp((this.x / profile.maxX) * profile.tiltY, -profile.tiltY, profile.tiltY);
+        this.rx = this.clamp((-this.y / profile.maxY) * profile.tiltX, -profile.tiltX, profile.tiltX);
+        this.rz = this.clamp((this.x / profile.maxX) * 2.2, -2.2, 2.2);
+        this.apply(1.045);
         return;
       }
 
       if (event.pointerType !== 'mouse') return;
       const rect = this.root.getBoundingClientRect();
-      const localX = ((event.clientX - rect.left) / rect.width - .5) * 2;
-      const localY = ((event.clientY - rect.top) / rect.height - .5) * 2;
-      this.x = localX * 7;
-      this.y = localY * 5;
-      this.ry = -8 + localX * 12;
-      this.rx = 3 - localY * 9;
-      this.rz = localX * 1.4;
-      this.apply(1.012);
+      const localX = this.clamp(((event.clientX - rect.left) / rect.width - .5) * 2, -1, 1);
+      const localY = this.clamp(((event.clientY - rect.top) / rect.height - .5) * 2, -1, 1);
+      this.hovering = true;
+      this.x += (localX * profile.hoverX - this.x) * .42;
+      this.y += (localY * profile.hoverY - this.y) * .42;
+      this.ry += (localX * profile.tiltY - this.ry) * .38;
+      this.rx += (-localY * profile.tiltX - this.rx) * .38;
+      this.rz += (localX * 1.4 - this.rz) * .32;
+      this.apply(1.018);
     }, { passive: true });
 
     const release = event => {
@@ -1036,9 +1079,13 @@ class DeviceTiltController {
 
     this.phone.addEventListener('pointerup', release);
     this.phone.addEventListener('pointercancel', release);
-    this.root.addEventListener('pointerleave', () => {
-      if (!this.dragging) this.reset();
+    this.root.addEventListener('pointerleave', event => {
+      if (settings.reducedMotion || event.pointerType !== 'mouse' || this.dragging) return;
+      this.hovering = false;
+      this.root.classList.remove('is-tracking');
+      this.settle({ fromHover: true });
     });
+    this.phone.addEventListener('dblclick', () => this.reset());
   }
 
   apply(scale = 1) {
@@ -1048,43 +1095,55 @@ class DeviceTiltController {
     this.root.style.setProperty('--phone-ry', `${this.ry.toFixed(2)}deg`);
     this.root.style.setProperty('--phone-rz', `${this.rz.toFixed(2)}deg`);
     this.root.style.setProperty('--phone-scale', scale.toFixed(3));
-    this.root.style.setProperty('--shadow-x', `${(this.x * -.32).toFixed(2)}px`);
-    this.root.style.setProperty('--orbit-x', `${(this.x * -.15).toFixed(2)}px`);
-    this.root.style.setProperty('--orbit-y', `${(this.y * -.12).toFixed(2)}px`);
-    this.root.style.setProperty('--light-x', `${(this.x * .18).toFixed(2)}px`);
-    this.root.style.setProperty('--light-y', `${(this.y * .18).toFixed(2)}px`);
+    this.root.style.setProperty('--shadow-x', `${(this.x * -.25).toFixed(2)}px`);
+    this.root.style.setProperty('--orbit-x', `${(this.x * -.18).toFixed(2)}px`);
+    this.root.style.setProperty('--orbit-y', `${(this.y * -.15).toFixed(2)}px`);
+    this.root.style.setProperty('--light-x', `${(this.x * .2).toFixed(2)}px`);
+    this.root.style.setProperty('--light-y', `${(this.y * .2).toFixed(2)}px`);
   }
 
-  reset() {
+  reset({ immediate = false } = {}) {
     cancelAnimationFrame(this.animationFrame);
-    this.x = 0;
-    this.y = 0;
-    this.rx = 4;
-    this.ry = -10;
-    this.rz = 0;
-    this.apply();
+    this.hovering = false;
+    this.root.classList.remove('is-tracking', 'is-dragging');
+    if (immediate || settings.reducedMotion) {
+      this.x = 0;
+      this.y = 0;
+      this.rx = 0;
+      this.ry = 0;
+      this.rz = 0;
+      this.velocityX = 0;
+      this.velocityY = 0;
+      this.apply();
+      return;
+    }
+    this.settle({ fromHover: true });
   }
 
-  settle() {
+  settle({ fromHover = false } = {}) {
+    cancelAnimationFrame(this.animationFrame);
     if (settings.reducedMotion) {
-      this.reset();
+      this.reset({ immediate: true });
       return;
     }
 
+    const profile = this.profile;
+    if (fromHover) {
+      this.velocityX = 0;
+      this.velocityY = 0;
+    }
     const frame = () => {
-      this.velocityX *= .84;
-      this.velocityY *= .84;
-      this.x += this.velocityX;
-      this.y += this.velocityY;
-      this.x *= .9;
-      this.y *= .9;
-      this.rx += (4 - this.rx) * .12;
-      this.ry += (-10 - this.ry) * .12;
-      this.rz *= .82;
-      this.apply(1 + Math.min(Math.abs(this.velocityX) + Math.abs(this.velocityY), 8) * .002);
-      const moving = Math.abs(this.x) + Math.abs(this.y) + Math.abs(this.velocityX) + Math.abs(this.velocityY) > .35;
+      this.velocityX *= profile.inertia;
+      this.velocityY *= profile.inertia;
+      this.x = (this.x + this.velocityX) * .9;
+      this.y = (this.y + this.velocityY) * .9;
+      this.rx *= .82;
+      this.ry *= .82;
+      this.rz *= .78;
+      this.apply(1 + Math.min(Math.abs(this.velocityX) + Math.abs(this.velocityY), 10) * .0018);
+      const moving = Math.abs(this.x) + Math.abs(this.y) + Math.abs(this.rx) + Math.abs(this.ry) + Math.abs(this.velocityX) + Math.abs(this.velocityY) > .28;
       if (moving) this.animationFrame = requestAnimationFrame(frame);
-      else this.reset();
+      else this.reset({ immediate: true });
     };
     this.animationFrame = requestAnimationFrame(frame);
   }
@@ -1092,22 +1151,33 @@ class DeviceTiltController {
 
 function setupDeviceClock() {
   const clock = $('#deviceClock');
+  const seconds = $('#deviceSeconds');
+  const timezone = $('#deviceTimezone');
   if (!clock) return;
-  const formatter = new Intl.DateTimeFormat('fa-IR', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hourCycle: 'h23',
-  });
+
+  const zone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Local';
+  const zoneLabel = zone.split('/').pop().replaceAll('_', ' ');
+  if (timezone) timezone.textContent = `${zoneLabel} · LOCAL`;
+
+  let timer;
   const update = () => {
     const now = new Date();
-    clock.textContent = formatter.format(now);
-    clock.dateTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const currentSeconds = String(now.getSeconds()).padStart(2, '0');
+    clock.textContent = `${toPersianDigits(hours)}:${toPersianDigits(minutes)}`;
+    if (seconds) seconds.textContent = `:${toPersianDigits(currentSeconds)}`;
+    clock.dateTime = `${hours}:${minutes}:${currentSeconds}`;
+    window.clearTimeout(timer);
+    timer = window.setTimeout(update, Math.max(120, 1000 - (Date.now() % 1000) + 8));
   };
-  update();
-  window.setInterval(update, 15000);
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) update(); });
-}
 
+  update();
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) update();
+  });
+  window.addEventListener('pageshow', update);
+}
 let cosmos;
 let orbit;
 let deviceTilt;
@@ -1120,7 +1190,7 @@ function cycleTheme() {
   settings.theme = SITE_CONFIG.themes[(currentIndex + 1) % SITE_CONFIG.themes.length];
   applySettings();
   sound.play('toggle');
-  const names = { neon: 'نئون', aurora: 'شفق', solar: 'خورشیدی' };
+  const names = { neon: 'نئون', aurora: 'شفق', solar: 'خورشیدی', prism: 'منشوری' };
   toast(`تم ${names[settings.theme]} فعال شد.`);
 }
 
@@ -1203,34 +1273,85 @@ function getInstallPlatform() {
 function setupPlatformTabs() {
   const tabs = $$('[data-platform-tab]');
   const panels = $$('[data-platform-panel]');
-  if (!tabs.length) return;
+  const quickChoices = $$('[data-platform-choice]');
+  if (!tabs.length || !panels.length) return;
 
-  const activate = (platform, { focus = false } = {}) => {
+  let savedPlatform = '';
+  try { savedPlatform = sessionStorage.getItem('mamali-install-platform') || ''; } catch { /* Optional storage. */ }
+
+  const activate = (platform, { focus = false, reveal = false, remember = true } = {}) => {
+    const normalized = ['android', 'windows'].includes(platform) ? platform : 'android';
     for (const tab of tabs) {
-      const selected = tab.dataset.platformTab === platform;
+      const selected = tab.dataset.platformTab === normalized;
       tab.setAttribute('aria-selected', String(selected));
       tab.tabIndex = selected ? 0 : -1;
-      if (selected && focus) tab.focus();
+      if (selected && focus) tab.focus({ preventScroll: true });
     }
-    for (const panel of panels) panel.hidden = panel.dataset.platformPanel !== platform;
-    document.body.dataset.installPlatform = platform;
-    document.dispatchEvent(new CustomEvent('installplatformchange', { detail: { platform } }));
+    for (const panel of panels) {
+      const selected = panel.dataset.platformPanel === normalized;
+      panel.hidden = !selected;
+      panel.setAttribute('aria-hidden', String(!selected));
+      panel.classList.toggle('is-active', selected);
+    }
+    for (const choice of quickChoices) {
+      const selected = choice.dataset.platformChoice === normalized;
+      choice.setAttribute('aria-pressed', String(selected));
+      choice.classList.toggle('is-active', selected);
+    }
+    document.body.dataset.installPlatform = normalized;
+    if (remember) {
+      try { sessionStorage.setItem('mamali-install-platform', normalized); } catch { /* Optional storage. */ }
+    }
+    document.dispatchEvent(new CustomEvent('installplatformchange', { detail: { platform: normalized } }));
+    if (reveal) {
+      const panel = panels.find(item => item.dataset.platformPanel === normalized);
+      window.setTimeout(() => panel?.scrollIntoView({ behavior: settings.reducedMotion ? 'auto' : 'smooth', block: 'nearest' }), 30);
+    }
   };
 
   for (const tab of tabs) {
-    tab.addEventListener('click', () => activate(tab.dataset.platformTab));
+    tab.addEventListener('click', event => {
+      event.preventDefault();
+      activate(tab.dataset.platformTab, { reveal: true });
+    });
     tab.addEventListener('keydown', event => {
-      if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
       event.preventDefault();
       const index = tabs.indexOf(tab);
-      const direction = event.key === 'ArrowLeft' ? 1 : -1;
-      activate(tabs[(index + direction + tabs.length) % tabs.length].dataset.platformTab, { focus: true });
+      let target = index;
+      if (event.key === 'ArrowLeft') target = (index + 1) % tabs.length;
+      if (event.key === 'ArrowRight') target = (index - 1 + tabs.length) % tabs.length;
+      if (event.key === 'Home') target = 0;
+      if (event.key === 'End') target = tabs.length - 1;
+      activate(tabs[target].dataset.platformTab, { focus: true, reveal: true });
     });
   }
 
-  activate(getInstallPlatform() === 'windows' ? 'windows' : 'android');
-}
+  for (const choice of quickChoices) {
+    choice.addEventListener('click', () => activate(choice.dataset.platformChoice, { reveal: true }));
+  }
 
+  $('#copyAndroidLink')?.addEventListener('click', async event => {
+    const url = new URL('./', window.location.href).href;
+    try {
+      await navigator.clipboard.writeText(url);
+      event.currentTarget.classList.add('is-copied');
+      event.currentTarget.textContent = 'لینک نصب Android کپی شد ✓';
+      toast('لینک ماملی برای فرستادن به گوشی کپی شد.');
+      window.setTimeout(() => {
+        event.currentTarget.classList.remove('is-copied');
+        event.currentTarget.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"></rect><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"></path></svg> کپی لینک برای بازکردن روی گوشی Android';
+      }, 2600);
+    } catch {
+      toast(`لینک نصب: ${url}`, 6000);
+    }
+  });
+
+  const initial = ['android', 'windows'].includes(savedPlatform)
+    ? savedPlatform
+    : (getInstallPlatform() === 'windows' ? 'windows' : 'android');
+  activate(initial, { remember: false });
+}
 function setupDialogs() {
   const settingsDialog = $('#settingsDialog');
   const commandDialog = $('#commandDialog');
@@ -1267,7 +1388,7 @@ function setupDialogs() {
   }
 
   const animateSettingControl = control => {
-    const row = control.closest('.setting-row, .setting-select');
+    const row = control.closest('.setting-row, .setting-select, .setting-range');
     if (!row) return;
     row.classList.remove('is-switching');
     void row.offsetWidth;
@@ -1281,6 +1402,7 @@ function setupDialogs() {
     ['motionSetting', 'motion'],
     ['reducedMotionSetting', 'reducedMotion'],
     ['soundSetting', 'sound'],
+    ['autoUpdateSetting', 'autoUpdate'],
   ];
 
   for (const [id, key] of bindings) {
@@ -1292,6 +1414,28 @@ function setupDialogs() {
       sound.play('toggle');
     });
   }
+
+  $('#themeSetting').addEventListener('change', event => {
+    settings.theme = SITE_CONFIG.themes.includes(event.target.value) ? event.target.value : defaults.theme;
+    animateSettingControl(event.target);
+    applySettings({ notify: true });
+    sound.play('toggle');
+  });
+
+  $('#deviceMotionSetting').addEventListener('change', event => {
+    settings.deviceMotion = ['soft', 'balanced', 'free'].includes(event.target.value) ? event.target.value : defaults.deviceMotion;
+    animateSettingControl(event.target);
+    applySettings({ notify: true });
+    deviceTilt?.reset({ immediate: true });
+  });
+
+  $('#phoneDepth').addEventListener('input', event => {
+    settings.phoneDepth = Math.min(145, Math.max(55, Number(event.target.value) || defaults.phoneDepth));
+    $('#phoneDepthValue').value = toPersianDigits(settings.phoneDepth);
+    animateSettingControl(event.target);
+    applySettings();
+  });
+  $('#phoneDepth').addEventListener('change', () => announce('عمق سه‌بعدی گوشی به‌روزرسانی شد.'));
 
   $('#qualitySetting').addEventListener('change', event => {
     settings.quality = event.target.value;
@@ -1484,6 +1628,9 @@ class UpdateManager {
     this.latest = $('#latestVersion');
     this.applyButton = $('#applyUpdateButton');
     this.checkButton = $('#checkUpdateButton');
+    this.magnet = $('#updateMagnet');
+    this.magnetStatus = $('#updateMagnetStatus');
+    this.progress = $('#updateProgress');
     this.banner = $('#updateBanner');
     this.bannerCopy = $('#updateBannerCopy');
     this.bannerApply = $('#applyUpdateBanner');
@@ -1495,6 +1642,8 @@ class UpdateManager {
     this.reloading = false;
     this.dismissed = false;
     this.lastCheck = 0;
+    this.autoApplyAt = 0;
+    this.autoApplyTimer = null;
   }
 
   init() {
@@ -1502,11 +1651,11 @@ class UpdateManager {
     for (const node of $$('[data-app-version]')) node.textContent = toPersianDigits(APP_VERSION);
 
     this.applyButton.addEventListener('click', () => {
-      if (this.state === 'available') this.applyUpdate();
+      if (this.state === 'available' || this.state === 'countdown') this.applyUpdate('manual');
       else this.check();
     });
     this.checkButton.addEventListener('click', () => this.check());
-    this.bannerApply.addEventListener('click', () => this.applyUpdate());
+    this.bannerApply.addEventListener('click', () => this.applyUpdate('manual'));
     this.bannerDismiss.addEventListener('click', () => {
       this.dismissed = true;
       this.banner.hidden = true;
@@ -1514,22 +1663,27 @@ class UpdateManager {
 
     window.addEventListener('online', () => {
       this.dismissed = false;
-      this.check({ silent: true });
+      if (this.state === 'available' && this.registration?.waiting) this.scheduleAutoApply();
+      else this.check({ silent: true });
     });
-    window.addEventListener('offline', () => this.setState('offline'));
+    window.addEventListener('offline', () => {
+      this.cancelAutoApply();
+      this.setState('offline');
+    });
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && Date.now() - this.lastCheck > 60000) this.check({ silent: true });
+      if (!document.hidden && Date.now() - this.lastCheck > 15000) this.check({ silent: true });
     });
 
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (!this.applying || this.reloading) return;
         this.reloading = true;
-        toast('نسخه جدید فعال شد؛ در حال راه‌اندازی دوباره ماملی…', 3000);
-        window.setTimeout(() => window.location.reload(), 450);
+        toast('نسخه تازه فعال شد؛ در حال راه‌اندازی دوباره ماملی…', 3000);
+        window.setTimeout(() => window.location.reload(), 350);
       });
     }
 
+    this.syncAutoMode();
     this.setState(navigator.onLine ? 'checking' : 'offline');
     if (document.readyState === 'complete') this.register();
     else window.addEventListener('load', () => this.register(), { once: true });
@@ -1543,13 +1697,15 @@ class UpdateManager {
     }
 
     try {
-      this.registration = await navigator.serviceWorker.register('./sw.js', { scope: './' });
+      this.registration = await navigator.serviceWorker.register('./sw.js', { scope: './', updateViaCache: 'none' });
       this.watchRegistration(this.registration);
       if (this.registration.waiting && navigator.serviceWorker.controller) {
-        this.setAvailable(this.latestVersion);
+        this.setAvailable(this.latestVersion, [], { workerReady: true });
       }
+      await this.registration.update();
       await this.check({ silent: true });
-    } catch {
+    } catch (error) {
+      console.warn('Service Worker registration failed:', error);
       this.setState(navigator.onLine ? 'error' : 'offline');
     }
   }
@@ -1557,9 +1713,12 @@ class UpdateManager {
   watchRegistration(registration) {
     const watchWorker = worker => {
       if (!worker) return;
+      this.setMagnet('pulling', 'نسخه تازه پیدا شد؛ در حال آماده‌سازی بسته…');
       const inspect = () => {
         if (worker.state === 'installed' && navigator.serviceWorker.controller) {
-          this.setAvailable(this.latestVersion);
+          this.setAvailable(this.latestVersion, [], { workerReady: true });
+        } else if (worker.state === 'activated' && !navigator.serviceWorker.controller) {
+          this.setMagnet('current', 'اپ برای اجرای آفلاین آماده است');
         }
       };
       worker.addEventListener('statechange', inspect);
@@ -1570,13 +1729,15 @@ class UpdateManager {
   }
 
   async check({ silent = false } = {}) {
+    if (this.state === 'updating') return;
     this.lastCheck = Date.now();
     if (!navigator.onLine) {
       this.setState('offline');
       return;
     }
 
-    this.setState('checking');
+    if (this.state !== 'available' && this.state !== 'countdown') this.setState('checking');
+    else this.setMagnet('scanning', 'نسخه آماده است؛ هم‌زمان کانال انتشار بررسی می‌شود…');
     try {
       const separator = SITE_CONFIG.versionEndpoint.includes('?') ? '&' : '?';
       const response = await fetch(`${SITE_CONFIG.versionEndpoint}${separator}check=${Date.now()}`, { cache: 'no-store' });
@@ -1589,57 +1750,112 @@ class UpdateManager {
 
       const waiting = Boolean(this.registration?.waiting && navigator.serviceWorker.controller);
       if (compareVersions(release.version, APP_VERSION) > 0 || waiting) {
-        this.setAvailable(release.version, release.notes);
+        this.setAvailable(release.version, release.notes, { workerReady: waiting });
       } else {
         this.setState('current');
         if (!silent) toast(`نسخه ${toPersianDigits(APP_VERSION)} آخرین نسخه پایدار است.`);
       }
-    } catch {
-      this.setState(navigator.onLine ? 'error' : 'offline');
+    } catch (error) {
+      console.warn('Update check failed:', error);
+      if (this.state !== 'available' && this.state !== 'countdown') this.setState(navigator.onLine ? 'error' : 'offline');
       if (!silent && navigator.onLine) toast('اتصال به کانال بروزرسانی ممکن نشد؛ دوباره تلاش کنید.');
     }
   }
 
-  setAvailable(version = APP_VERSION, notes = []) {
+  setAvailable(version = APP_VERSION, notes = [], { workerReady = false } = {}) {
     this.latestVersion = compareVersions(version, APP_VERSION) >= 0 ? version : APP_VERSION;
     this.latest.textContent = toPersianDigits(this.latestVersion);
-    this.setState('available');
-    const note = Array.isArray(notes) && notes.length ? notes[0] : 'نسخه جدید آماده فعال‌سازی است.';
+    this.setState('available', { workerReady });
+    const note = Array.isArray(notes) && notes.length ? notes[0] : 'نسخه تازه بدون نصب دوباره آماده فعال‌سازی است.';
     this.bannerCopy.textContent = `نسخه ${toPersianDigits(this.latestVersion)} — ${note}`;
-    if (!this.dismissed) this.banner.hidden = false;
-    announce(`بروزرسانی نسخه ${toPersianDigits(this.latestVersion)} موجود است.`);
+    if (workerReady && !this.dismissed) this.banner.hidden = false;
+    if (workerReady) {
+      announce(`بروزرسانی نسخه ${toPersianDigits(this.latestVersion)} آماده است.`);
+      this.scheduleAutoApply();
+    }
   }
 
-  setState(state) {
+  setState(state, { workerReady = false } = {}) {
     this.state = state;
     this.center.dataset.state = state;
     const offline = state === 'offline';
     const busy = state === 'checking' || state === 'updating';
     this.connection.innerHTML = offline ? '<i></i> آفلاین' : '<i></i> آنلاین';
-    this.applyButton.disabled = offline || busy;
+    this.applyButton.disabled = offline || busy || (state === 'available' && !workerReady && Boolean(this.registration));
     this.checkButton.disabled = offline || busy;
 
     const content = {
-      checking: ['در حال بررسی نسخه جدید و اتصال به کانال پایدار…', 'در حال بررسی…'],
-      current: [`نسخه ${toPersianDigits(APP_VERSION)} به‌روز است؛ بررسی بعدی به‌صورت خودکار انجام می‌شود.`, 'بررسی بروزرسانی'],
-      available: [`نسخه ${toPersianDigits(this.latestVersion)} آماده است؛ بدون حذف برنامه آن را فعال کنید.`, `بروزرسانی به ${toPersianDigits(this.latestVersion)}`],
-      updating: ['فایل‌های نسخه جدید دریافت شدند؛ در حال فعال‌سازی…', 'در حال بروزرسانی…'],
-      offline: ['اینترنت قطع است؛ بروزرسانی تا اتصال دوباره غیرفعال می‌ماند.', 'بروزرسانی غیرفعال'],
-      error: ['کانال بروزرسانی پاسخ نداد؛ اتصال را بررسی و دوباره تلاش کنید.', 'تلاش دوباره'],
+      checking: ['در حال بررسی نسخه انتشار و بسته آفلاین…', 'در حال بررسی…', 'scanning', 'در حال جذب تازه‌ترین انتشار…'],
+      current: [`نسخه ${toPersianDigits(APP_VERSION)} تازه و همگام است؛ بررسی بعدی خودکار انجام می‌شود.`, 'بررسی بروزرسانی', 'current', 'متصل؛ تازه‌ترین نسخه روی این دستگاه است'],
+      available: [workerReady ? `نسخه ${toPersianDigits(this.latestVersion)} جذب شد؛ بدون نصب دوباره آماده است.` : `نسخه ${toPersianDigits(this.latestVersion)} پیدا شد و بسته تازه در حال آماده‌شدن است…`, workerReady ? `فعال‌سازی ${toPersianDigits(this.latestVersion)}` : 'در حال آماده‌سازی…', workerReady ? 'captured' : 'pulling', workerReady ? `نسخه ${toPersianDigits(this.latestVersion)} جذب شد و آماده فعال‌سازی است` : `در حال جذب بسته نسخه ${toPersianDigits(this.latestVersion)}…`],
+      countdown: ['', `فعال‌سازی ${toPersianDigits(this.latestVersion)}`, 'countdown', 'فعال‌سازی خودکار نزدیک است'],
+      updating: ['فایل‌های نسخه تازه دریافت شدند؛ در حال فعال‌سازی امن…', 'در حال بروزرسانی…', 'activating', 'در حال فعال‌سازی نسخه تازه…'],
+      offline: ['اینترنت قطع است؛ نسخه فعلی امن می‌ماند و هیچ فعال‌سازی اجباری انجام نمی‌شود.', 'بروزرسانی غیرفعال', 'offline', 'آفلاین؛ آهنربا تا اتصال بعدی در حالت امن است'],
+      error: ['کانال بروزرسانی پاسخ نداد؛ نسخه فعلی فعال است و بررسی تکرار می‌شود.', 'تلاش دوباره', 'error', 'بررسی بعدی به‌صورت خودکار انجام می‌شود'],
     };
-    const [message, buttonLabel] = content[state];
-    this.status.textContent = message;
+    const [message, buttonLabel, magnetState, magnetCopy] = content[state];
+    if (message) this.status.textContent = message;
     this.applyButton.textContent = buttonLabel;
-    if (state !== 'available') this.banner.hidden = true;
+    this.setMagnet(magnetState, magnetCopy);
+    if (!['available', 'countdown'].includes(state)) this.banner.hidden = true;
   }
 
-  async applyUpdate() {
+  setMagnet(state, message) {
+    this.magnet.dataset.state = state;
+    this.magnet.dataset.auto = String(settings.autoUpdate !== false);
+    this.magnetStatus.textContent = message;
+    this.magnet.setAttribute('aria-label', message);
+  }
+
+  syncAutoMode() {
+    document.body.classList.toggle('auto-update-enabled', settings.autoUpdate !== false);
+    this.magnet?.setAttribute('data-auto', String(settings.autoUpdate !== false));
+    if (settings.autoUpdate === false) {
+      this.cancelAutoApply();
+      if (this.state === 'countdown') this.setState('available', { workerReady: Boolean(this.registration?.waiting) });
+    } else if (this.registration?.waiting && navigator.onLine) {
+      this.scheduleAutoApply();
+    }
+  }
+
+  scheduleAutoApply() {
+    if (settings.autoUpdate === false || !navigator.onLine || !this.registration?.waiting || this.applying) return;
+    this.cancelAutoApply();
+    this.autoApplyAt = Date.now() + SITE_CONFIG.updateAutoApplyDelay;
+    const updateCountdown = () => {
+      if (settings.autoUpdate === false || !navigator.onLine || !this.registration?.waiting) {
+        this.cancelAutoApply();
+        return;
+      }
+      const seconds = Math.max(0, Math.ceil((this.autoApplyAt - Date.now()) / 1000));
+      this.state = 'countdown';
+      this.center.dataset.state = 'countdown';
+      this.status.textContent = `نسخه ${toPersianDigits(this.latestVersion)} آماده است؛ فعال‌سازی خودکار تا ${toPersianDigits(seconds)} ثانیه دیگر…`;
+      this.applyButton.disabled = false;
+      this.applyButton.textContent = `همین حالا فعال کن (${toPersianDigits(seconds)})`;
+      this.setMagnet('countdown', `نسخه جذب شد؛ فعال‌سازی خودکار تا ${toPersianDigits(seconds)} ثانیه دیگر`);
+      if (seconds <= 0) this.applyUpdate('auto');
+    };
+    updateCountdown();
+    this.autoApplyTimer = window.setInterval(updateCountdown, 250);
+  }
+
+  cancelAutoApply() {
+    if (this.autoApplyTimer) window.clearInterval(this.autoApplyTimer);
+    this.autoApplyTimer = null;
+    this.autoApplyAt = 0;
+  }
+
+  async applyUpdate(mode = 'manual') {
     if (!navigator.onLine) {
+      this.cancelAutoApply();
       this.setState('offline');
       return;
     }
+    this.cancelAutoApply();
     this.applying = true;
     this.setState('updating');
+    this.setMagnet('activating', mode === 'auto' ? 'فعال‌سازی خودکار نسخه تازه…' : 'در حال فعال‌سازی نسخه انتخاب‌شده…');
     sound.play('energy');
 
     try {
@@ -1666,23 +1882,24 @@ class UpdateManager {
       } else {
         window.location.reload();
       }
-    } catch {
+    } catch (error) {
+      console.warn('Update activation failed:', error);
       this.applying = false;
       this.setState(navigator.onLine ? 'error' : 'offline');
     }
   }
 }
-
 function setupInstall() {
   const buttons = $$('.install-trigger');
   const guide = $('#installDialog');
   const standaloneQuery = window.matchMedia('(display-mode: standalone)');
+  const devicePlatform = getInstallPlatform();
+  let selectedPlatform = document.body.dataset.installPlatform || (devicePlatform === 'windows' ? 'windows' : 'android');
   let installed = standaloneQuery.matches || Boolean(navigator.standalone);
 
-  const platform = getInstallPlatform();
   const platformLabels = {
-    android: 'نصب اپ اندروید',
-    windows: 'نصب اپ ویندوز',
+    android: devicePlatform === 'android' ? 'نصب اپ Android' : 'راهنمای نصب Android',
+    windows: devicePlatform === 'windows' ? 'نصب اپ Windows' : 'راهنمای نصب Windows',
     ios: 'افزودن به صفحه اصلی',
     desktop: 'نصب اپ روی دستگاه',
   };
@@ -1699,11 +1916,26 @@ function setupInstall() {
 
   const updateInstallState = () => {
     document.body.classList.toggle('app-installed', installed);
+    document.body.dataset.installPlatform = selectedPlatform;
+    const selection = ['android', 'windows'].includes(selectedPlatform) ? selectedPlatform : devicePlatform;
     for (const button of buttons) {
-      button.classList.toggle('is-installable', Boolean(installPrompt));
-      button.setAttribute('aria-label', installed ? 'اپ ماملی نصب شده است' : platformLabels[platform]);
-      setButtonLabel(button, installed ? 'اپ نصب شده' : platformLabels[platform]);
+      const canInstallHere = selection === devicePlatform || !['android', 'windows'].includes(devicePlatform);
+      button.classList.toggle('is-installable', Boolean(installPrompt && canInstallHere));
+      button.dataset.selectedPlatform = selection;
+      const label = installed ? 'اپ روی این دستگاه نصب است' : (platformLabels[selection] || platformLabels[devicePlatform]);
+      button.setAttribute('aria-label', label);
+      setButtonLabel(button, label);
     }
+  };
+
+  const showGuide = platform => {
+    const normalized = ['android', 'windows'].includes(platform) ? platform : devicePlatform;
+    guide.dataset.guidePlatform = normalized;
+    if (!guide.open) guide.showModal();
+    window.setTimeout(() => {
+      const heading = normalized === 'windows' ? $('#windowsGuideHeading') : $('#androidGuideHeading');
+      heading?.scrollIntoView({ behavior: settings.reducedMotion ? 'auto' : 'smooth', block: 'start' });
+    }, 90);
   };
 
   window.addEventListener('beforeinstallprompt', event => {
@@ -1712,10 +1944,24 @@ function setupInstall() {
     updateInstallState();
   });
 
+  document.addEventListener('installplatformchange', event => {
+    selectedPlatform = event.detail?.platform || selectedPlatform;
+    updateInstallState();
+  });
+
   for (const button of buttons) {
     button.addEventListener('click', async () => {
+      const targetPlatform = ['android', 'windows'].includes(selectedPlatform) ? selectedPlatform : devicePlatform;
       if (installed) {
-        toast('نسخه اپ ماملی همین حالا روی دستگاه شما اجرا شده است.');
+        toast('ماملی همین حالا به‌صورت اپ مستقل روی این دستگاه اجرا می‌شود.');
+        return;
+      }
+
+      if (targetPlatform !== devicePlatform && ['android', 'windows'].includes(devicePlatform)) {
+        showGuide(targetPlatform);
+        toast(targetPlatform === 'android'
+          ? 'بخش Android فعال شد؛ لینک را روی Chrome گوشی باز کنید.'
+          : 'بخش Windows فعال شد؛ لینک را در Edge یا Chrome ویندوز باز کنید.', 4800);
         return;
       }
 
@@ -1728,14 +1974,14 @@ function setupInstall() {
         return;
       }
 
-      if (!guide.open) guide.showModal();
+      showGuide(targetPlatform);
       const instructions = {
         ios: 'در Safari از Share، گزینه Add to Home Screen را بزنید.',
         windows: 'در Edge یا Chrome روی آیکون Install در نوار آدرس بزنید.',
         android: 'در Chrome منوی سه‌نقطه و گزینه Install app را انتخاب کنید.',
         desktop: 'در مرورگر سازگار گزینه Install app را انتخاب کنید.',
       };
-      toast(instructions[platform], 4800);
+      toast(instructions[targetPlatform] || instructions[devicePlatform] || instructions.desktop, 4800);
     });
   }
 
@@ -1753,7 +1999,6 @@ function setupInstall() {
 
   updateInstallState();
 }
-
 function initProtectedApp() {
   if (protectedAppInitialized) return;
   protectedAppInitialized = true;

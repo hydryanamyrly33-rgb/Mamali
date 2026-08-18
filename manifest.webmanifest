@@ -2,20 +2,32 @@
   "id": "/Mamali/",
   "name": "ماملی — منظومه اجتماعی سه‌بعدی",
   "short_name": "ماملی",
-  "description": "لانچر اجتماعی سه‌بعدی قابل نصب روی Android و Windows با ورود Google، دستگاه مورد اعتماد، بروزرسانی زنده و پشتیبانی آفلاین.",
+  "description": "لانچر اجتماعی سه‌بعدی قابل نصب روی Android و Windows با ورود Google، دستگاه مورد اعتماد، انتخاب مستقل پلتفرم، بروزرسانی خودکار و پشتیبانی آفلاین.",
   "lang": "fa",
   "dir": "rtl",
   "start_url": "/Mamali/",
   "scope": "/Mamali/",
   "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "any",
   "background_color": "#050712",
   "theme_color": "#080b18",
-  "categories": ["social", "entertainment", "utilities", "productivity"],
+  "categories": [
+    "social",
+    "entertainment",
+    "utilities",
+    "productivity"
+  ],
   "prefer_related_applications": false,
   "launch_handler": {
-    "client_mode": ["navigate-existing", "auto"]
+    "client_mode": [
+      "navigate-existing",
+      "auto"
+    ]
   },
   "icons": [
     {
@@ -43,21 +55,21 @@
       "sizes": "1440x1000",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "ماملی ۳.۱ با ورود Google، نصب و بروزرسانی روی Android و Windows"
+      "label": "ماملی ۳.۲ با نصب مستقل Android، گوشی سه‌بعدی و بروزرسانی خودکار"
     },
     {
       "src": "assets/screenshots/windows-install-wide.png",
       "sizes": "1440x1000",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "ماملی با حساب مورد اعتماد و نصب روی Windows 10 و 11"
+      "label": "ماملی ۳.۲ با انتخاب Windows، دستگاه مورد اعتماد و Update Center زنده"
     },
     {
       "src": "assets/screenshots/android-install-narrow.png",
       "sizes": "390x844",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "نسخه Android ماملی با ورود Google و Update Center زنده"
+      "label": "نسخه Android ماملی ۳.۲ با انتخاب نصب لمسی و رابط پاسخ‌گو"
     }
   ],
   "shortcuts": [
@@ -66,21 +78,39 @@
       "short_name": "پورتال‌ها",
       "description": "اجرای مستقیم اپ‌های اجتماعی",
       "url": "/Mamali/#portals",
-      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+      "icons": [
+        {
+          "src": "assets/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     },
     {
       "name": "نصب روی Android و Windows",
       "short_name": "نصب اپ",
       "description": "راهنمای نصب برنامه روی گوشی و ویندوز",
       "url": "/Mamali/#android-app",
-      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+      "icons": [
+        {
+          "src": "assets/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     },
     {
       "name": "بررسی بروزرسانی",
       "short_name": "بروزرسانی",
       "description": "اتصال به کانال پایدار و دریافت آخرین نسخه",
       "url": "/Mamali/#updateCenter",
-      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+      "icons": [
+        {
+          "src": "assets/icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }

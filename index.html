@@ -15,8 +15,8 @@
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="preload" href="assets/styles.css?v=3.1.1" as="style">
-  <link rel="stylesheet" href="assets/styles.css?v=3.1.1">
+  <link rel="preload" href="assets/styles.css?v=3.2.0" as="style">
+  <link rel="stylesheet" href="assets/styles.css?v=3.2.0">
 
   <meta property="og:type" content="website">
   <meta property="og:locale" content="fa_IR">
@@ -26,12 +26,12 @@
   <meta property="og:url" content="https://mamali-orbit.vercel.app/Mamali/">
   <meta property="og:image" content="https://mamali-orbit.vercel.app/Mamali/assets/social-preview.svg">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Mamali Orbit 3.1.1">
+  <meta name="twitter:title" content="Mamali Orbit 3.2.0">
   <meta name="twitter:description" content="اپ سه‌بعدی قابل نصب روی Android و Windows با ورود گوگل، اجرای آفلاین مورد اعتماد و بروزرسانی زنده.">
   <meta name="twitter:image" content="https://mamali-orbit.vercel.app/Mamali/assets/social-preview.svg">
 
   <title>Mamali Orbit — مرکز فرمان اجتماعی سه‌بعدی</title>
-  <script type="module" src="assets/app.js?v=3.1.1"></script>
+  <script type="module" src="assets/app.js?v=3.2.0"></script>
 </head>
 <body>
   <canvas id="cosmos" class="cosmos" aria-hidden="true"></canvas>
@@ -57,11 +57,17 @@
         <div class="auth-orbit auth-orbit--two"><span></span></div>
         <div class="auth-orbit auth-orbit--three"></div>
         <div class="auth-core">
-          <span class="auth-core__shield">
-            <svg viewBox="0 0 24 24"><path d="M12 2.8 4.5 6v5.4c0 5.1 3.1 8.5 7.5 10 4.4-1.5 7.5-4.9 7.5-10V6L12 2.8Z"/><path d="m8.8 12 2.1 2.1 4.5-4.7"/></svg>
+          <span class="auth-core__shield auth-google-orb">
+            <span class="auth-google-orb__depth" aria-hidden="true"></span>
+            <svg class="google-g" viewBox="0 0 48 48" aria-hidden="true">
+              <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303C33.654 32.657 29.223 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917Z"/>
+              <path fill="#FF3D00" d="m6.306 14.691 6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4c-7.682 0-14.344 4.337-17.694 10.691Z"/>
+              <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44Z"/>
+              <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917Z"/>
+            </svg>
           </span>
           <strong>GOOGLE ID</strong>
-          <small>TRUSTED DEVICE LINK</small>
+          <small>ONE TAP · TRUSTED DEVICE</small>
         </div>
         <span class="auth-visual__label auth-visual__label--top">IDENTITY / VERIFIED</span>
         <span class="auth-visual__label auth-visual__label--bottom">LOCAL VAULT / READY</span>
@@ -113,7 +119,7 @@
 
     <footer class="auth-gate__footer">
       <span>GOOGLE IDENTITY SERVICES</span>
-      <span>نسخه <b data-app-version>۳.۱.۱</b></span>
+      <span>نسخه <b data-app-version>۳.۲.۰</b></span>
     </footer>
   </section>
 
@@ -159,7 +165,7 @@
           <span class="live-dot" aria-hidden="true"></span>
           سیستم آنلاین است
           <span class="eyebrow__divider" aria-hidden="true"></span>
-          نسخه <strong data-app-version>۳.۱.۱</strong>
+          نسخه <strong data-app-version>۳.۲.۰</strong>
         </div>
 
         <h1 id="hero-title" class="reveal">
@@ -194,10 +200,6 @@
         <div class="scene-toolbar" role="group" aria-label="کنترل‌های صحنه">
           <span class="scene-status"><span aria-hidden="true"></span> مدار پایدار</span>
           <div>
-            <button class="mini-button" id="motionButton" type="button" aria-pressed="false" aria-label="توقف حرکت خودکار">
-              <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>
-              <span>توقف</span>
-            </button>
             <button class="mini-button" id="fullscreenButton" type="button" aria-label="نمایش تمام‌صفحه">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M8 21H3v-5m13 5h5v-5"/></svg>
             </button>
@@ -255,9 +257,15 @@
             </span>
           </a>
 
-          <div class="scene__hint" aria-hidden="true">
-            <svg viewBox="0 0 24 24"><path d="M8 11V7a2 2 0 0 1 4 0v3-1a2 2 0 0 1 4 0v2-1a2 2 0 0 1 4 0v5c0 4-3 7-7 7h-1c-2 0-3.5-.8-4.7-2.2L3.5 15a2 2 0 0 1 3-2.6L8 14"/></svg>
-            بکشید تا مدار بچرخد
+          <div class="scene-controls-dock" role="group" aria-label="کنترل حرکت مدار">
+            <span class="scene__hint">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 11V7a2 2 0 0 1 4 0v3-1a2 2 0 0 1 4 0v2-1a2 2 0 0 1 4 0v5c0 4-3 7-7 7h-1c-2 0-3.5-.8-4.7-2.2L3.5 15a2 2 0 0 1 3-2.6L8 14"/></svg>
+              با لمس یا موس مدار را بکشید
+            </span>
+            <button class="orbit-motion-control" id="motionButton" type="button" aria-pressed="false" aria-label="توقف چرخش خودکار مدار">
+              <span class="orbit-motion-control__icon" aria-hidden="true"><i></i><i></i></span>
+              <span class="orbit-motion-control__copy"><small>AUTO ORBIT</small><strong>توقف چرخش</strong></span>
+            </button>
           </div>
         </div>
       </div>
@@ -293,7 +301,19 @@
           <span class="feature-card__number">04</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21v-7m0-4V3m8 18v-9m0-4V3m8 18v-5m0-4V3M1 14h6M9 8h6m2 8h6"/></svg>
           <h3>کنترل کامل جلوه‌ها</h3>
-          <p>تم، صدا، ذرات، حرکت، کیفیت گرافیکی و کاهش انیمیشن همگی در اختیار شما هستند.</p>
+          <p>چهار طیف رنگ، شدت حرکت گوشی، صدا، ذرات و کیفیت رندر همگی قابل تنظیم‌اند.</p>
+        </article>
+        <article class="feature-card" data-glass>
+          <span class="feature-card__number">05</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4v7a7 7 0 0 0 14 0V4M5 8h4m6 0h4"/><path d="M12 18v3"/></svg>
+          <h3>مکش زنده بروزرسانی</h3>
+          <p>نسخه تازه هر چند ثانیه بررسی، در پس‌زمینه دریافت و با شمارش معکوس هوشمند فعال می‌شود.</p>
+        </article>
+        <article class="feature-card" data-glass>
+          <span class="feature-card__number">06</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10Z"/><path d="M4 21a8 8 0 0 1 16 0M18 7h3m-1.5-1.5v3"/></svg>
+          <h3>Google و دستگاه مورد اعتماد</h3>
+          <p>ورود امن، بازگشت سریع روی Windows و Android و ادامه آفلاین بدون ذخیره توکن Google.</p>
         </article>
       </div>
     </section>
@@ -308,14 +328,17 @@
             <div class="phone-frame__camera"></div>
             <div class="phone-frame__screen">
               <div class="phone-frame__status">
-                <time id="deviceClock" datetime="00:00">--:--</time>
+                <span class="phone-frame__clock">
+                  <span><time id="deviceClock" datetime="00:00:00">--:--</time><b id="deviceSeconds">:--</b></span>
+                  <small id="deviceTimezone">LOCAL TIME</small>
+                </span>
                 <span class="phone-frame__network"><i></i> 5G ▰</span>
               </div>
               <span class="phone-frame__glass"></span>
               <img src="assets/icons/icon-192.png" width="96" height="96" alt="" loading="lazy" decoding="async">
               <strong>Mamali Orbit</strong>
               <small>Android · Windows · PWA</small>
-              <div class="phone-frame__install"><span>✓</span> نسخه <b data-app-version>۳.۱.۱</b> آماده اجرا</div>
+              <div class="phone-frame__install"><span>✓</span> نسخه <b data-app-version>۳.۲.۰</b> آماده اجرا</div>
             </div>
           </div>
           <div class="device-gesture"><span>↔</span> با موس یا انگشت بکشید</div>
@@ -340,6 +363,17 @@
           <span><strong>ONLINE-FIRST</strong><small>آفلاین پشتیبان</small></span>
         </div>
 
+        <div class="platform-quick-actions" role="group" aria-label="انتخاب سریع نسخه نصب">
+          <button type="button" data-platform-choice="android" aria-pressed="false">
+            <span class="platform-quick-actions__icon" aria-hidden="true">◫</span>
+            <span><small>MOBILE INSTALL</small><strong>دانلود و نصب Android</strong></span>
+          </button>
+          <button type="button" data-platform-choice="windows" aria-pressed="false">
+            <span class="platform-quick-actions__icon" aria-hidden="true">⊞</span>
+            <span><small>DESKTOP INSTALL</small><strong>نسخه Windows</strong></span>
+          </button>
+        </div>
+
         <div class="platform-tabs" role="tablist" aria-label="راهنمای نصب سیستم‌عامل">
           <button id="androidTab" type="button" role="tab" aria-selected="true" aria-controls="androidPanel" data-platform-tab="android">
             <span aria-hidden="true">◫</span> Android
@@ -355,6 +389,10 @@
             <li><span>۲</span><div><strong>نصب روی گوشی</strong><small>دکمه نصب یا گزینه Install app در منوی مرورگر را بزنید.</small></div></li>
             <li><span>۳</span><div><strong>اجرای مستقل</strong><small>آیکون M وارد Launcher می‌شود و اپ بدون نوار مرورگر اجرا خواهد شد.</small></div></li>
           </ol>
+          <button class="platform-copy-link" id="copyAndroidLink" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>
+            کپی لینک برای بازکردن روی گوشی Android
+          </button>
         </div>
 
         <div class="platform-panel" id="windowsPanel" role="tabpanel" aria-labelledby="windowsTab" data-platform-panel="windows" hidden>
@@ -381,8 +419,12 @@
             </div>
             <span class="update-center__connection" id="updateConnection"><i></i> آنلاین</span>
           </div>
+          <div class="update-magnet" id="updateMagnet" aria-live="polite">
+            <span class="update-magnet__field" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span><small>AUTO-PULL ENGINE</small><strong id="updateMagnetStatus">مکش خودکار نسخه تازه فعال است</strong></span>
+          </div>
           <div class="update-center__versions">
-            <span><small>نسخه نصب‌شده</small><strong data-app-version>۳.۱.۱</strong></span>
+            <span><small>نسخه نصب‌شده</small><strong data-app-version>۳.۲.۰</strong></span>
             <span aria-hidden="true">←</span>
             <span><small>آخرین نسخه</small><strong id="latestVersion">در حال بررسی</strong></span>
           </div>
@@ -397,7 +439,7 @@
           </div>
         </div>
 
-        <p class="android-note">نسخه ۳.۱.۱ از ورود Google، دستگاه مورد اعتماد و بروزرسانی زنده SemVer استفاده می‌کند؛ اگر نسخه جدید برسد، بدون حذف برنامه با یک لمس فعال می‌شود. در حالت آفلاین، بخش بروزرسانی خاکستری و غیرفعال خواهد بود.</p>
+        <p class="android-note">نسخه ۳.۲.۰ از ورود Google، دستگاه مورد اعتماد و بروزرسانی زنده SemVer استفاده می‌کند؛ اگر نسخه جدید برسد، بدون حذف برنامه به‌صورت خودکار یا با یک لمس فعال می‌شود. در حالت آفلاین، شمارش متوقف و بخش بروزرسانی خاکستری و غیرفعال خواهد بود.</p>
       </div>
     </section>
 
@@ -411,9 +453,9 @@
         <p>ماملی پس از تأیید Google، فقط نمایه و مجوز دستگاه مورد اعتماد را در دیتابیس محلی IndexedDB نگه می‌دارد؛ توکن ورود ذخیره نمی‌شود و میزبانی روی Vercel و نسخه پشتیبان GitHub Pages است.</p>
       </div>
       <dl>
-        <div><dt>نسخه پایدار</dt><dd data-app-version>۳.۱.۱</dd></div>
+        <div><dt>نسخه پایدار</dt><dd data-app-version>۳.۲.۰</dd></div>
         <div><dt>پلتفرم نصب</dt><dd>۲</dd></div>
-        <div><dt>حالت رنگ</dt><dd>۳</dd></div>
+        <div><dt>حالت رنگ</dt><dd>۴</dd></div>
       </dl>
     </section>
   </main>
@@ -469,10 +511,31 @@
         <span><strong>درخشش پویا</strong><small>واکنش نور به اشاره‌گر</small></span>
         <input id="glowSetting" type="checkbox" role="switch" checked>
       </label>
+      <label class="setting-select" data-setting-code="COLOR">
+        <span><strong>طیف رنگ رابط</strong><small>نئون، شفق، خورشیدی یا منشوری</small></span>
+        <select id="themeSetting">
+          <option value="neon">نئون آبی</option>
+          <option value="aurora">شفق سبز</option>
+          <option value="solar">خورشیدی</option>
+          <option value="prism">منشوری</option>
+        </select>
+      </label>
       <label class="setting-row" data-setting-code="ORBIT">
         <span><strong>حرکت خودکار</strong><small>چرخش آرام پورتال‌ها</small></span>
         <input id="motionSetting" type="checkbox" role="switch" checked>
       </label>
+      <label class="setting-select" data-setting-code="PHONE">
+        <span><strong>آزادی حرکت گوشی</strong><small>میزان دنبال‌کردن انگشت و موس</small></span>
+        <select id="deviceMotionSetting">
+          <option value="soft">آرام</option>
+          <option value="balanced">متعادل</option>
+          <option value="free">آزاد و سه‌بعدی</option>
+        </select>
+      </label>
+      <div class="setting-range" data-setting-code="DEPTH">
+        <label for="phoneDepth"><strong>عمق سه‌بعدی گوشی</strong><small>شدت پرسپکتیو، جابه‌جایی و سایه</small></label>
+        <span class="range-control"><input id="phoneDepth" type="range" min="55" max="145" step="5" value="100" aria-describedby="phoneDepthValue"><output id="phoneDepthValue" for="phoneDepth">۱۰۰</output></span>
+      </div>
       <label class="setting-row" data-setting-code="ACCESS">
         <span><strong>کاهش حرکت</strong><small>مناسب حساسیت حرکتی و مصرف کمتر</small></span>
         <input id="reducedMotionSetting" type="checkbox" role="switch">
@@ -480,6 +543,10 @@
       <label class="setting-row" data-setting-code="AUDIO">
         <span><strong>صدای رابط</strong><small>بازخورد صوتی مینیمال</small></span>
         <input id="soundSetting" type="checkbox" role="switch">
+      </label>
+      <label class="setting-row" data-setting-code="MAGNET">
+        <span><strong>مکش خودکار بروزرسانی</strong><small>دریافت و فعال‌سازی سریع نسخه تازه</small></span>
+        <input id="autoUpdateSetting" type="checkbox" role="switch" checked>
       </label>
       <label class="setting-select" data-setting-code="RENDER">
         <span><strong>کیفیت گرافیکی</strong><small>تعادل جزئیات و مصرف باتری</small></span>
@@ -517,7 +584,7 @@
     <div class="install-guide__body" role="region" tabindex="0" aria-label="راهنمای نصب و بروزرسانی برنامه">
       <div class="install-guide__intro">
         <img src="assets/icons/icon-192.png" width="72" height="72" alt="آیکون اپ ماملی" loading="lazy" decoding="async">
-        <div><strong>Mamali Orbit 3.1.1</strong><small>Android · Windows · بروزرسانی زنده</small></div>
+        <div><strong>Mamali Orbit 3.2.0</strong><small>Android · Windows · بروزرسانی زنده</small></div>
       </div>
 
       <section aria-labelledby="androidGuideHeading">
