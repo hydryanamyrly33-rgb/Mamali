@@ -148,6 +148,9 @@ class CosmosRenderer {
     this.height = 0;
     this.dpr = 1;
     this.lastTime = 0;
+    this.lastDraw = 0;
+    this.primary = '#6cf5ff';
+    this.accent = '#ff4ecd';
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.resizeObserver.observe(document.documentElement);
     window.addEventListener('pointermove', event => {
@@ -173,6 +176,9 @@ class CosmosRenderer {
     const target = this.getParticleCount();
     while (this.particles.length < target) this.particles.push(this.createParticle());
     if (this.particles.length > target) this.particles.length = target;
+    const styles = getComputedStyle(document.documentElement);
+    this.primary = styles.getPropertyValue('--primary').trim() || '#6cf5ff';
+    this.accent = styles.getPropertyValue('--accent').trim() || '#ff4ecd';
   }
 
   createParticle() {
@@ -200,9 +206,13 @@ class CosmosRenderer {
   }
 
   frame(time) {
-    const delta = Math.min(time - (this.lastTime || time), 50);
-    this.lastTime = time;
-    this.draw(delta);
+    const interval = settings.quality === 'high' ? 16 : 32;
+    if (time - this.lastDraw >= interval) {
+      const delta = Math.min(time - (this.lastTime || time), 50);
+      this.lastTime = time;
+      this.lastDraw = time;
+      this.draw(delta);
+    }
     requestAnimationFrame(next => this.frame(next));
   }
 
@@ -211,9 +221,8 @@ class CosmosRenderer {
     ctx.clearRect(0, 0, this.width, this.height);
     if (!settings.particles || document.hidden) return;
 
-    const styles = getComputedStyle(document.documentElement);
-    const primary = styles.getPropertyValue('--primary').trim();
-    const accent = styles.getPropertyValue('--accent').trim();
+    const primary = this.primary;
+    const accent = this.accent;
     const pointerX = this.pointer.x * this.width;
     const pointerY = this.pointer.y * this.height;
 
@@ -274,6 +283,13 @@ class OrbitEngine {
     this.lastX = 0;
     this.pitch = -8;
     this.lastFrame = performance.now();
+    this.lastRender = 0;
+    this.width = scene.clientWidth;
+    this.resizeObserver = new ResizeObserver(entries => {
+      this.width = entries[0]?.contentRect.width || this.width;
+      this.render();
+    });
+    this.resizeObserver.observe(scene);
     this.setupInteraction();
     this.syncMotion();
     requestAnimationFrame(time => this.frame(time));
@@ -353,8 +369,15 @@ class OrbitEngine {
   }
 
   frame(time) {
+    const interval = settings.quality === 'high' || this.dragging ? 16 : 32;
+    if (time - this.lastRender < interval) {
+      requestAnimationFrame(next => this.frame(next));
+      return;
+    }
+
     const delta = Math.min(time - this.lastFrame, 50);
     this.lastFrame = time;
+    this.lastRender = time;
 
     if (!this.dragging) {
       if (settings.motion && !settings.reducedMotion) this.angle += delta * .00018;
@@ -368,7 +391,7 @@ class OrbitEngine {
   }
 
   render() {
-    const width = this.scene.clientWidth;
+    const width = this.width;
     const compact = width < 520;
     const radius = Math.min(width * (compact ? .31 : .34), compact ? 145 : 220);
     const depth = radius * .68;
