@@ -1,789 +1,305 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<!doctype html>
+<html lang="fa" dir="rtl" data-theme="neon">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>سایت سگ و شرفدار ترین برنامه ها نسبت به برنامه ایرانی</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="مامَلی اوربیت؛ یک مرکز فرمان اجتماعی سه‌بعدی، سریع، خصوصی و قابل نصب برای ورود به اینستاگرام، یوتیوب و اپلیکیشن تلگرام.">
+  <meta name="keywords" content="Mamali, ماملی, social orbit, رابط سه‌بعدی, تلگرام, اینستاگرام, یوتیوب">
+  <meta name="author" content="Amirali">
+  <meta name="theme-color" content="#050816">
+  <meta name="color-scheme" content="dark">
+  <meta name="robots" content="index, follow">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <link rel="canonical" href="https://hydryanamyrly33-rgb.github.io/Mamali/">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="preload" href="assets/styles.css" as="style">
+  <link rel="stylesheet" href="assets/styles.css">
 
-<style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:"Vazirmatn",system-ui,sans-serif;
-}
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="fa_IR">
+  <meta property="og:site_name" content="Mamali Orbit">
+  <meta property="og:title" content="Mamali Orbit — مرکز فرمان اجتماعی آینده">
+  <meta property="og:description" content="سه پورتال اجتماعی در یک تجربه نئونی، سه‌بعدی و کاملاً خصوصی.">
+  <meta property="og:url" content="https://hydryanamyrly33-rgb.github.io/Mamali/">
+  <meta property="og:image" content="https://hydryanamyrly33-rgb.github.io/Mamali/assets/social-preview.svg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Mamali Orbit">
+  <meta name="twitter:description" content="مرکز فرمان اجتماعی سه‌بعدی و قابل نصب.">
+  <meta name="twitter:image" content="https://hydryanamyrly33-rgb.github.io/Mamali/assets/social-preview.svg">
 
-:root{
-  --lightX:50%;
-  --lightY:50%;
-}
-
-body{
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background:#020617;
-  color:#f9fafb;
-  overflow:hidden;
-  transition:background 0.6s ease, color 0.4s ease;
-}
-
-/* حالت نئونی */
-body.neon{
-  background:
-    radial-gradient(circle at 10% 20%,#1d0535 0,#020617 55%),
-    radial-gradient(circle at 80% 80%,#001b3f 0,#020617 55%);
-}
-
-/* حالت فضایی */
-body.space{
-  background:#020617;
-}
-
-/* ⭐ ستاره‌ها ⭐ */
-.stars{
-  position:fixed;
-  inset:0;
-  pointer-events:none;
-  z-index:-1;
-  opacity:0;
-  transition:opacity 0.6s ease;
-}
-.stars .layer1,
-.stars .layer2,
-.stars .layer3{
-  position:absolute;
-  inset:0;
-  background-repeat:repeat;
-  background-size:300px 300px;
-}
-.stars .layer1{
-  background-image:
-    radial-gradient(1px 1px at 20% 30%, #ffffff55, transparent),
-    radial-gradient(1.2px 1.2px at 70% 60%, #ffffff44, transparent),
-    radial-gradient(1px 1px at 50% 80%, #ffffff33, transparent);
-  animation: starMove1 40s linear infinite;
-}
-.stars .layer2{
-  background-image:
-    radial-gradient(1.5px 1.5px at 10% 20%, #ffffffaa, transparent),
-    radial-gradient(1.8px 1.8px at 60% 40%, #ffffff88, transparent),
-    radial-gradient(1.4px 1.4px at 80% 70%, #ffffff77, transparent);
-  animation: starMove2 25s linear infinite;
-}
-.stars .layer3{
-  background-image:
-    radial-gradient(2px 2px at 30% 50%, #ffffffdd, transparent),
-    radial-gradient(2.2px 2.2px at 70% 30%, #ffffffcc, transparent),
-    radial-gradient(2px 2px at 40% 80%, #ffffffbb, transparent);
-  animation: starMove3 15s linear infinite;
-}
-body.space .stars{ opacity:1; }
-
-@keyframes starMove1{ to{transform:translate(-20px,-30px);} }
-@keyframes starMove2{ to{transform:translate(-40px,-60px);} }
-@keyframes starMove3{ to{transform:translate(-70px,-90px);} }
-
-/* هاله نئونی */
-.glow-layer{
-  position:fixed;
-  inset:-20%;
-  background:
-    radial-gradient(circle at 0% 0%,rgba(236,72,153,0.25),transparent 55%),
-    radial-gradient(circle at 100% 0%,rgba(56,189,248,0.25),transparent 55%),
-    radial-gradient(circle at 50% 100%,rgba(129,140,248,0.25),transparent 55%);
-  filter:blur(6px);
-  opacity:1;
-  transition:opacity 0.6s ease;
-  z-index:-2;
-}
-body.space .glow-layer{ opacity:0.4; }
-
-/* نور دنبال‌کننده انگشت */
-#mouseGlow{
-  position:fixed;
-  width:300px;
-  height:300px;
-  border-radius:50%;
-  pointer-events:none;
-  background:
-    radial-gradient(
-      circle,
-      rgba(56,189,248,.22),
-      transparent 70%
-    );
-  transform:translate(-50%,-50%);
-  z-index:-1;
-}
-
-/* محتوای اصلی */
-.wrapper{
-  text-align:center;
-  position:relative;
-  z-index:10;
-  transform-style:preserve-3d;
-  transition:transform .25s ease;
-}
-
-.maker{
-  font-size:11px;
-  color:#cbd5f5;
-  margin-bottom:4px;
-}
-
-.title{
-  font-size:20px;
-  font-weight:800;
-  margin-bottom:6px;
-  background:linear-gradient(120deg,#ec4899,#a855f7,#22d3ee);
-  -webkit-background-clip:text;
-  background-clip:text;
-  color:transparent;
-}
-
-.subtitle{
-  font-size:12px;
-  color:#e5e7eb;
-  margin-bottom:8px;
-}
-
-/* دکمه تغییر پس‌زمینه */
-.bg-toggle{
-  margin-top:4px;
-  font-size:11px;
-  color:#f9fafb;
-  cursor:pointer;
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  padding:4px 12px;
-  border-radius:999px;
-  border:1px solid rgba(248,250,252,0.35);
-  background:rgba(15,23,42,0.7);
-  backdrop-filter:blur(10px);
-}
-.bg-toggle i{ color:#22d3ee; }
-
-/* دکمه‌های کنترل */
-.rotate-control{
-  margin-top:10px;
-  font-size:12px;
-  color:#fff;
-  cursor:pointer;
-  padding:8px 16px;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,.25);
-  background:rgba(15,23,42,.8);
-  backdrop-filter:blur(10px);
-}
-
-/* دکمه غیرفعال */
-.rotate-control:disabled{
-  opacity:.45;
-  cursor:not-allowed;
-}
-
-/* پنل تنظیمات جلوه‌ها */
-.effects-panel{
-  opacity:0;
-  max-height:0;
-  overflow:hidden;
-  transition:.4s ease;
-  margin-top:12px;
-  padding:0 14px;
-  border-radius:18px;
-  background:rgba(15,23,42,.85);
-  backdrop-filter:blur(14px);
-  border:1px solid rgba(255,255,255,.15);
-}
-.effects-panel.show{
-  opacity:1;
-  max-height:500px;
-  padding:14px;
-}
-.effects-panel label{
-  display:flex;
-  gap:10px;
-  margin:10px 0;
-  font-size:13px;
-}
-
-/* کانتینر */
-.orbit{
-  position:relative;
-  width:340px;
-  height:260px;
-  margin:32px auto 0;
-  perspective:900px;
-}
-
-/* مکعب‌ها */
-.cube{
-  position:absolute;
-  width:80px;
-  height:80px;
-  transform-style:preserve-3d;
-  cursor:pointer;
-  transition:
-    top 3.5s cubic-bezier(.22,.61,.36,1),
-    left 3.5s cubic-bezier(.22,.61,.36,1),
-    transform .6s ease,
-    box-shadow .4s ease;
-}
-
-/* افکت شناور */
-@keyframes float3d{
-  0%{ transform:translateY(0px) rotateZ(0deg); }
-  50%{ transform:translateY(-8px) rotateZ(2deg); }
-  100%{ transform:translateY(0px) rotateZ(0deg); }
-}
-
-.float-disabled .cube-inner{
-  animation:none !important;
-}
-
-/* شیشه‌ای + نور زنده */
-.cube-inner{
-  position:absolute;
-  inset:0;
-  border-radius:18px;
-
-  background:
-    radial-gradient(circle at var(--lightX) var(--lightY),
-      rgba(255,255,255,.35),
-      transparent 40%
-    ),
-    linear-gradient(145deg,
-      rgba(255,255,255,.22),
-      rgba(30,64,175,.92)
-    );
-
-  border:2px solid rgba(255,255,255,.55);
-
-  box-shadow:
-    0 0 40px rgba(59,130,246,.9),
-    0 0 70px rgba(129,140,248,.5),
-    inset 0 3px 10px rgba(255,255,255,.25),
-    inset 0 -12px 18px rgba(15,23,42,.95);
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:32px;
-  color:white;
-
-  backdrop-filter:blur(16px);
-
-  transition:border-radius .9s ease, box-shadow .9s ease, background .9s ease, transform .25s ease;
-
-  animation:float3d 5s ease-in-out infinite;
-}
-
-/* نور مخصوص هر برنامه */
-.instagram .cube-inner{
-  box-shadow:
-    0 0 35px #ff2e9f,
-    0 0 70px #ff2e9f55,
-    inset 0 0 15px rgba(255,255,255,.15);
-}
-.youtube .cube-inner{
-  box-shadow:
-    0 0 35px #ff0000,
-    0 0 70px #ff000055,
-    inset 0 0 15px rgba(255,255,255,.15);
-}
-.telegram .cube-inner{
-  box-shadow:
-    0 0 35px #2aabee,
-    0 0 70px #2aabee55,
-    inset 0 0 15px rgba(255,255,255,.15);
-}
-
-/* انعکاس شیشه‌ای */
-.cube-inner::before{
-  content:"";
-  position:absolute;
-  inset:6px;
-  border-radius:12px;
-  background:linear-gradient(180deg,
-    rgba(255,255,255,.55),
-    rgba(255,255,255,.05)
-  );
-  pointer-events:none;
-}
-
-/* حالت دایره‌ای */
-body.round-icons .cube-inner{
-  border-radius:50%;
-  background:
-    radial-gradient(circle at 30% 25%,
-      rgba(255,255,255,.65),
-      rgba(255,255,255,.15) 30%,
-      rgba(30,64,175,.95) 100%
-    );
-  border:2px solid rgba(255,255,255,.45);
-  backdrop-filter:blur(18px);
-  box-shadow:
-    inset 0 10px 20px rgba(255,255,255,.25),
-    inset 0 -15px 25px rgba(0,0,0,.35),
-    0 0 35px rgba(59,130,246,.8),
-    0 0 80px rgba(56,189,248,.35);
-}
-
-body.round-icons .cube-inner::after{
-  content:"";
-  position:absolute;
-  top:10%;
-  left:18%;
-  width:40%;
-  height:18%;
-  border-radius:50%;
-  background:rgba(255,255,255,.55);
-  filter:blur(6px);
-}
-
-body.round-icons .cube{
-  transform:scale(1.08);
-}
-
-/* افکت فشاری */
-.cube:active .cube-inner{
-  transform:scale(.92);
-}
-
-/* جایگاه‌ها */
-.pos-top{ top:0; left:130px; }
-.pos-left{ top:120px; left:40px; }
-.pos-right{ top:120px; left:220px; }
-
-/* آیکن‌ها */
-.cube.instagram i{ color:#ff2e9f; }
-.cube.youtube i{ color:#ff0000; }
-.cube.telegram i{ color:#2aabee; }
-
-/* لامپ */
-.center{
-  position:absolute;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%) rotateX(18deg);
-  width:120px;
-  height:120px;
-  border-radius:50%;
-  border:none;
-  cursor:pointer;
-  background:radial-gradient(circle at 30% 0%,#ffffff,#e5e7eb 40%,#0f172a 100%);
-  box-shadow:
-    0 0 40px rgba(250,250,250,0.9),
-    0 0 80px rgba(56,189,248,0.9);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:40px;
-  color:#facc15;
-  position:relative;
-  overflow:hidden;
-}
-
-.center::before{
-  content:"";
-  position:absolute;
-  inset:-8px;
-  border-radius:50%;
-  border:3px solid transparent;
-  border-top-color:#22d3ee;
-  border-right-color:#a855f7;
-  border-left-color:#ec4899;
-  opacity:.9;
-  animation:spin 6s linear infinite;
-}
-
-.center::after{
-  content:"";
-  position:absolute;
-  width:70%;
-  height:70%;
-  border-radius:24px;
-  border:2px solid rgba(148,163,184,0.7);
-  box-shadow:
-    0 0 20px rgba(56,189,248,0.8),
-    inset 0 0 18px rgba(15,23,42,0.9);
-  transform:rotateX(60deg) rotateZ(25deg);
-}
-
-@keyframes spin{ to{transform:rotate(360deg);} }
-
-/* شهاب‌سنگ */
-.meteor{
-  position:fixed;
-  width:180px;
-  height:2px;
-  background:linear-gradient(90deg,white,transparent);
-  transform:rotate(-35deg);
-  animation:meteorMove 2s linear forwards;
-  z-index:-1;
-}
-
-@keyframes meteorMove{
-  from{ top:-100px; left:110%; }
-  to{ top:110%; left:-200px; }
-}
-
-/* پیام شیشه‌ای */
-#glassMessage{
-  position:fixed;
-  top:25px;
-  left:50%;
-  transform:translateX(-50%) translateY(-20px);
-  padding:14px 20px;
-  border-radius:18px;
-  background:rgba(15,23,42,.85);
-  backdrop-filter:blur(18px);
-  border:1px solid rgba(255,255,255,.2);
-  color:white;
-  font-size:13px;
-  z-index:99999;
-  opacity:0;
-  pointer-events:none;
-  transition:opacity .4s ease, transform .4s ease;
-  box-shadow:
-    0 0 25px rgba(56,189,248,.25),
-    0 0 50px rgba(129,140,248,.18);
-}
-
-#glassMessage.show{
-  opacity:1;
-  transform:translateX(-50%) translateY(0);
-}
-</style>
+  <title>Mamali Orbit — مرکز فرمان اجتماعی سه‌بعدی</title>
+  <script type="module" src="assets/app.js"></script>
 </head>
+<body>
+  <a class="skip-link" href="#main-content">پرش به محتوای اصلی</a>
 
-<body class="neon">
+  <canvas id="cosmos" class="cosmos" aria-hidden="true"></canvas>
+  <div class="ambient ambient--one" aria-hidden="true"></div>
+  <div class="ambient ambient--two" aria-hidden="true"></div>
+  <div class="grid-plane" aria-hidden="true"></div>
 
-<div class="glow-layer"></div>
-<div id="mouseGlow"></div>
+  <header class="topbar" data-glass>
+    <a class="brand" href="#home" aria-label="ماملی اوربیت، صفحه اصلی">
+      <span class="brand__mark" aria-hidden="true">M</span>
+      <span class="brand__copy">
+        <strong>MAMALI</strong>
+        <small>ORBIT SYSTEM</small>
+      </span>
+    </a>
 
-<div class="stars">
-  <div class="layer1"></div>
-  <div class="layer2"></div>
-  <div class="layer3"></div>
-</div>
+    <nav class="nav" aria-label="پیمایش اصلی">
+      <a href="#portals">پورتال‌ها</a>
+      <a href="#capabilities">قابلیت‌ها</a>
+      <button class="nav__command" id="commandButton" type="button" aria-keyshortcuts="Control+K Meta+K">
+        فرمان سریع
+        <kbd>⌘ K</kbd>
+      </button>
+    </nav>
 
-<div id="meteorContainer"></div>
+    <div class="topbar__actions">
+      <button class="icon-button" id="themeButton" type="button" aria-label="تغییر تم" title="تغییر تم">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9c0-.5-.5-.8-1-.6a6.5 6.5 0 0 1-8.4-8.4c.2-.5-.1-1-.6-1Z"/></svg>
+      </button>
+      <button class="icon-button" id="settingsButton" type="button" aria-label="بازکردن تنظیمات" title="تنظیمات">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3A1.7 1.7 0 0 0 10 3V2.8h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg>
+      </button>
+    </div>
+  </header>
 
-<div class="wrapper">
+  <main id="main-content">
+    <section class="hero" id="home" aria-labelledby="hero-title">
+      <div class="hero__copy">
+        <div class="eyebrow reveal">
+          <span class="live-dot" aria-hidden="true"></span>
+          سیستم آنلاین است
+          <span class="eyebrow__divider" aria-hidden="true"></span>
+          نسخه ۲.۰
+        </div>
 
-  <div class="maker">سازنده این ابر سایت کوصیشر🌚👇: امیرعلی سیگمابوی</div>
+        <h1 id="hero-title" class="reveal">
+          مرکز فرمان
+          <span class="gradient-text">اجتماعی آینده</span>
+        </h1>
 
-  <div class="title">سایت سگ و شرفدار ترین برنامه ها نسبت به برنامه های ایرانی</div>
+        <p class="hero__lead reveal">
+          سه پورتال، یک مدار هوشمند و تجربه‌ای که با حرکت شما زنده می‌شود.
+          سریع، بدون ردیاب، قابل نصب و ساخته‌شده با سه‌بعدی واقعی مرورگر.
+        </p>
 
-  <div class="subtitle">نئونی–فضایی سه‌بعدی • مکعب‌های شیشه‌ای ضخیم • هولوگرافیک</div>
+        <div class="hero__actions reveal">
+          <a class="button button--primary" href="#portals">
+            ورود به مدار
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+          </a>
+          <button class="button button--ghost" id="installButton" type="button">
+            نصب روی دستگاه
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14"/></svg>
+          </button>
+        </div>
 
-  <div class="bg-toggle" id="bgToggle">
-    <i class="fa-solid fa-wand-magic-sparkles"></i>
-    تغییر پس‌زمینه: نئونی / فضایی واقعی
-  </div>
-
-  <button class="rotate-control" id="rotateBtn">
-    <i class="fa-solid fa-pause"></i>
-    توقف چرخش
-  </button>
-
-  <button class="rotate-control" id="effectsBtn">
-    ⚙️ تنظیمات پنل
-  </button>
-
-  <div class="effects-panel" id="effectsPanel">
-
-    <label>
-      <input type="checkbox" id="toggleMeteor" checked>
-      شهاب فضایی
-    </label>
-
-    <label>
-      <input type="checkbox" id="toggleGlow" checked>
-      نور دنبال‌کننده
-    </label>
-
-    <label>
-      <input type="checkbox" id="toggleFloat" checked>
-      شناوری آیکون‌ها
-    </label>
-
-    <label>
-      <input type="checkbox" id="toggleRotate" checked>
-      چرخش آیکون‌ها
-    </label>
-
-  </div>
-
-  <div class="orbit">
-
-    <!-- ✅ اینستاگرامِ درست‌شده، بدون div خراب -->
-    <a class="cube instagram pos-top" href="https://instagram.com" target="_blank">
-      <div class="cube-inner">
-        <i class="fab fa-instagram"></i>
+        <dl class="hero__metrics reveal" aria-label="مشخصات سیستم">
+          <div><dt>پورتال فعال</dt><dd>۳</dd></div>
+          <div><dt>ردیاب</dt><dd>۰</dd></div>
+          <div><dt>پردازش</dt><dd>Local</dd></div>
+        </dl>
       </div>
+
+      <div class="scene-shell reveal" id="portals">
+        <div class="scene-toolbar" role="group" aria-label="کنترل‌های صحنه">
+          <span class="scene-status"><span aria-hidden="true"></span> مدار پایدار</span>
+          <div>
+            <button class="mini-button" id="motionButton" type="button" aria-pressed="false" aria-label="توقف حرکت خودکار">
+              <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14"/></svg>
+              <span>توقف</span>
+            </button>
+            <button class="mini-button" id="fullscreenButton" type="button" aria-label="نمایش تمام‌صفحه">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M8 21H3v-5m13 5h5v-5"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <div class="scene" id="orbitScene" tabindex="0" role="application" aria-label="مدار سه‌بعدی پورتال‌های اجتماعی؛ با کشیدن یا کلیدهای جهت‌دار بچرخانید">
+          <div class="scene__halo" aria-hidden="true"></div>
+          <div class="orbit-ring orbit-ring--outer" aria-hidden="true"></div>
+          <div class="orbit-ring orbit-ring--inner" aria-hidden="true"></div>
+          <div class="orbit-ring orbit-ring--vertical" aria-hidden="true"></div>
+
+          <button class="energy-core" id="energyCore" type="button" aria-label="M CORE ONLINE، فعال‌سازی موج انرژی">
+            <span class="energy-core__orbit" aria-hidden="true"></span>
+            <span class="energy-core__sphere" aria-hidden="true">M</span>
+            <span class="energy-core__label" aria-hidden="true">CORE ONLINE</span>
+          </button>
+
+          <a class="portal portal--instagram" data-portal="instagram" data-phase="0" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">
+            <span class="portal__beam" aria-hidden="true"></span>
+            <span class="portal__face">
+              <span class="portal__topline"><span>01</span><span>WEB</span></span>
+              <span class="portal__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.7" r="1" class="fill"/></svg>
+              </span>
+              <strong>Instagram</strong>
+              <small>ورود به شبکه تصویری</small>
+              <span class="portal__action">بازکردن <span aria-hidden="true">↗</span></span>
+            </span>
+          </a>
+
+          <a class="portal portal--youtube" data-portal="youtube" data-phase="2.094" href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer">
+            <span class="portal__beam" aria-hidden="true"></span>
+            <span class="portal__face">
+              <span class="portal__topline"><span>02</span><span>VIDEO</span></span>
+              <span class="portal__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M21 8.1a3 3 0 0 0-2.1-2.2C17 5.4 12 5.4 12 5.4s-5 0-6.9.5A3 3 0 0 0 3 8.1 31 31 0 0 0 2.5 12 31 31 0 0 0 3 15.9a3 3 0 0 0 2.1 2.2c1.9.5 6.9.5 6.9.5s5 0 6.9-.5a3 3 0 0 0 2.1-2.2 31 31 0 0 0 .5-3.9 31 31 0 0 0-.5-3.9Z"/><path class="cutout" d="m10 15 5-3-5-3Z"/></svg>
+              </span>
+              <strong>YouTube</strong>
+              <small>ورود به دنیای ویدیو</small>
+              <span class="portal__action">بازکردن <span aria-hidden="true">↗</span></span>
+            </span>
+          </a>
+
+          <a class="portal portal--telegram" id="telegramPortal" data-portal="telegram" data-phase="4.188" data-fallback="https://t.me/Mr_CaceRo" href="tg://resolve?domain=Mr_CaceRo">
+            <span class="portal__beam" aria-hidden="true"></span>
+            <span class="portal__face">
+              <span class="portal__topline"><span>03</span><span>APP LINK</span></span>
+              <span class="portal__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M21.3 3.4 18 20.1c-.2 1.2-.9 1.5-1.9.9l-5-3.7-2.4 2.3c-.3.3-.5.5-1 .5l.4-5.1 9.2-8.3c.4-.4-.1-.6-.6-.2L5.3 13.7.4 12.2c-1.1-.3-1.1-1.1.2-1.6L19.7 3c.9-.3 1.8.2 1.6.4Z"/></svg>
+              </span>
+              <strong>Telegram App</strong>
+              <small>ورود مستقیم به اپلیکیشن</small>
+              <span class="portal__action">اجرای اپ <span aria-hidden="true">↗</span></span>
+            </span>
+          </a>
+
+          <div class="scene__hint" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M8 11V7a2 2 0 0 1 4 0v3-1a2 2 0 0 1 4 0v2-1a2 2 0 0 1 4 0v5c0 4-3 7-7 7h-1c-2 0-3.5-.8-4.7-2.2L3.5 15a2 2 0 0 1 3-2.6L8 14"/></svg>
+            بکشید تا مدار بچرخد
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="capabilities section" id="capabilities" aria-labelledby="capabilities-title">
+      <div class="section__heading">
+        <span class="section__kicker">زیر پوسته سیستم</span>
+        <h2 id="capabilities-title">سبک‌تر، هوشمندتر، زنده‌تر</h2>
+        <p>تمام جزئیات از نو طراحی شده‌اند تا تجربه روی موبایل و دسکتاپ سریع، قابل‌دسترسی و قابل‌کنترل باشد.</p>
+      </div>
+
+      <div class="feature-grid">
+        <article class="feature-card" data-glass>
+          <span class="feature-card__number">01</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 3 7v10l9 5 9-5V7l-9-5Z"/><path d="m3 7 9 5 9-5M12 12v10"/></svg>
+          <h3>موتور مدار سه‌بعدی</h3>
+          <p>چرخش خودکار، کنترل لمسی، Drag، کلیدهای جهت‌دار و عمق واقعی با شتاب نرم.</p>
+        </article>
+        <article class="feature-card" data-glass>
+          <span class="feature-card__number">02</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-5"/></svg>
+          <h3>حریم خصوصی واقعی</h3>
+          <p>بدون تبلیغ، بدون آنالیتیکس و بدون انتقال تنظیمات شما به هیچ سروری.</p>
+        </article>
+        <article class="feature-card" data-glass>
+          <span class="feature-card__number">03</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14"/></svg>
+          <h3>نصب و اجرای آفلاین</h3>
+          <p>ساختار PWA، کش امن فایل‌ها و امکان اضافه‌شدن به صفحه اصلی دستگاه.</p>
+        </article>
+        <article class="feature-card" data-glass>
+          <span class="feature-card__number">04</span>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21v-7m0-4V3m8 18v-9m0-4V3m8 18v-5m0-4V3M1 14h6M9 8h6m2 8h6"/></svg>
+          <h3>کنترل کامل جلوه‌ها</h3>
+          <p>تم، صدا، ذرات، حرکت، کیفیت گرافیکی و کاهش انیمیشن همگی در اختیار شما هستند.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="system-strip section" aria-label="وضعیت فنی">
+      <div class="system-strip__visual" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+      <div class="system-strip__copy">
+        <span>ENGINE STATUS / NOMINAL</span>
+        <h2>همه‌چیز داخل مرورگر شما اتفاق می‌افتد.</h2>
+        <p>ماملی برای اجرا به حساب کاربری، دیتابیس یا سرور واسط نیاز ندارد. همین موضوع آن را سریع، کم‌ریسک و قابل میزبانی روی GitHub Pages می‌کند.</p>
+      </div>
+      <dl>
+        <div><dt>فایل خارجی</dt><dd>۰</dd></div>
+        <div><dt>تنظیم شخصی</dt><dd>۷</dd></div>
+        <div><dt>حالت رنگ</dt><dd>۳</dd></div>
+      </dl>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <a class="brand brand--small" href="#home" aria-label="بازگشت به بالای صفحه">
+      <span class="brand__mark" aria-hidden="true">M</span>
+      <span class="brand__copy"><strong>MAMALI</strong><small>ORBIT SYSTEM</small></span>
     </a>
+    <p>طراحی و توسعه با تمرکز بر سرعت، دسترس‌پذیری و تجربه سه‌بعدی.</p>
+    <span>© <span id="currentYear">2026</span> Mamali</span>
+  </footer>
 
-    <a class="cube youtube pos-left" href="https://youtube.com" target="_blank">
-      <div class="cube-inner"><i class="fab fa-youtube"></i></div>
-    </a>
+  <dialog class="settings" id="settingsDialog" aria-labelledby="settingsTitle">
+    <form method="dialog" class="dialog__header">
+      <div>
+        <span class="dialog__kicker">SYSTEM CONTROL</span>
+        <h2 id="settingsTitle">تنظیمات تجربه</h2>
+      </div>
+      <button class="icon-button" value="close" aria-label="بستن تنظیمات">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg>
+      </button>
+    </form>
 
-    <a class="cube telegram pos-right" href="https://t.me" target="_blank">
-      <div class="cube-inner"><i class="fab fa-telegram"></i></div>
-    </a>
+    <div class="settings__body">
+      <label class="setting-row">
+        <span><strong>ذرات پس‌زمینه</strong><small>ستاره‌ها و اتصال‌های زنده</small></span>
+        <input id="particlesSetting" type="checkbox" role="switch" checked>
+      </label>
+      <label class="setting-row">
+        <span><strong>درخشش پویا</strong><small>واکنش نور به اشاره‌گر</small></span>
+        <input id="glowSetting" type="checkbox" role="switch" checked>
+      </label>
+      <label class="setting-row">
+        <span><strong>حرکت خودکار</strong><small>چرخش آرام پورتال‌ها</small></span>
+        <input id="motionSetting" type="checkbox" role="switch" checked>
+      </label>
+      <label class="setting-row">
+        <span><strong>کاهش حرکت</strong><small>مناسب حساسیت حرکتی و مصرف کمتر</small></span>
+        <input id="reducedMotionSetting" type="checkbox" role="switch">
+      </label>
+      <label class="setting-row">
+        <span><strong>صدای رابط</strong><small>بازخورد صوتی مینیمال</small></span>
+        <input id="soundSetting" type="checkbox" role="switch">
+      </label>
+      <label class="setting-select">
+        <span><strong>کیفیت گرافیکی</strong><small>تعادل جزئیات و مصرف باتری</small></span>
+        <select id="qualitySetting">
+          <option value="auto">خودکار</option>
+          <option value="high">بالا</option>
+          <option value="low">اقتصادی</option>
+        </select>
+      </label>
+    </div>
 
-    <button class="center" id="lamp">
-      <i class="fa-solid fa-lightbulb"></i>
-    </button>
+    <div class="dialog__footer">
+      <button class="button button--danger" id="resetSettings" type="button">بازنشانی تنظیمات</button>
+      <form method="dialog"><button class="button button--primary" value="done">انجام شد</button></form>
+    </div>
+  </dialog>
 
-  </div>
+  <dialog class="command" id="commandDialog" aria-labelledby="commandTitle">
+    <div class="command__search">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+      <label class="sr-only" for="commandInput" id="commandTitle">جست‌وجوی فرمان</label>
+      <input id="commandInput" type="search" placeholder="یک مقصد یا فرمان بنویسید…" autocomplete="off">
+      <button class="command__esc" id="closeCommand" type="button" aria-label="بستن">ESC</button>
+    </div>
+    <div class="command__results" id="commandResults" role="listbox" aria-label="فرمان‌ها"></div>
+    <p class="command__hint">با ↑ ↓ انتخاب کنید و Enter را بزنید</p>
+  </dialog>
 
-  <div class="control">
-    روی لامپ بزن تا آیکون‌ها بین حالت مربع و دایره تغییر کنند.
-  </div>
-
-</div>
-
-<!-- پیام شیشه‌ای -->
-<div id="glassMessage"></div>
-<script>
-/* ذخیره و بازیابی تنظیمات پس‌زمینه و دایره‌ها */
-const savedSpace = localStorage.getItem("spaceMode");
-if(savedSpace === "true"){
-  document.body.classList.remove("neon");
-  document.body.classList.add("space");
-}
-
-if(localStorage.getItem("roundIcons")==="true"){
-  document.body.classList.add("round-icons");
-}
-
-/* تغییر پس‌زمینه */
-const bgToggle = document.getElementById("bgToggle");
-bgToggle.onclick = () => {
-  document.body.classList.toggle("neon");
-  document.body.classList.toggle("space");
-  localStorage.setItem(
-    "spaceMode",
-    document.body.classList.contains("space")
-  );
-};
-
-/* تبدیل مربع ↔ دایره */
-const lamp = document.getElementById("lamp");
-lamp.onclick = () => {
-  document.body.classList.toggle("round-icons");
-  localStorage.setItem(
-    "roundIcons",
-    document.body.classList.contains("round-icons")
-  );
-};
-
-/* چرخش مثلثی نرم */
-const insta = document.querySelector(".instagram");
-const youtube = document.querySelector(".youtube");
-const telegram = document.querySelector(".telegram");
-
-const rotateBtn = document.getElementById("rotateBtn");
-
-let running = true;
-
-let positions = ["pos-top","pos-left","pos-right"];
-
-function rotateTriangle(){
-
-  const temp = positions[2];
-  positions[2] = positions[1];
-  positions[1] = positions[0];
-  positions[0] = temp;
-
-  insta.classList.remove("pos-top","pos-left","pos-right");
-  youtube.classList.remove("pos-top","pos-left","pos-right");
-  telegram.classList.remove("pos-top","pos-left","pos-right");
-
-  insta.classList.add(positions[0]);
-  youtube.classList.add(positions[1]);
-  telegram.classList.add(positions[2]);
-}
-
-let timer = setInterval(rotateTriangle,3500);
-
-/* پیام شیشه‌ای با جلوگیری از تایمرهای تکراری */
-let glassTimeout;
-
-function showGlassMessage(text){
-  const msg = document.getElementById("glassMessage");
-
-  clearTimeout(glassTimeout);
-
-  msg.textContent = text;
-  msg.classList.add("show");
-
-  glassTimeout = setTimeout(()=>{
-    msg.classList.remove("show");
-  },4000);
-}
-
-/* دکمه شروع/توقف چرخش با بررسی toggleRotate */
-rotateBtn.onclick = () => {
-
-  const rotateEnabled = document.getElementById("toggleRotate").checked;
-
-  if(!rotateEnabled){
-    showGlassMessage("ابتدا گزینه «چرخش آیکون‌ها» را در تنظیمات جلوه‌ها فعال کنید.");
-    return;
-  }
-
-  if(running){
-    clearInterval(timer);
-    rotateBtn.innerHTML = '<i class="fa-solid fa-play"></i> شروع چرخش';
-  }else{
-    timer = setInterval(rotateTriangle,3500);
-    rotateBtn.innerHTML = '<i class="fa-solid fa-pause"></i> توقف چرخش';
-  }
-
-  running = !running;
-};
-
-/* نور دنبال‌کننده انگشت + نور زنده روی شیشه‌ها */
-const mouseGlow = document.getElementById("mouseGlow");
-let glowEnabled = true;
-
-document.addEventListener("touchmove", e => {
-  if(!glowEnabled) return;
-  const t = e.touches[0];
-  mouseGlow.style.left = t.clientX + "px";
-  mouseGlow.style.top = t.clientY + "px";
-
-  document.documentElement.style.setProperty("--lightX", t.clientX + "px");
-  document.documentElement.style.setProperty("--lightY", t.clientY + "px");
-});
-
-document.addEventListener("mousemove", e => {
-  if(!glowEnabled) return;
-  mouseGlow.style.left = e.clientX + "px";
-  mouseGlow.style.top = e.clientY + "px";
-
-  document.documentElement.style.setProperty("--lightX", e.clientX + "px");
-  document.documentElement.style.setProperty("--lightY", e.clientY + "px");
-});
-
-/* شهاب‌سنگ‌ها با موقعیت تصادفی + ذخیره تنظیمات */
-let meteorEnabled = true;
-const savedMeteor = localStorage.getItem("meteorEnabled");
-if(savedMeteor !== null){
-  meteorEnabled = savedMeteor === "true";
-}
-
-setInterval(()=>{
-  if(!meteorEnabled) return;
-
-  const meteor = document.createElement("div");
-  meteor.className = "meteor";
-
-  meteor.style.top = Math.random()*30 + "vh";
-  meteor.style.left = (80 + Math.random()*30) + "vw";
-
-  document.body.appendChild(meteor);
-
-  setTimeout(()=>{ meteor.remove(); },2000);
-},12000);
-
-/* پنل تنظیمات جلوه‌ها */
-const effectsBtn = document.getElementById("effectsBtn");
-const effectsPanel = document.getElementById("effectsPanel");
-effectsBtn.onclick = ()=>{
-  effectsPanel.classList.toggle("show");
-};
-
-/* کنترل شهاب فضایی از پنل */
-const toggleMeteor = document.getElementById("toggleMeteor");
-toggleMeteor.checked = meteorEnabled;
-toggleMeteor.onchange = function(){
-  meteorEnabled = this.checked;
-  localStorage.setItem("meteorEnabled", meteorEnabled);
-};
-
-/* کنترل نور دنبال‌کننده از پنل */
-const toggleGlow = document.getElementById("toggleGlow");
-toggleGlow.checked = glowEnabled;
-toggleGlow.onchange = function(){
-  glowEnabled = this.checked;
-  mouseGlow.style.display = glowEnabled ? "block" : "none";
-  localStorage.setItem("glowEnabled", glowEnabled);
-};
-
-/* بازیابی نور دنبال‌کننده */
-const savedGlow = localStorage.getItem("glowEnabled");
-if(savedGlow !== null){
-  glowEnabled = savedGlow === "true";
-  toggleGlow.checked = glowEnabled;
-  mouseGlow.style.display = glowEnabled ? "block" : "none";
-}
-
-/* کنترل شناوری از پنل */
-let floatEnabled = true;
-const toggleFloat = document.getElementById("toggleFloat");
-toggleFloat.checked = floatEnabled;
-toggleFloat.onchange = function(){
-  floatEnabled = this.checked;
-  document.body.classList.toggle("float-disabled", !floatEnabled);
-  localStorage.setItem("floatEnabled", floatEnabled);
-};
-
-/* بازیابی شناوری */
-const savedFloat = localStorage.getItem("floatEnabled");
-if(savedFloat !== null){
-  floatEnabled = savedFloat === "true";
-  toggleFloat.checked = floatEnabled;
-  document.body.classList.toggle("float-disabled", !floatEnabled);
-}
-
-/* کنترل چرخش از پنل */
-const toggleRotate = document.getElementById("toggleRotate");
-toggleRotate.checked = true;
-toggleRotate.onchange = function(){
-
-  rotateBtn.disabled = !this.checked;
-
-  if(this.checked){
-
-    if(!running){
-      timer = setInterval(rotateTriangle,3500);
-      running = true;
-      rotateBtn.innerHTML = '<i class="fa-solid fa-pause"></i> توقف چرخش';
-    }
-
-  }else{
-
-    clearInterval(timer);
-    running = false;
-    rotateBtn.innerHTML = '<i class="fa-solid fa-play"></i> شروع چرخش';
-
-  }
-
-  localStorage.setItem("rotateEnabled", this.checked);
-};
-
-/* ⭐ اصلاح مهم رفیقت — بازیابی واقعی وضعیت چرخش */
-const savedRotate = localStorage.getItem("rotateEnabled");
-
-if(savedRotate !== null){
-
-  toggleRotate.checked = savedRotate === "true";
-
-  if(!toggleRotate.checked){
-    clearInterval(timer);
-    running = false;
-    rotateBtn.innerHTML =
-      '<i class="fa-solid fa-play"></i> شروع چرخش';
-  }
-
-  rotateBtn.disabled = !toggleRotate.checked;
-}
-    </script>
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+  <div class="sr-only" id="systemAnnouncer" aria-live="polite"></div>
+</body>
+</html>
