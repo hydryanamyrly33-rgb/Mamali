@@ -1,8 +1,8 @@
 {
-  "version": "3.1.0",
-  "previous_version": "3.0.0",
+  "version": "3.1.1",
+  "previous_version": "3.1.0",
   "channel": "stable",
-  "released_at": "2026-08-18T22:00:21.113Z",
+  "released_at": "2026-08-18T22:39:00.000Z",
   "minimum_supported_version": "3.0.0",
   "platforms": [
     "android",
@@ -10,10 +10,9 @@
     "web"
   ],
   "notes": [
-    "ورود رسمی با Google Identity Services و FedCM برای وب، Android و Windows",
-    "دروازه سه‌بعدی تمام‌صفحه و قفل کامل رابط تا تأیید هویت",
-    "دستگاه مورد اعتماد مبتنی بر IndexedDB برای بازگشت سریع و اجرای آفلاین",
-    "ادامه با حساب ذخیره‌شده در Windows و تجربه Google مناسب Android",
-    "مدیریت حساب، قفل برنامه و حذف امن اطلاعات محلی بدون ذخیره توکن Google"
+    "استقرار Production روی Vercel با اتصال مستقیم به شاخه main گیت‌هاب",
+    "مسیر پایدار و یکسان /Mamali/ برای Manifest، Service Worker و اجرای آفلاین",
+    "بهبود خوانایی متن‌های دروازه ورود روی نمایشگرهای موبایل",
+    "حفظ ورود Google، دستگاه مورد اعتماد و ادامه آفلاین نسخه ۳.۱"
   ]
 }

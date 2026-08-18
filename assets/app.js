@@ -1,7 +1,7 @@
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
-const APP_VERSION = '3.1.0';
+const APP_VERSION = '3.1.1';
 
 const SITE_CONFIG = Object.freeze({
   version: APP_VERSION,
