@@ -1,46 +1,124 @@
 <!doctype html>
-<html lang="fa" dir="rtl" data-theme="neon">
+<html lang="fa" dir="rtl" data-theme="neon" data-auth-state="booting">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="ماملی اوربیت ۳؛ اپ اجتماعی سه‌بعدی قابل نصب روی Android و Windows با گوشی تعاملی، بروزرسانی زنده و اجرای آفلاین.">
-  <meta name="keywords" content="Mamali, ماملی, Windows PWA, Android PWA, بروزرسانی زنده, رابط سه‌بعدی, تلگرام, اینستاگرام, یوتیوب">
+  <meta name="description" content="ماملی اوربیت؛ اپ اجتماعی سه‌بعدی قابل نصب روی Android و Windows با ورود امن گوگل، دستگاه مورد اعتماد، بروزرسانی زنده و اجرای آفلاین.">
+  <meta name="keywords" content="Mamali, ماملی, Google Sign-In, Windows PWA, Android PWA, بروزرسانی زنده, رابط سه‌بعدی, تلگرام, اینستاگرام, یوتیوب">
   <meta name="author" content="Amirali">
   <meta name="theme-color" content="#050816">
   <meta name="color-scheme" content="dark">
   <meta name="robots" content="index, follow">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: https://lh3.googleusercontent.com https://*.googleusercontent.com; font-src 'self'; connect-src 'self' https://accounts.google.com https://www.googleapis.com; frame-src https://accounts.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
 
   <link rel="canonical" href="https://hydryanamyrly33-rgb.github.io/Mamali/">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="preload" href="assets/styles.css?v=3.0.0" as="style">
-  <link rel="stylesheet" href="assets/styles.css?v=3.0.0">
+  <link rel="preload" href="assets/styles.css?v=3.1.0" as="style">
+  <link rel="stylesheet" href="assets/styles.css?v=3.1.0">
 
   <meta property="og:type" content="website">
   <meta property="og:locale" content="fa_IR">
   <meta property="og:site_name" content="Mamali Orbit">
-  <meta property="og:title" content="Mamali Orbit 3.0 — اپ سه‌بعدی Android و Windows">
-  <meta property="og:description" content="لانچر اجتماعی سه‌بعدی با گوشی تعاملی، بروزرسانی زنده و نصب مستقیم روی موبایل و ویندوز.">
+  <meta property="og:title" content="Mamali Orbit — ورود گوگل و اپ سه‌بعدی Android و Windows">
+  <meta property="og:description" content="لانچر اجتماعی سه‌بعدی با ورود گوگل، دستگاه مورد اعتماد، اجرای آفلاین و نصب مستقیم روی موبایل و ویندوز.">
   <meta property="og:url" content="https://hydryanamyrly33-rgb.github.io/Mamali/">
   <meta property="og:image" content="https://hydryanamyrly33-rgb.github.io/Mamali/assets/social-preview.svg">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Mamali Orbit 3.0">
-  <meta name="twitter:description" content="اپ سه‌بعدی قابل نصب روی Android و Windows با بروزرسانی زنده.">
+  <meta name="twitter:title" content="Mamali Orbit 3.1">
+  <meta name="twitter:description" content="اپ سه‌بعدی قابل نصب روی Android و Windows با ورود گوگل، اجرای آفلاین مورد اعتماد و بروزرسانی زنده.">
   <meta name="twitter:image" content="https://hydryanamyrly33-rgb.github.io/Mamali/assets/social-preview.svg">
 
   <title>Mamali Orbit — مرکز فرمان اجتماعی سه‌بعدی</title>
-  <script type="module" src="assets/app.js?v=3.0.0"></script>
+  <script type="module" src="assets/app.js?v=3.1.0"></script>
 </head>
 <body>
-  <a class="skip-link" href="#main-content">پرش به محتوای اصلی</a>
-
   <canvas id="cosmos" class="cosmos" aria-hidden="true"></canvas>
   <div class="ambient ambient--one" aria-hidden="true"></div>
   <div class="ambient ambient--two" aria-hidden="true"></div>
   <div class="grid-plane" aria-hidden="true"></div>
 
+  <section class="auth-gate" id="authGate" aria-labelledby="authTitle">
+    <div class="auth-gate__mesh" aria-hidden="true"></div>
+    <div class="auth-gate__scan" aria-hidden="true"></div>
+
+    <header class="auth-gate__header">
+      <span class="brand">
+        <span class="brand__mark" aria-hidden="true">M</span>
+        <span class="brand__copy"><strong>MAMALI</strong><small>IDENTITY GATE</small></span>
+      </span>
+      <span class="auth-network" id="authNetwork"><i aria-hidden="true"></i><span>بررسی اتصال…</span></span>
+    </header>
+
+    <div class="auth-gate__layout">
+      <div class="auth-visual" aria-hidden="true">
+        <div class="auth-orbit auth-orbit--one"><span></span><span></span></div>
+        <div class="auth-orbit auth-orbit--two"><span></span></div>
+        <div class="auth-orbit auth-orbit--three"></div>
+        <div class="auth-core">
+          <span class="auth-core__shield">
+            <svg viewBox="0 0 24 24"><path d="M12 2.8 4.5 6v5.4c0 5.1 3.1 8.5 7.5 10 4.4-1.5 7.5-4.9 7.5-10V6L12 2.8Z"/><path d="m8.8 12 2.1 2.1 4.5-4.7"/></svg>
+          </span>
+          <strong>GOOGLE ID</strong>
+          <small>TRUSTED DEVICE LINK</small>
+        </div>
+        <span class="auth-visual__label auth-visual__label--top">IDENTITY / VERIFIED</span>
+        <span class="auth-visual__label auth-visual__label--bottom">LOCAL VAULT / READY</span>
+      </div>
+
+      <div class="auth-card" role="main" data-glass>
+        <div class="auth-card__status"><span aria-hidden="true"></span> دروازه هویت ماملی</div>
+        <h1 id="authTitle">مدار شما، فقط با <span>حساب گوگل</span></h1>
+        <p class="auth-card__lead">برای ورود به وب‌سایت یا اپ نصب‌شده، هویت خود را با Google تأیید کنید. پس از اولین ورود، این دستگاه را برای بازگشت سریع و اجرای آفلاین به خاطر می‌سپاریم.</p>
+
+        <div class="auth-progress" id="authProgress" role="status" aria-live="polite">
+          <span class="auth-progress__spinner" aria-hidden="true"></span>
+          <span id="authProgressText">در حال بررسی دستگاه مورد اعتماد…</span>
+        </div>
+
+        <div class="trusted-account" id="trustedAccount" role="group" aria-labelledby="trustedAccountTitle" hidden>
+          <div class="account-avatar account-avatar--large" data-account-avatar><span data-account-initial>M</span><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="" referrerpolicy="no-referrer" hidden></div>
+          <div class="trusted-account__copy">
+            <small id="trustedAccountTitle">حساب ذخیره‌شده روی این دستگاه</small>
+            <strong data-account-name>کاربر ماملی</strong>
+            <span data-account-email></span>
+          </div>
+          <button class="button button--primary trusted-account__continue" id="continueTrustedButton" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
+            <span>ادامه با همین حساب</span>
+          </button>
+        </div>
+
+        <div class="auth-divider" id="authDivider" hidden><span>یا تأیید با Google</span></div>
+        <div class="google-auth" id="googleAuth" hidden>
+          <div class="google-button-shell" id="googleButton" role="group" aria-label="ورود با حساب گوگل"></div>
+          <button class="button button--ghost auth-retry" id="authRetryButton" type="button" hidden>تلاش دوباره برای اتصال به Google</button>
+        </div>
+
+        <div class="auth-message" id="authMessage" role="alert" hidden></div>
+
+        <div class="auth-trust-note">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-5"/></svg>
+          <p><strong>ورود امن، بدون ذخیره توکن</strong><span>توکن Google فقط همان لحظه اعتبارسنجی می‌شود؛ شناسه و نمایه لازم برای «دستگاه مورد اعتماد» فقط در IndexedDB همین دستگاه باقی می‌ماند.</span></p>
+        </div>
+      </div>
+    </div>
+
+    <button class="auth-resume-chip" id="authResumeChip" type="button" hidden>
+      <span class="account-avatar" data-account-avatar><span data-account-initial>M</span><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="" referrerpolicy="no-referrer" hidden></span>
+      <span><small>حساب مورد اعتماد Windows</small><strong>ادامه با همان حساب گوگل</strong></span>
+      <span aria-hidden="true">←</span>
+    </button>
+
+    <footer class="auth-gate__footer">
+      <span>GOOGLE IDENTITY SERVICES</span>
+      <span>نسخه <b data-app-version>۳.۱.۰</b></span>
+    </footer>
+  </section>
+
+  <div class="app-shell" id="appShell" hidden inert>
+    <a class="skip-link" href="#main-content">پرش به محتوای اصلی</a>
   <header class="topbar" data-glass>
     <a class="brand" href="#home" aria-label="ماملی اوربیت، صفحه اصلی">
       <span class="brand__mark" aria-hidden="true">M</span>
@@ -61,6 +139,10 @@
     </nav>
 
     <div class="topbar__actions">
+      <button class="account-button" id="accountButton" type="button" aria-label="مدیریت حساب و قفل برنامه" aria-haspopup="dialog" aria-controls="accountDialog">
+        <span class="account-avatar" data-account-avatar><span data-account-initial>M</span><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="" referrerpolicy="no-referrer" hidden></span>
+        <span class="account-button__copy"><small>ورود با Google</small><strong data-account-name>حساب من</strong></span>
+      </button>
       <button class="icon-button" id="themeButton" type="button" aria-label="تغییر تم" title="تغییر تم">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a9 9 0 1 0 9 9c0-.5-.5-.8-1-.6a6.5 6.5 0 0 1-8.4-8.4c.2-.5-.1-1-.6-1Z"/></svg>
       </button>
@@ -77,7 +159,7 @@
           <span class="live-dot" aria-hidden="true"></span>
           سیستم آنلاین است
           <span class="eyebrow__divider" aria-hidden="true"></span>
-          نسخه <strong data-app-version>۳.۰.۰</strong>
+          نسخه <strong data-app-version>۳.۱.۰</strong>
         </div>
 
         <h1 id="hero-title" class="reveal">
@@ -233,7 +315,7 @@
               <img src="assets/icons/icon-192.png" width="96" height="96" alt="" loading="lazy" decoding="async">
               <strong>Mamali Orbit</strong>
               <small>Android · Windows · PWA</small>
-              <div class="phone-frame__install"><span>✓</span> نسخه <b data-app-version>۳.۰.۰</b> آماده اجرا</div>
+              <div class="phone-frame__install"><span>✓</span> نسخه <b data-app-version>۳.۱.۰</b> آماده اجرا</div>
             </div>
           </div>
           <div class="device-gesture"><span>↔</span> با موس یا انگشت بکشید</div>
@@ -291,7 +373,7 @@
           <button class="button button--ghost open-install-guide" type="button" data-open-dialog="installDialog" aria-haspopup="dialog" aria-controls="installDialog">راهنمای Android و Windows</button>
         </div>
 
-        <section class="update-center" id="updateCenter" data-state="checking" aria-labelledby="updateCenterTitle">
+        <div class="update-center" id="updateCenter" role="region" data-state="checking" aria-labelledby="updateCenterTitle">
           <div class="update-center__head">
             <div class="update-center__identity">
               <span class="update-center__pulse" aria-hidden="true"></span>
@@ -300,7 +382,7 @@
             <span class="update-center__connection" id="updateConnection"><i></i> آنلاین</span>
           </div>
           <div class="update-center__versions">
-            <span><small>نسخه نصب‌شده</small><strong data-app-version>۳.۰.۰</strong></span>
+            <span><small>نسخه نصب‌شده</small><strong data-app-version>۳.۱.۰</strong></span>
             <span aria-hidden="true">←</span>
             <span><small>آخرین نسخه</small><strong id="latestVersion">در حال بررسی</strong></span>
           </div>
@@ -313,9 +395,9 @@
               بررسی دوباره
             </button>
           </div>
-        </section>
+        </div>
 
-        <p class="android-note">نسخه ۳.۰ از بروزرسانی زنده SemVer استفاده می‌کند؛ اگر نسخه جدید برسد، بدون حذف برنامه با یک لمس فعال می‌شود. در حالت آفلاین، بخش بروزرسانی خاکستری و غیرفعال خواهد بود.</p>
+        <p class="android-note">نسخه ۳.۱ از ورود Google، دستگاه مورد اعتماد و بروزرسانی زنده SemVer استفاده می‌کند؛ اگر نسخه جدید برسد، بدون حذف برنامه با یک لمس فعال می‌شود. در حالت آفلاین، بخش بروزرسانی خاکستری و غیرفعال خواهد بود.</p>
       </div>
     </section>
 
@@ -326,10 +408,10 @@
       <div class="system-strip__copy">
         <span>ENGINE STATUS / NOMINAL</span>
         <h2>همه‌چیز داخل مرورگر شما اتفاق می‌افتد.</h2>
-        <p>ماملی برای اجرا به حساب کاربری، دیتابیس یا سرور واسط نیاز ندارد. همین موضوع آن را سریع، کم‌ریسک و قابل میزبانی روی GitHub Pages می‌کند.</p>
+        <p>ماملی پس از تأیید Google، فقط نمایه و مجوز دستگاه مورد اعتماد را در دیتابیس محلی IndexedDB نگه می‌دارد؛ توکن ورود ذخیره نمی‌شود و میزبانی همچنان روی GitHub Pages است.</p>
       </div>
       <dl>
-        <div><dt>نسخه پایدار</dt><dd data-app-version>۳.۰.۰</dd></div>
+        <div><dt>نسخه پایدار</dt><dd data-app-version>۳.۱.۰</dd></div>
         <div><dt>پلتفرم نصب</dt><dd>۲</dd></div>
         <div><dt>حالت رنگ</dt><dd>۳</dd></div>
       </dl>
@@ -344,6 +426,26 @@
     <p>طراحی و توسعه با تمرکز بر سرعت، دسترس‌پذیری و تجربه سه‌بعدی.</p>
     <span>© <span id="currentYear">2026</span> Mamali</span>
   </footer>
+
+  <dialog class="account-dialog" id="accountDialog" aria-labelledby="accountDialogTitle">
+    <form method="dialog" class="dialog__header">
+      <div><span class="dialog__kicker">GOOGLE IDENTITY / LOCAL TRUST</span><h2 id="accountDialogTitle">حساب و امنیت دستگاه</h2></div>
+      <button class="icon-button" value="close" aria-label="بستن مدیریت حساب"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg></button>
+    </form>
+    <div class="account-dialog__body">
+      <div class="account-profile">
+        <div class="account-avatar account-avatar--profile" data-account-avatar><span data-account-initial>M</span><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="" referrerpolicy="no-referrer" hidden></div>
+        <div><small>تأییدشده توسط Google</small><strong data-account-name>کاربر ماملی</strong><span data-account-email></span></div>
+        <span class="account-profile__verified" role="img" aria-label="حساب تأییدشده">✓</span>
+      </div>
+      <div class="account-security-state"><i aria-hidden="true"></i><p><strong>این دستگاه مورد اعتماد است</strong><span id="accountTrustCopy">بازگشت سریع و اجرای آفلاین برای این حساب فعال است.</span></p></div>
+      <p class="account-dialog__privacy">ماملی گذرواژه یا توکن Google را نگه نمی‌دارد. فقط شناسه حساب، نام، ایمیل، تصویر نمایه و وضعیت اعتماد در IndexedDB همین مرورگر ذخیره می‌شود.</p>
+    </div>
+    <div class="dialog__footer account-dialog__actions">
+      <button class="button button--danger" id="removeAccountButton" type="button">حذف حساب از این دستگاه</button>
+      <button class="button button--ghost g_id_signout" id="lockAppButton" type="button">قفل و خروج از ماملی</button>
+    </div>
+  </dialog>
 
   <dialog class="settings" id="settingsDialog" aria-labelledby="settingsTitle">
     <div class="settings__energy" aria-hidden="true"><span></span><span></span><span></span></div>
@@ -415,7 +517,7 @@
     <div class="install-guide__body" role="region" tabindex="0" aria-label="راهنمای نصب و بروزرسانی برنامه">
       <div class="install-guide__intro">
         <img src="assets/icons/icon-192.png" width="72" height="72" alt="آیکون اپ ماملی" loading="lazy" decoding="async">
-        <div><strong>Mamali Orbit 3.0</strong><small>Android · Windows · بروزرسانی زنده</small></div>
+        <div><strong>Mamali Orbit 3.1</strong><small>Android · Windows · بروزرسانی زنده</small></div>
       </div>
 
       <section aria-labelledby="androidGuideHeading">
@@ -445,6 +547,7 @@
           <div><dt>Service Worker</dt><dd>دریافت آنلاین تازه‌ترین نسخه و استفاده از کش فقط هنگام قطع اینترنت</dd></div>
           <div><dt>HTTPS</dt><dd>میزبانی امن GitHub Pages؛ شرط اجرای Service Worker و نصب مطمئن</dd></div>
           <div><dt>Responsive UI</dt><dd>رابط تطبیقی برای نمایشگر، لمس، صفحه‌کلید و حالت اپ</dd></div>
+          <div><dt>Trusted Identity</dt><dd>ورود Google و ذخیره محلی مجوز دستگاه برای بازگشت سریع و اجرای آفلاین</dd></div>
         </dl>
       </section>
 
@@ -479,6 +582,8 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg>
     </button>
   </aside>
+
+  </div>
 
   <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
   <div class="sr-only" id="systemAnnouncer" aria-live="polite"></div>

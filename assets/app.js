@@ -1,12 +1,17 @@
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
-const APP_VERSION = '3.0.0';
+const APP_VERSION = '3.1.0';
 
 const SITE_CONFIG = Object.freeze({
   version: APP_VERSION,
   versionEndpoint: './version.json',
   updateInterval: 5 * 60 * 1000,
+  googleClientId: '737314975140-nhilm65a3mr9bsemufr4e83cmhisq77e.apps.googleusercontent.com',
+  googleIdentityScript: 'https://accounts.google.com/gsi/client?hl=fa',
+  googleJwksEndpoint: 'https://www.googleapis.com/oauth2/v3/certs',
+  authDatabase: 'mamali-trusted-identity-v1',
+  authStore: 'sessions',
   apps: {
     instagram: {
       label: 'اینستاگرام',
@@ -87,6 +92,506 @@ let installPrompt = null;
 
 const announcer = $('#systemAnnouncer');
 const toastRegion = $('#toastRegion');
+
+class TrustedDeviceStore {
+  constructor() {
+    this.databasePromise = null;
+  }
+
+  open() {
+    if (!('indexedDB' in window)) return Promise.reject(new Error('IndexedDB is unavailable'));
+    if (this.databasePromise) return this.databasePromise;
+
+    this.databasePromise = new Promise((resolve, reject) => {
+      const request = indexedDB.open(SITE_CONFIG.authDatabase, 1);
+      request.addEventListener('upgradeneeded', () => {
+        const database = request.result;
+        if (!database.objectStoreNames.contains(SITE_CONFIG.authStore)) {
+          database.createObjectStore(SITE_CONFIG.authStore, { keyPath: 'key' });
+        }
+      });
+      request.addEventListener('success', () => resolve(request.result));
+      request.addEventListener('error', () => reject(request.error || new Error('IndexedDB open failed')));
+      request.addEventListener('blocked', () => reject(new Error('IndexedDB upgrade is blocked')));
+    });
+    return this.databasePromise;
+  }
+
+  async run(mode, action) {
+    const database = await this.open();
+    return new Promise((resolve, reject) => {
+      const transaction = database.transaction(SITE_CONFIG.authStore, mode);
+      const store = transaction.objectStore(SITE_CONFIG.authStore);
+      let request;
+      try { request = action(store); }
+      catch (error) { reject(error); return; }
+      request.addEventListener('success', () => resolve(request.result));
+      request.addEventListener('error', () => reject(request.error || new Error('IndexedDB request failed')));
+      transaction.addEventListener('abort', () => reject(transaction.error || new Error('IndexedDB transaction aborted')));
+    });
+  }
+
+  get() {
+    return this.run('readonly', store => store.get('current-google-account'));
+  }
+
+  save(record) {
+    return this.run('readwrite', store => store.put({ ...record, key: 'current-google-account' }));
+  }
+
+  clear() {
+    return this.run('readwrite', store => store.delete('current-google-account'));
+  }
+}
+
+function base64UrlToBytes(value) {
+  if (typeof value !== 'string' || !/^[A-Za-z0-9_-]+$/.test(value)) throw new Error('Invalid base64url value');
+  const normalized = value.replaceAll('-', '+').replaceAll('_', '/');
+  const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
+  const binary = atob(padded);
+  return Uint8Array.from(binary, character => character.charCodeAt(0));
+}
+
+function decodeJwtPart(value) {
+  const text = new TextDecoder().decode(base64UrlToBytes(value));
+  return JSON.parse(text);
+}
+
+async function verifyGoogleCredential(token, expectedNonce) {
+  if (typeof token !== 'string' || token.length > 20000) throw new Error('Invalid Google credential');
+  const parts = token.split('.');
+  if (parts.length !== 3) throw new Error('Malformed Google credential');
+
+  const [encodedHeader, encodedPayload, encodedSignature] = parts;
+  const header = decodeJwtPart(encodedHeader);
+  const payload = decodeJwtPart(encodedPayload);
+  if (header.alg !== 'RS256' || typeof header.kid !== 'string') throw new Error('Unsupported Google signature');
+
+  const response = await fetch(SITE_CONFIG.googleJwksEndpoint, {
+    cache: 'no-store',
+    credentials: 'omit',
+    mode: 'cors',
+  });
+  if (!response.ok) throw new Error(`Google key endpoint returned ${response.status}`);
+  const keySet = await response.json();
+  const jwk = Array.isArray(keySet.keys) ? keySet.keys.find(key => key.kid === header.kid && key.kty === 'RSA') : null;
+  if (!jwk) throw new Error('Google signing key was not found');
+
+  const key = await crypto.subtle.importKey(
+    'jwk',
+    jwk,
+    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+    false,
+    ['verify'],
+  );
+  const signatureValid = await crypto.subtle.verify(
+    'RSASSA-PKCS1-v1_5',
+    key,
+    base64UrlToBytes(encodedSignature),
+    new TextEncoder().encode(`${encodedHeader}.${encodedPayload}`),
+  );
+  if (!signatureValid) throw new Error('Google signature verification failed');
+
+  const now = Math.floor(Date.now() / 1000);
+  const audience = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
+  if (!audience.includes(SITE_CONFIG.googleClientId)) throw new Error('Google audience mismatch');
+  if (!['accounts.google.com', 'https://accounts.google.com'].includes(payload.iss)) throw new Error('Google issuer mismatch');
+  if (!Number.isFinite(payload.exp) || payload.exp <= now - 30) throw new Error('Google credential expired');
+  if (Number.isFinite(payload.iat) && payload.iat > now + 120) throw new Error('Google credential issued in the future');
+  if (Number.isFinite(payload.nbf) && payload.nbf > now + 30) throw new Error('Google credential is not active');
+  if (expectedNonce && payload.nonce !== expectedNonce) throw new Error('Google nonce mismatch');
+  if (payload.azp && payload.azp !== SITE_CONFIG.googleClientId) throw new Error('Google authorized party mismatch');
+  if (typeof payload.sub !== 'string' || !payload.sub || typeof payload.email !== 'string') throw new Error('Google profile is incomplete');
+  if (payload.email_verified !== true) throw new Error('Google email is not verified');
+
+  return payload;
+}
+
+function createAuthNonce() {
+  const bytes = new Uint8Array(24);
+  crypto.getRandomValues(bytes);
+  return [...bytes].map(value => value.toString(16).padStart(2, '0')).join('');
+}
+
+function safeGooglePicture(value) {
+  try {
+    const url = new URL(value);
+    const googleHost = url.hostname === 'lh3.googleusercontent.com' || url.hostname.endsWith('.googleusercontent.com');
+    return url.protocol === 'https:' && googleHost ? url.href : '';
+  } catch {
+    return '';
+  }
+}
+
+class AuthManager {
+  constructor() {
+    this.store = new TrustedDeviceStore();
+    this.session = null;
+    this.storageAvailable = true;
+    this.googleReady = false;
+    this.googleLoadPromise = null;
+    this.appStarted = false;
+    this.nonce = createAuthNonce();
+    this.removeConfirmationTimer = 0;
+    this.gate = $('#authGate');
+    this.appShell = $('#appShell');
+    this.progress = $('#authProgress');
+    this.progressText = $('#authProgressText');
+    this.trustedAccount = $('#trustedAccount');
+    this.googleAuth = $('#googleAuth');
+    this.googleButton = $('#googleButton');
+    this.divider = $('#authDivider');
+    this.message = $('#authMessage');
+    this.network = $('#authNetwork');
+    this.resumeChip = $('#authResumeChip');
+    this.accountDialog = $('#accountDialog');
+  }
+
+  async init() {
+    document.body.dataset.authPlatform = this.getPlatform();
+    $$('[data-app-version]', this.gate).forEach(node => { node.textContent = toPersianDigits(APP_VERSION); });
+    this.bind();
+    this.updateNetworkState({ loadGoogle: false });
+    this.registerAppShell();
+
+    try {
+      const stored = await this.store.get();
+      if (this.isTrustedRecord(stored)) this.session = stored;
+      else if (stored) await this.store.clear();
+    } catch {
+      this.storageAvailable = false;
+    }
+
+    if (this.session) {
+      this.renderProfile(this.session);
+      if (this.session.active) {
+        await this.unlock({ source: navigator.onLine ? 'trusted-device' : 'trusted-offline' });
+        return;
+      }
+      this.showLockedGate();
+    } else {
+      this.showLockedGate();
+    }
+    this.updateNetworkState();
+  }
+
+  bind() {
+    $('#continueTrustedButton').addEventListener('click', () => this.continueTrusted());
+    this.resumeChip.addEventListener('click', () => this.continueTrusted());
+    $('#authRetryButton').addEventListener('click', () => {
+      this.googleLoadPromise = null;
+      this.loadGoogleIdentity();
+    });
+    $('#accountButton').addEventListener('click', () => {
+      if (!this.accountDialog.open) this.accountDialog.showModal();
+    });
+    $('#lockAppButton').addEventListener('click', () => this.lock());
+    $('#removeAccountButton').addEventListener('click', event => this.removeAccount(event.currentTarget));
+    this.accountDialog.addEventListener('click', event => {
+      if (event.target !== this.accountDialog) return;
+      const rect = this.accountDialog.getBoundingClientRect();
+      const inside = event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom;
+      if (!inside) this.accountDialog.close();
+    });
+    window.addEventListener('online', () => this.updateNetworkState());
+    window.addEventListener('offline', () => this.updateNetworkState());
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => { if (this.googleReady && !this.gate.hidden) this.renderGoogleButton(); }, 180);
+    }, { passive: true });
+  }
+
+  registerAppShell() {
+    if (!('serviceWorker' in navigator) || !window.isSecureContext) return;
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => {});
+    }, { once: true });
+  }
+
+  getPlatform() {
+    const identity = `${navigator.userAgentData?.platform || ''} ${navigator.platform || ''} ${navigator.userAgent}`.toLowerCase();
+    if (identity.includes('android')) return 'android';
+    if (identity.includes('windows') || identity.includes('win32') || identity.includes('win64')) return 'windows';
+    if (/iphone|ipad|ipod/.test(identity)) return 'ios';
+    return 'web';
+  }
+
+  isTrustedRecord(record) {
+    return Boolean(
+      record
+      && record.provider === 'google'
+      && record.clientId === SITE_CONFIG.googleClientId
+      && typeof record.subject === 'string'
+      && record.subject
+      && typeof record.email === 'string'
+      && record.email
+      && Number.isFinite(record.verifiedAt),
+    );
+  }
+
+  showLockedGate() {
+    document.documentElement.dataset.authState = 'locked';
+    this.gate.hidden = false;
+    this.gate.removeAttribute('aria-hidden');
+    this.appShell.hidden = true;
+    this.appShell.inert = true;
+    this.appShell.setAttribute('aria-hidden', 'true');
+    this.trustedAccount.hidden = !this.session;
+    this.resumeChip.hidden = !(this.session && this.getPlatform() === 'windows');
+    this.progress.hidden = true;
+    this.googleAuth.hidden = !navigator.onLine;
+    this.divider.hidden = !this.session || !navigator.onLine;
+    if (this.session) this.renderProfile(this.session);
+    window.setTimeout(() => (this.session ? $('#continueTrustedButton') : this.googleButton).focus?.(), 50);
+  }
+
+  async unlock({ source = 'google' } = {}) {
+    if (!this.session) return;
+    const nextSession = {
+      ...this.session,
+      active: true,
+      lastAccessAt: Date.now(),
+      lastAccessMode: source,
+    };
+    this.session = nextSession;
+    try { await this.store.save(nextSession); }
+    catch { this.storageAvailable = false; }
+
+    this.renderProfile(nextSession);
+    this.setMessage(source === 'trusted-offline' ? 'دستگاه مورد اعتماد تأیید شد؛ ماملی در حالت آفلاین باز می‌شود.' : 'هویت تأیید شد؛ در حال بازکردن مدار ماملی…', 'success');
+    document.documentElement.dataset.authState = 'authenticated';
+    this.appShell.hidden = false;
+    this.appShell.inert = false;
+    this.appShell.setAttribute('aria-hidden', 'false');
+    this.gate.hidden = true;
+    this.gate.setAttribute('aria-hidden', 'true');
+    if (!this.appStarted) {
+      this.appStarted = true;
+      initProtectedApp();
+    }
+    window.setTimeout(() => $('#main-content')?.focus({ preventScroll: true }), 80);
+  }
+
+  async continueTrusted() {
+    if (!this.session) return;
+    this.setProgress(true, navigator.onLine ? 'در حال بازکردن حساب مورد اعتماد…' : 'در حال تأیید مجوز آفلاین دستگاه…');
+    await this.unlock({ source: navigator.onLine ? 'trusted-resume' : 'trusted-offline' });
+  }
+
+  async handleCredential(response) {
+    const credential = response?.credential;
+    if (!credential) {
+      this.setMessage('Google اطلاعات ورود معتبری برنگرداند. دوباره تلاش کنید.', 'error');
+      return;
+    }
+
+    this.setProgress(true, 'در حال اعتبارسنجی امضای Google و اتصال امن حساب…');
+    this.googleAuth.hidden = true;
+    this.message.hidden = true;
+    try {
+      const payload = await verifyGoogleCredential(credential, this.nonce);
+      this.session = {
+        provider: 'google',
+        clientId: SITE_CONFIG.googleClientId,
+        subject: payload.sub,
+        email: payload.email,
+        name: String(payload.name || payload.given_name || payload.email.split('@')[0]).slice(0, 120),
+        picture: safeGooglePicture(payload.picture),
+        locale: typeof payload.locale === 'string' ? payload.locale.slice(0, 20) : '',
+        verifiedAt: Date.now(),
+        lastGoogleExpiry: payload.exp * 1000,
+        active: true,
+      };
+      await this.unlock({ source: `google-${response.select_by || 'button'}` });
+    } catch (error) {
+      console.warn('Google credential validation failed:', error instanceof Error ? error.message : 'unknown error');
+      this.setProgress(false);
+      this.googleAuth.hidden = !navigator.onLine;
+      this.setMessage('اعتبار حساب Google تأیید نشد. اتصال و تنظیم OAuth را بررسی کنید و دوباره وارد شوید.', 'error');
+    }
+  }
+
+  updateNetworkState({ loadGoogle = true } = {}) {
+    const online = navigator.onLine;
+    this.network.dataset.state = online ? 'online' : 'offline';
+    $('span', this.network).textContent = online ? 'آنلاین · Google آماده' : 'آفلاین · حالت مورد اعتماد';
+    if (document.documentElement.dataset.authState === 'authenticated') return;
+
+    if (!online) {
+      this.googleAuth.hidden = true;
+      this.divider.hidden = true;
+      this.setProgress(false);
+      this.setMessage(
+        this.session
+          ? 'اینترنت قطع است؛ با حساب ذخیره‌شده روی همین دستگاه ادامه دهید.'
+          : 'برای اولین ورود با Google اینترنت لازم است. پس از یک ورود موفق، همین دستگاه آفلاین هم باز می‌شود.',
+        'offline',
+      );
+      return;
+    }
+
+    this.googleAuth.hidden = false;
+    this.divider.hidden = !this.session;
+    this.message.hidden = true;
+    if (loadGoogle) this.loadGoogleIdentity();
+  }
+
+  loadGoogleIdentity() {
+    if (!navigator.onLine) return Promise.resolve(false);
+    if (window.google?.accounts?.id) {
+      this.initializeGoogleIdentity();
+      return Promise.resolve(true);
+    }
+    if (this.googleLoadPromise) return this.googleLoadPromise;
+
+    this.setProgress(true, 'در حال اتصال امن به Google Identity…');
+    $('#authRetryButton').hidden = true;
+    this.googleLoadPromise = new Promise(resolve => {
+      const previous = document.querySelector('script[data-google-identity]');
+      previous?.remove();
+      const script = document.createElement('script');
+      script.src = SITE_CONFIG.googleIdentityScript;
+      script.async = true;
+      script.dataset.googleIdentity = 'true';
+      const timeout = window.setTimeout(() => script.dispatchEvent(new Event('error')), 12000);
+      script.addEventListener('load', () => {
+        window.clearTimeout(timeout);
+        if (!window.google?.accounts?.id) {
+          this.handleGoogleLoadError();
+          resolve(false);
+          return;
+        }
+        this.initializeGoogleIdentity();
+        resolve(true);
+      }, { once: true });
+      script.addEventListener('error', () => {
+        window.clearTimeout(timeout);
+        script.remove();
+        this.handleGoogleLoadError();
+        resolve(false);
+      }, { once: true });
+      document.head.append(script);
+    });
+    return this.googleLoadPromise;
+  }
+
+  initializeGoogleIdentity() {
+    try {
+      window.google.accounts.id.initialize({
+        client_id: SITE_CONFIG.googleClientId,
+        callback: response => this.handleCredential(response),
+        auto_select: false,
+        cancel_on_tap_outside: false,
+        context: 'signin',
+        ux_mode: 'popup',
+        nonce: this.nonce,
+        use_fedcm_for_prompt: true,
+        use_fedcm_for_button: true,
+        button_auto_select: true,
+      });
+      this.googleReady = true;
+      this.setProgress(false);
+      this.renderGoogleButton();
+    } catch {
+      this.handleGoogleLoadError();
+    }
+  }
+
+  renderGoogleButton() {
+    if (!this.googleReady || !window.google?.accounts?.id || this.googleAuth.hidden) return;
+    const width = Math.max(260, Math.min(400, Math.floor(this.googleAuth.getBoundingClientRect().width || 360)));
+    this.googleButton.replaceChildren();
+    window.google.accounts.id.renderButton(this.googleButton, {
+      type: 'standard',
+      theme: 'filled_black',
+      size: 'large',
+      text: this.session ? 'continue_with' : 'signin_with',
+      shape: 'pill',
+      logo_alignment: 'left',
+      width,
+      locale: 'fa',
+    });
+  }
+
+  handleGoogleLoadError() {
+    this.googleReady = false;
+    this.googleLoadPromise = null;
+    this.setProgress(false);
+    $('#authRetryButton').hidden = false;
+    this.setMessage('اتصال به Google Identity برقرار نشد. اینترنت، مجوزهای مرورگر یا تنظیم Authorized JavaScript origin را بررسی کنید.', 'error');
+  }
+
+  renderProfile(profile) {
+    const name = profile.name || 'کاربر ماملی';
+    const email = profile.email || '';
+    const initial = [...name.trim()][0]?.toUpperCase() || 'M';
+    $$('[data-account-name]').forEach(node => { node.textContent = name; });
+    $$('[data-account-email]').forEach(node => { node.textContent = email; });
+    $$('[data-account-avatar]').forEach(avatar => {
+      const initialNode = $('[data-account-initial]', avatar);
+      const image = $('img', avatar);
+      initialNode.textContent = initial;
+      image.hidden = true;
+      image.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACw=';
+      const picture = safeGooglePicture(profile.picture);
+      if (!picture) return;
+      image.addEventListener('load', () => { image.hidden = false; }, { once: true });
+      image.addEventListener('error', () => { image.hidden = true; }, { once: true });
+      image.src = picture;
+    });
+  }
+
+  setProgress(visible, text = '') {
+    this.progress.hidden = !visible;
+    if (text) this.progressText.textContent = text;
+  }
+
+  setMessage(text, state = 'error') {
+    this.message.textContent = text;
+    this.message.dataset.state = state;
+    this.message.hidden = !text;
+  }
+
+  async lock() {
+    if (!this.session) return;
+    this.session = { ...this.session, active: false, lockedAt: Date.now() };
+    try { await this.store.save(this.session); }
+    catch { this.storageAvailable = false; }
+    window.google?.accounts?.id?.disableAutoSelect?.();
+    for (const dialog of $$('dialog[open]')) dialog.close();
+    this.showLockedGate();
+    this.updateNetworkState();
+    announce('ماملی قفل شد. برای بازگشت از حساب مورد اعتماد استفاده کنید.');
+  }
+
+  async removeAccount(button) {
+    if (!button.classList.contains('is-confirming')) {
+      button.classList.add('is-confirming');
+      button.textContent = 'برای تأیید، دوباره بزنید';
+      window.clearTimeout(this.removeConfirmationTimer);
+      this.removeConfirmationTimer = window.setTimeout(() => {
+        button.classList.remove('is-confirming');
+        button.textContent = 'حذف حساب از این دستگاه';
+      }, 5000);
+      return;
+    }
+
+    window.clearTimeout(this.removeConfirmationTimer);
+    window.google?.accounts?.id?.disableAutoSelect?.();
+    try { await this.store.clear(); }
+    catch { this.storageAvailable = false; }
+    this.session = null;
+    button.classList.remove('is-confirming');
+    button.textContent = 'حذف حساب از این دستگاه';
+    for (const dialog of $$('dialog[open]')) dialog.close();
+    this.showLockedGate();
+    this.updateNetworkState();
+    this.setMessage('حساب از دیتابیس این دستگاه حذف شد. برای ورود دوباره از Google استفاده کنید.', 'success');
+    announce('حساب ذخیره‌شده از این دستگاه حذف شد.');
+  }
+}
+
 
 function announce(message) {
   announcer.textContent = '';
@@ -607,6 +1112,8 @@ let cosmos;
 let orbit;
 let deviceTilt;
 let updateManager;
+let authManager;
+let protectedAppInitialized = false;
 
 function cycleTheme() {
   const currentIndex = SITE_CONFIG.themes.indexOf(settings.theme);
@@ -728,6 +1235,7 @@ function setupDialogs() {
   const settingsDialog = $('#settingsDialog');
   const commandDialog = $('#commandDialog');
   const installDialog = $('#installDialog');
+  const accountDialog = $('#accountDialog');
 
   const settingsButton = $('#settingsButton');
   settingsButton.addEventListener('click', () => {
@@ -749,7 +1257,7 @@ function setupDialogs() {
     });
   }
 
-  for (const dialog of [settingsDialog, commandDialog, installDialog]) {
+  for (const dialog of [settingsDialog, commandDialog, installDialog, accountDialog]) {
     dialog.addEventListener('click', event => {
       if (event.target !== dialog) return;
       const rect = dialog.getBoundingClientRect();
@@ -820,6 +1328,7 @@ function setupCommandPalette() {
     { icon: 'UP', title: 'بررسی بروزرسانی برنامه', hint: `نسخه ${toPersianDigits(APP_VERSION)} · کانال پایدار`, keywords: 'update بروزرسانی آپدیت version نسخه', run: () => { $('#updateCenter').scrollIntoView({ behavior: settings.reducedMotion ? 'auto' : 'smooth', block: 'center' }); updateManager?.check(); } },
     { icon: '◐', title: 'تغییر تم رنگی',  hint: 'نئون، شفق، خورشیدی', keywords: 'theme تم رنگ ظاهر', run: cycleTheme },
     { icon: '⚙', title: 'بازکردن تنظیمات', hint: 'کنترل جلوه‌ها', keywords: 'settings تنظیمات کنترل', run: () => $('#settingsDialog').showModal() },
+    { icon: '⌁', title: 'حساب و امنیت دستگاه', hint: 'قفل، خروج یا حذف حساب محلی', keywords: 'google account حساب امنیت قفل خروج', run: () => $('#accountDialog').showModal() },
     { icon: '↻', title: 'روشن/خاموش‌کردن حرکت', hint: 'چرخش خودکار مدار', keywords: 'motion حرکت توقف چرخش', run: () => { settings.motion = !settings.motion; applySettings(); } },
   ];
 
@@ -1022,7 +1531,8 @@ class UpdateManager {
     }
 
     this.setState(navigator.onLine ? 'checking' : 'offline');
-    window.addEventListener('load', () => this.register());
+    if (document.readyState === 'complete') this.register();
+    else window.addEventListener('load', () => this.register(), { once: true });
     window.setInterval(() => this.check({ silent: true }), SITE_CONFIG.updateInterval);
   }
 
@@ -1244,7 +1754,9 @@ function setupInstall() {
   updateInstallState();
 }
 
-function init() {
+function initProtectedApp() {
+  if (protectedAppInitialized) return;
+  protectedAppInitialized = true;
   $('#currentYear').textContent = String(new Date().getFullYear());
   cosmos = new CosmosRenderer($('#cosmos'));
   orbit = new OrbitEngine($('#orbitScene'));
@@ -1262,4 +1774,18 @@ function init() {
   updateManager.init();
 }
 
-init();
+async function bootstrap() {
+  authManager = new AuthManager();
+  await authManager.init();
+}
+
+bootstrap().catch(error => {
+  console.error('Mamali authentication bootstrap failed:', error);
+  document.documentElement.dataset.authState = 'locked';
+  const message = $('#authMessage');
+  if (message) {
+    message.hidden = false;
+    message.dataset.state = 'error';
+    message.textContent = 'راه‌اندازی دروازه ورود کامل نشد. صفحه را دوباره بارگذاری کنید.';
+  }
+});

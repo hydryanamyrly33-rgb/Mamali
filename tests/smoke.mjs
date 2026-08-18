@@ -62,6 +62,14 @@ const requiredHtmlPatterns = [
   ['Real device clock', /id="deviceClock"/i],
   ['Interactive phone', /id="interactivePhone"/i],
   ['Animated settings controls', /data-setting-code="PARTICLES"/i],
+  ['Full-screen authentication gate', /id="authGate"[^>]+aria-labelledby="authTitle"/i],
+  ['Protected application shell', /id="appShell"[^>]+hidden[^>]+inert/i],
+  ['Official Google button host', /id="googleButton"/i],
+  ['Trusted account continuation', /id="continueTrustedButton"/i],
+  ['Windows saved-account continuation', /id="authResumeChip"/i],
+  ['Account security dialog', /id="accountDialog"/i],
+  ['Lock and local account removal', /id="lockAppButton"[\s\S]+id="removeAccountButton"|id="removeAccountButton"[\s\S]+id="lockAppButton"/i],
+  ['Google Identity CSP resources', /script-src[^;]+accounts\.google\.com\/gsi\/client[\s\S]+frame-src[^;]+accounts\.google\.com/i],
 ];
 requiredHtmlPatterns.push(['Versioned application script', new RegExp(`assets/app\\.js\\?v=${escapedVersion}`, 'i')]);
 
@@ -112,9 +120,23 @@ const requiredAppPatterns = [
   ['Semantic version comparison', /function compareVersions\(/],
   ['Live update manager', /class UpdateManager/],
   ['Online and offline listeners', /addEventListener\('offline'/],
+  ['Supplied Google OAuth client ID', /737314975140-nhilm65a3mr9bsemufr4e83cmhisq77e\.apps\.googleusercontent\.com/],
+  ['Google Identity Services integration', /accounts\.google\.com\/gsi\/client\?hl=fa/],
+  ['FedCM button integration', /use_fedcm_for_button:\s*true/],
+  ['Cryptographic Google JWT verification', /crypto\.subtle\.verify\([\s\S]+Google signature verification failed/],
+  ['Google audience and issuer validation', /Google audience mismatch[\s\S]+Google issuer mismatch/],
+  ['Google nonce validation', /Google nonce mismatch/],
+  ['IndexedDB trusted-device database', /class TrustedDeviceStore[\s\S]+indexedDB\.open/],
+  ['Offline trusted-session continuation', /trusted-offline/],
+  ['Only Google expiry metadata retained', /lastGoogleExpiry:\s*payload\.exp \* 1000/],
+  ['Authentication before protected app init', /await authManager\.init\(\)/],
 ];
 for (const [label, pattern] of requiredAppPatterns) {
   if (!pattern.test(app)) failures.push(`الزام App پیدا نشد: ${label}`);
+}
+const trustedRecordBlock = app.match(/this\.session\s*=\s*\{[\s\S]{0,1600}?\n\s*\};/)?.[0] || '';
+if (/\b(?:credential|idToken|accessToken|refreshToken)\s*:/.test(trustedRecordBlock)) {
+  failures.push('توکن خام نباید در رکورد دستگاه مورد اعتماد ذخیره شود.');
 }
 
 const requiredServiceWorkerPatterns = [

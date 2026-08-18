@@ -2,7 +2,7 @@
   "id": "/Mamali/",
   "name": "ماملی — منظومه اجتماعی سه‌بعدی",
   "short_name": "ماملی",
-  "description": "لانچر اجتماعی سه‌بعدی قابل نصب روی Android و Windows با بروزرسانی زنده، اجرای مستقل و پشتیبانی آفلاین.",
+  "description": "لانچر اجتماعی سه‌بعدی قابل نصب روی Android و Windows با ورود Google، دستگاه مورد اعتماد، بروزرسانی زنده و پشتیبانی آفلاین.",
   "lang": "fa",
   "dir": "rtl",
   "start_url": "/Mamali/",
@@ -43,21 +43,21 @@
       "sizes": "1440x1000",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "نصب و بروزرسانی ماملی روی Android و Windows"
+      "label": "ماملی ۳.۱ با ورود Google، نصب و بروزرسانی روی Android و Windows"
     },
     {
       "src": "assets/screenshots/windows-install-wide.png",
       "sizes": "1440x1000",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "نصب برنامه Mamali روی Windows 10 و 11"
+      "label": "ماملی با حساب مورد اعتماد و نصب روی Windows 10 و 11"
     },
     {
       "src": "assets/screenshots/android-install-narrow.png",
       "sizes": "390x844",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "نسخه موبایل ماملی با Update Center زنده"
+      "label": "نسخه Android ماملی با ورود Google و Update Center زنده"
     }
   ],
   "shortcuts": [
