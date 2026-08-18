@@ -72,6 +72,7 @@ const requiredHtmlPatterns = [
   ['Account security dialog', /id="accountDialog"/i],
   ['Lock and local account removal', /id="lockAppButton"[\s\S]+id="removeAccountButton"|id="removeAccountButton"[\s\S]+id="lockAppButton"/i],
   ['Google Identity CSP resources', /script-src[^;]+accounts\.google\.com\/gsi\/client[\s\S]+frame-src[^;]+accounts\.google\.com/i],
+  ['Primary Vercel canonical URL', /rel="canonical" href="https:\/\/mamali-orbit\.vercel\.app\/Mamali\/"/i],
 ];
 requiredHtmlPatterns.push(['Versioned application script', new RegExp(`assets/app\\.js\\?v=${escapedVersion}`, 'i')]);
 

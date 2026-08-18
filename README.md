@@ -2,7 +2,9 @@
 
 مرکز فرمان اجتماعی سه‌بعدی، قابل نصب روی Android و Windows، با ورود Google، دستگاه مورد اعتماد و اجرای آفلاین کنترل‌شده.
 
-**نسخه زنده:** [hydryanamyrly33-rgb.github.io/Mamali](https://hydryanamyrly33-rgb.github.io/Mamali/)
+**نسخه اصلی Vercel:** [mamali-orbit.vercel.app/Mamali](https://mamali-orbit.vercel.app/Mamali/)
+
+**نسخه پشتیبان GitHub Pages:** [hydryanamyrly33-rgb.github.io/Mamali](https://hydryanamyrly33-rgb.github.io/Mamali/)
 
 ## قابلیت‌های نسخه ۳.۱
 
@@ -17,6 +19,18 @@
 - ورود آفلاین فقط برای دستگاهی که قبلاً با Google تأیید و مورد اعتماد شده است
 - حفظ همه قابلیت‌های ۳.۰: نصب Android/Windows، گوشی سه‌بعدی تعاملی، ساعت واقعی، App Linkهای بومی و بروزرسانی زنده
 
+## استقرار Vercel و اتصال GitHub
+
+پروژه Vercel با نام `mamali-orbit` مستقیماً به مخزن GitHub `hydryanamyrly33-rgb/Mamali` و شاخه `main` متصل است. هر Push موفق به `main` یک Production Deployment تازه ایجاد می‌کند.
+
+فایل `vercel.json` ریشه دامنه را به `/Mamali/` هدایت و فایل‌های همان مسیر را به منابع واقعی پروژه Rewrite می‌کند. به این ترتیب مسیرهای Manifest، Service Worker، Scope نصب، Update Center و اجرای آفلاین روی Vercel و GitHub Pages یکسان می‌مانند.
+
+URL پایدار Production:
+
+```text
+https://mamali-orbit.vercel.app/Mamali/
+```
+
 ## تنظیم Google OAuth
 
 Client ID وب برنامه در `SITE_CONFIG.googleClientId` قرار دارد. Client ID یک شناسه عمومی است و نباید با Client Secret اشتباه شود؛ **هیچ Client Secret یا کلید خصوصی نباید داخل این مخزن قرار گیرد.**
@@ -24,10 +38,10 @@ Client ID وب برنامه در `SITE_CONFIG.googleClientId` قرار دارد.
 در Google Cloud Console، برای OAuth 2.0 Web Client باید این مبدأ در بخش **Authorized JavaScript origins** ثبت شود:
 
 ```text
-https://hydryanamyrly33-rgb.github.io
+https://mamali-orbit.vercel.app
 ```
 
-مبدأ باید بدون مسیر `/Mamali/` نوشته شود. برای توسعه محلی می‌توان مبدأ دقیق سرور محلی را نیز جداگانه افزود، برای مثال:
+مبدأ باید بدون مسیر `/Mamali/` نوشته شود. اگر ورود Google روی نسخه پشتیبان GitHub Pages هم لازم است، `https://hydryanamyrly33-rgb.github.io` را به‌عنوان یک مبدأ جداگانه اضافه کنید. برای توسعه محلی می‌توان مبدأ دقیق سرور محلی را نیز جداگانه افزود، برای مثال:
 
 ```text
 http://localhost:8080
@@ -66,7 +80,7 @@ Service Worker پوسته برنامه را Online-first نگه می‌دارد.
 
 ## مرز امنیتی مهم
 
-Mamali روی GitHub Pages و بدون Backend اختصاصی اجرا می‌شود. بنابراین دروازه ۳.۱ یک **کنترل دسترسی سمت کاربر برای رابط و PWA** است و برای محافظت از داده عمومی همین برنامه مناسب است. اعتبار Token واقعاً با امضای Google بررسی می‌شود، اما برای پروژه‌ای که داده محرمانه، API خصوصی یا مجوزهای مالی دارد باید ID Token در Backend نیز اعتبارسنجی، Session امن `HttpOnly` صادر و همه APIها در سرور محافظت شوند.
+Mamali روی میزبانی استاتیک Vercel و GitHub Pages و بدون Backend اختصاصی اجرا می‌شود. بنابراین دروازه ۳.۱ یک **کنترل دسترسی سمت کاربر برای رابط و PWA** است و برای محافظت از داده عمومی همین برنامه مناسب است. اعتبار Token واقعاً با امضای Google بررسی می‌شود، اما برای پروژه‌ای که داده محرمانه، API خصوصی یا مجوزهای مالی دارد باید ID Token در Backend نیز اعتبارسنجی، Session امن `HttpOnly` صادر و همه APIها در سرور محافظت شوند.
 
 ## اپ Android و Windows
 
@@ -130,6 +144,7 @@ node scripts/release.mjs 3.2.0
 ├── .github/workflows/quality.yml
 ├── index.html
 ├── manifest.webmanifest
+├── vercel.json
 ├── version.json
 ├── sw.js
 ├── scripts/release.mjs
