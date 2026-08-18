@@ -1,31 +1,69 @@
 {
-  "name": "Mamali Orbit — مرکز فرمان اجتماعی",
-  "short_name": "Mamali",
-  "description": "مرکز فرمان اجتماعی سه‌بعدی، خصوصی و قابل نصب.",
   "id": "/Mamali/",
-  "start_url": "/Mamali/",
-  "scope": "/Mamali/",
+  "name": "ماملی — منظومه اجتماعی سه‌بعدی",
+  "short_name": "ماملی",
+  "description": "یک لانچر اجتماعی سه‌بعدی، سریع و نصب‌شونده با اجرای مستقیم اپ‌های اینستاگرام، یوتیوب و تلگرام.",
   "lang": "fa",
   "dir": "rtl",
+  "start_url": "/Mamali/",
+  "scope": "/Mamali/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "orientation": "any",
-  "background_color": "#050816",
-  "theme_color": "#050816",
-  "categories": ["social", "utilities", "entertainment"],
+  "background_color": "#050712",
+  "theme_color": "#080b18",
+  "categories": ["social", "entertainment", "utilities"],
+  "prefer_related_applications": false,
   "icons": [
     {
-      "src": "assets/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "src": "assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "assets/screenshots/android-install-wide.png",
+      "sizes": "1440x1000",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "راهنمای نصب اپ اندروید ماملی"
+    },
+    {
+      "src": "assets/screenshots/android-install-narrow.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "نصب ماملی روی موبایل اندروید"
     }
   ],
   "shortcuts": [
     {
-      "name": "پورتال‌ها",
+      "name": "بازکردن پورتال‌ها",
       "short_name": "پورتال‌ها",
+      "description": "اجرای مستقیم اپ‌های اجتماعی",
       "url": "/Mamali/#portals",
-      "icons": [{"src": "assets/favicon.svg", "sizes": "any", "type": "image/svg+xml"}]
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "راهنمای نصب اندروید",
+      "short_name": "نصب اپ",
+      "description": "آموزش نصب نسخه PWA روی اندروید",
+      "url": "/Mamali/#android-app",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]
 }

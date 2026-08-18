@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mamali-orbit-v2.0.2';
+const CACHE_NAME = 'mamali-orbit-v2.1.0';
 const APP_SHELL = [
   './',
   './index.html',
@@ -6,6 +6,10 @@ const APP_SHELL = [
   './assets/app.js',
   './assets/favicon.svg',
   './assets/social-preview.svg',
+  './assets/icons/icon-192.png',
+  './assets/icons/icon-512.png',
+  './assets/icons/icon-maskable-512.png',
+  './assets/icons/apple-touch-icon.png',
   './manifest.webmanifest',
 ];
 

@@ -573,6 +573,13 @@
   .scene__hint svg { width: 17px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 
   .section { padding: 105px 0; }
+  .features,
+  .android-section,
+  .system-strip,
+  .site-footer {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 800px;
+  }
   .section__heading { max-width: 700px; margin-bottom: 38px; }
   .section__kicker { display: inline-block; margin-bottom: 10px; color: var(--primary); font: 750 .68rem/1.5 ui-monospace, monospace; letter-spacing: .15em; }
   .section__heading h2 { font-size: clamp(2rem, 4vw, 3.7rem); line-height: 1.15; letter-spacing: -.045em; }
@@ -585,6 +592,120 @@
   .feature-card > svg { width: 38px; margin-top: 24px; fill: none; stroke: var(--primary); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 12px var(--glow-primary)); }
   .feature-card h3 { margin-top: 38px; font-size: 1.05rem; }
   .feature-card p { margin-top: 9px; color: var(--muted); font-size: .86rem; }
+
+  .android-section {
+    display: grid;
+    grid-template-columns: minmax(320px, .85fr) minmax(0, 1.15fr);
+    align-items: center;
+    gap: clamp(42px, 7vw, 96px);
+  }
+
+  .android-visual {
+    position: relative;
+    display: grid;
+    min-height: 590px;
+    overflow: hidden;
+    place-items: center;
+    border-radius: 34px;
+    isolation: isolate;
+  }
+  .android-visual::before {
+    content: "";
+    position: absolute;
+    z-index: -2;
+    inset: 0;
+    background:
+      radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--primary) 22%, transparent), transparent 34%),
+      linear-gradient(145deg, color-mix(in srgb, var(--secondary) 10%, transparent), transparent 60%);
+  }
+  .android-visual::after {
+    content: "ANDROID / STANDALONE";
+    position: absolute;
+    bottom: 18px;
+    left: 22px;
+    color: var(--soft);
+    font: 700 .55rem/1 ui-monospace, monospace;
+    letter-spacing: .14em;
+  }
+  .android-visual__orbit {
+    position: absolute;
+    z-index: -1;
+    top: 50%;
+    left: 50%;
+    border: 1px solid color-mix(in srgb, var(--primary) 27%, transparent);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .android-visual__orbit--one { width: 460px; height: 210px; transform: translate(-50%, -50%) rotate(-24deg); animation: system-orbit 12s linear infinite; }
+  .android-visual__orbit--two { width: 250px; height: 470px; border-color: color-mix(in srgb, var(--accent) 20%, transparent); transform: translate(-50%, -50%) rotate(32deg); animation: system-orbit 16s linear infinite reverse; }
+
+  .phone-frame {
+    position: relative;
+    width: min(264px, 72%);
+    aspect-ratio: .51;
+    padding: 9px;
+    border: 1px solid rgba(255,255,255,.32);
+    border-radius: 44px;
+    background: linear-gradient(145deg, #26304f, #070a16 44%, #1b2140);
+    box-shadow: 0 34px 80px rgba(0,0,0,.55), 0 0 55px var(--glow-primary), inset 0 0 0 2px rgba(0,0,0,.7);
+    transform: perspective(900px) rotateY(-9deg) rotateX(3deg);
+  }
+  .phone-frame__camera { position: absolute; z-index: 4; top: 17px; left: 50%; width: 74px; height: 20px; border-radius: 999px; background: #02030a; transform: translateX(-50%); }
+  .phone-frame__screen {
+    display: flex;
+    height: 100%;
+    overflow: hidden;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 38px 20px 22px;
+    border-radius: 36px;
+    background:
+      radial-gradient(circle at 50% 38%, var(--glow-primary), transparent 30%),
+      linear-gradient(180deg, #0b1028, #03050e);
+    text-align: center;
+  }
+  .phone-frame__screen::before { content: ""; position: absolute; inset: 11px; border-radius: 34px; background-image: linear-gradient(color-mix(in srgb, var(--primary) 7%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--primary) 7%, transparent) 1px, transparent 1px); background-size: 26px 26px; mask-image: linear-gradient(to bottom, transparent, black 25%, transparent); pointer-events: none; }
+  .phone-frame__screen img { position: relative; width: 88px; height: 88px; border-radius: 24px; box-shadow: 0 0 35px var(--glow-primary); }
+  .phone-frame__screen > strong { position: relative; margin-top: 20px; direction: ltr; font-size: 1rem; }
+  .phone-frame__screen > small { position: relative; color: var(--muted); font-size: .65rem; }
+  .phone-frame__status { position: absolute; z-index: 3; top: 23px; right: 24px; left: 24px; display: flex; justify-content: space-between; direction: ltr; color: var(--muted); font: 700 .5rem/1 ui-monospace, monospace; }
+  .phone-frame__install { position: relative; display: flex; align-items: center; gap: 7px; margin-top: 35px; padding: 8px 11px; border: 1px solid color-mix(in srgb, var(--success) 28%, transparent); border-radius: 999px; background: color-mix(in srgb, var(--success) 7%, transparent); color: var(--success); font-size: .56rem; }
+  .phone-frame__install span { display: grid; width: 17px; aspect-ratio: 1; place-items: center; border-radius: 50%; background: color-mix(in srgb, var(--success) 18%, transparent); }
+
+  .android-copy h2 { max-width: 720px; font-size: clamp(2.2rem, 4.5vw, 4.35rem); line-height: 1.1; letter-spacing: -.052em; }
+  .android-copy > p { max-width: 680px; margin-top: 18px; color: var(--muted); }
+  .android-stack { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 27px; }
+  .android-stack > span { display: grid; min-height: 72px; align-content: center; padding: 10px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255,255,255,.025); }
+  .android-stack strong { color: var(--primary); font: 800 .7rem/1.4 ui-monospace, monospace; direction: ltr; }
+  .android-stack small { color: var(--soft); font-size: .58rem; }
+
+  .install-steps { display: grid; gap: 12px; margin: 28px 0 0; padding: 0; list-style: none; }
+  .install-steps li { display: flex; align-items: center; gap: 13px; }
+  .install-steps li > span { display: grid; width: 36px; aspect-ratio: 1; flex: 0 0 auto; place-items: center; border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent); border-radius: 11px; background: color-mix(in srgb, var(--primary) 8%, transparent); color: var(--primary); font-weight: 850; }
+  .install-steps li > div { display: grid; }
+  .install-steps strong { font-size: .82rem; }
+  .install-steps small { color: var(--soft); font-size: .66rem; }
+  .android-copy__actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+  .android-note { max-width: 700px; padding: 11px 14px; border-inline-start: 2px solid var(--line-strong); color: var(--soft) !important; font-size: .66rem; }
+
+  .install-guide { width: min(calc(100% - 28px), 690px); }
+  .install-guide__body { display: grid; max-height: 65dvh; gap: 22px; overflow-y: auto; padding: 22px; }
+  .install-guide__intro { display: flex; align-items: center; gap: 15px; padding: 15px; border: 1px solid var(--line); border-radius: 18px; background: rgba(255,255,255,.025); }
+  .install-guide__intro img { width: 64px; height: 64px; border-radius: 18px; box-shadow: 0 0 22px var(--glow-primary); }
+  .install-guide__intro div { display: grid; }
+  .install-guide__intro strong { direction: ltr; }
+  .install-guide__intro small { color: var(--success); font-size: .68rem; }
+  .install-guide section { display: grid; gap: 10px; }
+  .install-guide h3 { font-size: .95rem; }
+  .install-guide ol { display: grid; gap: 8px; margin: 0; padding-inline-start: 24px; color: var(--muted); font-size: .77rem; }
+  .tech-list { display: grid; gap: 8px; }
+  .tech-list > div { display: grid; grid-template-columns: 145px 1fr; gap: 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; }
+  .tech-list dt { color: var(--primary); font: 750 .66rem/1.6 ui-monospace, monospace; direction: ltr; }
+  .tech-list dd { color: var(--muted); font-size: .68rem; }
+  .install-guide__notice { padding: 14px; border: 1px solid color-mix(in srgb, var(--primary) 22%, transparent); border-radius: 15px; background: color-mix(in srgb, var(--primary) 5%, transparent); }
+  .install-guide__notice strong { font-size: .8rem; }
+  .install-guide__notice p { margin-top: 5px; color: var(--muted); font-size: .68rem; }
 
   .system-strip {
     display: grid;
@@ -705,6 +826,8 @@
     .hero__actions, .hero__metrics { justify-content: center; }
     .scene-shell { width: min(100%, 760px); justify-self: center; }
     .feature-grid { grid-template-columns: repeat(2, 1fr); }
+    .android-section { grid-template-columns: minmax(290px, .75fr) minmax(0, 1.25fr); gap: 42px; }
+    .android-stack { grid-template-columns: repeat(2, 1fr); }
     .system-strip { grid-template-columns: .8fr 1.3fr; }
     .system-strip dl { grid-column: 1 / -1; grid-template-columns: repeat(3, 1fr); }
   }
@@ -745,6 +868,12 @@
     .feature-grid { grid-template-columns: 1fr; }
     .feature-card { min-height: 220px; }
     .feature-card h3 { margin-top: 28px; }
+    .android-section { grid-template-columns: 1fr; gap: 36px; }
+    .android-copy { order: -1; }
+    .android-visual { min-height: 520px; }
+    .android-copy h2 { font-size: clamp(2.2rem, 11vw, 3.6rem); }
+    .android-copy__actions { display: grid; }
+    .tech-list > div { grid-template-columns: 1fr; gap: 3px; }
     .system-strip { grid-template-columns: 1fr; gap: 22px; padding: 30px 0; }
     .system-strip__visual { height: 140px; }
     .system-strip dl { grid-column: auto; grid-template-columns: 1fr; }
@@ -773,6 +902,11 @@
     .energy-core__sphere { width: 58px; font-size: 1.1rem; }
     .energy-core__label { font-size: .47rem; }
     .section__heading h2 { font-size: 2.25rem; }
+    .android-stack { grid-template-columns: repeat(2, 1fr); }
+    .android-visual { min-height: 470px; }
+    .phone-frame { width: 220px; }
+    .install-guide__body { padding: 16px; }
+    .install-guide__intro { align-items: flex-start; }
   }
 
   @media (prefers-reduced-motion: reduce) {

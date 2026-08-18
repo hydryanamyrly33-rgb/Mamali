@@ -2,9 +2,28 @@ const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
 const SITE_CONFIG = Object.freeze({
-  telegram: {
-    deepLink: 'tg://resolve?domain=Mr_CaceRo',
-    fallback: 'https://t.me/Mr_CaceRo',
+  apps: {
+    instagram: {
+      label: 'اینستاگرام',
+      android: 'intent://www.instagram.com/#Intent;scheme=https;package=com.instagram.android;S.browser_fallback_url=https%3A%2F%2Fwww.instagram.com%2F;end',
+      ios: 'instagram://app',
+      desktop: 'instagram://app',
+      fallback: 'https://www.instagram.com/',
+    },
+    youtube: {
+      label: 'یوتیوب',
+      android: 'intent://www.youtube.com/#Intent;scheme=https;package=com.google.android.youtube;S.browser_fallback_url=https%3A%2F%2Fwww.youtube.com%2F;end',
+      ios: 'youtube://',
+      desktop: 'https://www.youtube.com/',
+      fallback: 'https://www.youtube.com/',
+    },
+    telegram: {
+      label: 'تلگرام',
+      android: 'tg://resolve?domain=Mr_CaceRo',
+      ios: 'tg://resolve?domain=Mr_CaceRo',
+      desktop: 'tg://resolve?domain=Mr_CaceRo',
+      fallback: 'https://t.me/Mr_CaceRo',
+    },
   },
   storageKey: 'mamali-orbit-settings-v2',
   themes: ['neon', 'aurora', 'solar'],
@@ -427,7 +446,40 @@ function cycleTheme() {
   toast(`تم ${names[settings.theme]} فعال شد.`);
 }
 
-function openTelegram() {
+function getPlatform() {
+  const agent = navigator.userAgent.toLowerCase();
+  if (/android/.test(agent)) return 'android';
+  if (/iphone|ipad|ipod/.test(agent)) return 'ios';
+  return 'desktop';
+}
+
+function getNativeAppLink(appId) {
+  const app = SITE_CONFIG.apps[appId];
+  return app?.[getPlatform()] || app?.fallback || '#';
+}
+
+function openNativeApp(appId) {
+  const app = SITE_CONFIG.apps[appId];
+  if (!app) return;
+
+  const deepLink = getNativeAppLink(appId);
+  sound.play('open');
+
+  if (deepLink.startsWith('https://')) {
+    toast(`نسخه وب ${app.label} باز می‌شود؛ روی موبایل دکمه مستقیماً اپ را اجرا می‌کند.`, 3000);
+    window.open(app.fallback, '_blank', 'noopener,noreferrer');
+    return;
+  }
+
+  toast(`در حال بازکردن اپ ${app.label}…`, 2200);
+
+  // Android intent: URLs include their own browser fallback and must run directly
+  // inside the user's click gesture. Chrome handles the app handoff itself.
+  if (deepLink.startsWith('intent:')) {
+    window.location.href = deepLink;
+    return;
+  }
+
   let appOpened = false;
   let fallbackTimer;
   const markOpened = () => {
@@ -440,37 +492,39 @@ function openTelegram() {
     if (document.hidden) markOpened();
   }, { once: true });
 
-  toast('در حال اجرای اپلیکیشن تلگرام…', 2200);
-  sound.play('open');
-  window.location.href = SITE_CONFIG.telegram.deepLink;
-
+  window.location.href = deepLink;
   fallbackTimer = window.setTimeout(() => {
     if (appOpened || document.hidden) return;
-    toast('اپ تلگرام پیدا نشد؛ نسخه وب به‌عنوان مسیر پشتیبان باز می‌شود.', 2600);
-    window.location.href = SITE_CONFIG.telegram.fallback;
-  }, 2600);
+    toast(`اپ ${app.label} پیدا نشد؛ نسخه وب باز می‌شود.`, 2600);
+    window.location.href = app.fallback;
+  }, 2400);
 }
 
-function setupTelegramLink() {
-  const link = $('#telegramPortal');
-  link.href = SITE_CONFIG.telegram.deepLink;
-  link.dataset.fallback = SITE_CONFIG.telegram.fallback;
-  link.addEventListener('click', event => {
-    event.preventDefault();
-    openTelegram();
-  });
+function setupNativeAppLinks() {
+  for (const link of $$('[data-native-app]')) {
+    const appId = link.dataset.nativeApp;
+    const app = SITE_CONFIG.apps[appId];
+    if (!app) continue;
+    link.href = getNativeAppLink(appId);
+    link.dataset.fallback = app.fallback;
+    link.addEventListener('click', event => {
+      event.preventDefault();
+      openNativeApp(appId);
+    });
+  }
 }
 
 function setupDialogs() {
   const settingsDialog = $('#settingsDialog');
   const commandDialog = $('#commandDialog');
+  const installDialog = $('#installDialog');
 
   $('#settingsButton').addEventListener('click', () => {
     sound.play('tap');
     settingsDialog.showModal();
   });
 
-  for (const dialog of [settingsDialog, commandDialog]) {
+  for (const dialog of [settingsDialog, commandDialog, installDialog]) {
     dialog.addEventListener('click', event => {
       if (event.target !== dialog) return;
       const rect = dialog.getBoundingClientRect();
@@ -519,9 +573,10 @@ function setupCommandPalette() {
   let visibleCommands = [];
 
   const commands = [
-    { icon: 'IG', title: 'بازکردن اینستاگرام', hint: 'شبکه تصویری', keywords: 'instagram اینستا اینستاگرام', run: () => window.open('https://www.instagram.com/', '_blank', 'noopener,noreferrer') },
-    { icon: 'YT', title: 'بازکردن یوتیوب', hint: 'ویدیو و محتوا', keywords: 'youtube یوتیوب ویدیو', run: () => window.open('https://www.youtube.com/', '_blank', 'noopener,noreferrer') },
-    { icon: 'TG', title: 'اجرای اپ تلگرام', hint: 'Deep Link مستقیم', keywords: 'telegram تلگرام app اپ', run: openTelegram },
+    { icon: 'IG', title: 'بازکردن اپ اینستاگرام', hint: 'Deep Link مستقیم', keywords: 'instagram اینستا اینستاگرام app اپ', run: () => openNativeApp('instagram') },
+    { icon: 'YT', title: 'بازکردن اپ یوتیوب', hint: 'Deep Link مستقیم', keywords: 'youtube یوتیوب ویدیو app اپ', run: () => openNativeApp('youtube') },
+    { icon: 'TG', title: 'بازکردن اپ تلگرام', hint: 'Deep Link مستقیم', keywords: 'telegram تلگرام app اپ', run: () => openNativeApp('telegram') },
+    { icon: 'APK', title: 'راهنمای نصب اپ اندروید', hint: 'PWA، آفلاین و صفحه اصلی', keywords: 'android اندروید install نصب pwa apk', run: () => $('#installDialog').showModal() },
     { icon: '◐', title: 'تغییر تم رنگی', hint: 'نئون، شفق، خورشیدی', keywords: 'theme تم رنگ ظاهر', run: cycleTheme },
     { icon: '⚙', title: 'بازکردن تنظیمات', hint: 'کنترل جلوه‌ها', keywords: 'settings تنظیمات کنترل', run: () => $('#settingsDialog').showModal() },
     { icon: '↻', title: 'روشن/خاموش‌کردن حرکت', hint: 'چرخش خودکار مدار', keywords: 'motion حرکت توقف چرخش', run: () => { settings.motion = !settings.motion; applySettings(); } },
@@ -672,26 +727,73 @@ function setupRevealAnimations() {
 }
 
 function setupInstall() {
-  const button = $('#installButton');
+  const buttons = $$('.install-trigger');
+  const guide = $('#installDialog');
+  const standaloneQuery = window.matchMedia('(display-mode: standalone)');
+  let installed = standaloneQuery.matches || Boolean(navigator.standalone);
+
+  const setButtonLabel = (button, label) => {
+    const textNode = [...button.childNodes].find(node => node.nodeType === Node.TEXT_NODE && node.textContent.trim());
+    if (textNode) textNode.textContent = ` ${label} `;
+    else button.textContent = label;
+  };
+
+  const updateInstallState = () => {
+    document.body.classList.toggle('app-installed', installed);
+    for (const button of buttons) {
+      button.classList.toggle('is-installable', Boolean(installPrompt));
+      button.setAttribute('aria-label', installed ? 'اپ ماملی نصب شده است' : 'نصب اپ ماملی روی دستگاه');
+      if (installed) setButtonLabel(button, 'اپ نصب شده');
+    }
+  };
+
   window.addEventListener('beforeinstallprompt', event => {
     event.preventDefault();
     installPrompt = event;
-    button.classList.add('is-installable');
+    updateInstallState();
   });
 
-  button.addEventListener('click', async () => {
-    if (installPrompt) {
-      installPrompt.prompt();
-      const choice = await installPrompt.userChoice;
-      toast(choice.outcome === 'accepted' ? 'ماملی در حال نصب است.' : 'نصب لغو شد.');
-      installPrompt = null;
-      return;
-    }
-    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-    toast(isIOS ? 'از منوی Share گزینه Add to Home Screen را انتخاب کنید.' : 'از منوی مرورگر گزینه Install app یا افزودن به صفحه اصلی را بزنید.', 5200);
+  for (const button of buttons) {
+    button.addEventListener('click', async () => {
+      if (installed) {
+        toast('نسخه اپ ماملی همین حالا روی دستگاه شما اجرا شده است.');
+        return;
+      }
+
+      if (installPrompt) {
+        installPrompt.prompt();
+        const choice = await installPrompt.userChoice;
+        toast(choice.outcome === 'accepted' ? 'ماملی در حال نصب روی دستگاه است.' : 'نصب لغو شد.');
+        installPrompt = null;
+        updateInstallState();
+        return;
+      }
+
+      if (!guide.open) guide.showModal();
+      const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+      toast(isIOS ? 'در Safari از Share، گزینه Add to Home Screen را بزنید.' : 'در Chrome منوی سه‌نقطه و گزینه Install app را انتخاب کنید.', 4800);
+    });
+  }
+
+  for (const button of $$('.open-install-guide')) {
+    button.addEventListener('click', () => {
+      if (!guide.open) guide.showModal();
+    });
+  }
+
+  standaloneQuery.addEventListener?.('change', event => {
+    installed = event.matches;
+    updateInstallState();
   });
 
-  window.addEventListener('appinstalled', () => toast('ماملی با موفقیت روی دستگاه نصب شد.'));
+  window.addEventListener('appinstalled', () => {
+    installed = true;
+    installPrompt = null;
+    updateInstallState();
+    toast('ماملی با موفقیت نصب شد و اکنون مثل یک اپ مستقل اجرا می‌شود.', 4500);
+  });
+
+  updateInstallState();
 }
 
 function registerServiceWorker() {
@@ -708,7 +810,7 @@ function init() {
   cosmos = new CosmosRenderer($('#cosmos'));
   orbit = new OrbitEngine($('#orbitScene'));
   applySettings();
-  setupTelegramLink();
+  setupNativeAppLinks();
   setupDialogs();
   setupCommandPalette();
   setupControls();

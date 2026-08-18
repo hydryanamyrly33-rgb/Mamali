@@ -13,6 +13,7 @@
 
   <link rel="canonical" href="https://hydryanamyrly33-rgb.github.io/Mamali/">
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="preload" href="assets/styles.css" as="style">
   <link rel="stylesheet" href="assets/styles.css">
@@ -52,6 +53,7 @@
     <nav class="nav" aria-label="پیمایش اصلی">
       <a href="#portals">پورتال‌ها</a>
       <a href="#capabilities">قابلیت‌ها</a>
+      <a href="#android-app">اپ اندروید</a>
       <button class="nav__command" id="commandButton" type="button" aria-keyshortcuts="Control+K Meta+K">
         فرمان سریع
         <kbd>⌘ K</kbd>
@@ -75,7 +77,7 @@
           <span class="live-dot" aria-hidden="true"></span>
           سیستم آنلاین است
           <span class="eyebrow__divider" aria-hidden="true"></span>
-          نسخه ۲.۰
+          نسخه ۲.۱
         </div>
 
         <h1 id="hero-title" class="reveal">
@@ -93,8 +95,8 @@
             ورود به مدار
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
           </a>
-          <button class="button button--ghost" id="installButton" type="button">
-            نصب روی دستگاه
+          <button class="button button--ghost install-trigger" id="installButton" type="button">
+            نصب اپ روی دستگاه
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14"/></svg>
           </button>
         </div>
@@ -132,33 +134,33 @@
             <span class="energy-core__label" aria-hidden="true">CORE ONLINE</span>
           </button>
 
-          <a class="portal portal--instagram" data-portal="instagram" data-phase="0" href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">
+          <a class="portal portal--instagram" data-portal="instagram" data-native-app="instagram" data-phase="0" data-fallback="https://www.instagram.com/" href="instagram://app">
             <span class="portal__beam" aria-hidden="true"></span>
             <span class="portal__face">
-              <span class="portal__topline"><span>01</span><span>WEB</span></span>
+              <span class="portal__topline"><span>01</span><span>APP LINK</span></span>
               <span class="portal__icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.7" r="1" class="fill"/></svg>
               </span>
-              <strong>Instagram</strong>
-              <small>ورود به شبکه تصویری</small>
-              <span class="portal__action">بازکردن <span aria-hidden="true">↗</span></span>
+              <strong>Instagram App</strong>
+              <small>ورود مستقیم به اپلیکیشن</small>
+              <span class="portal__action">بازکردن اپ <span aria-hidden="true">↗</span></span>
             </span>
           </a>
 
-          <a class="portal portal--youtube" data-portal="youtube" data-phase="2.094" href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer">
+          <a class="portal portal--youtube" data-portal="youtube" data-native-app="youtube" data-phase="2.094" data-fallback="https://www.youtube.com/" href="vnd.youtube://">
             <span class="portal__beam" aria-hidden="true"></span>
             <span class="portal__face">
-              <span class="portal__topline"><span>02</span><span>VIDEO</span></span>
+              <span class="portal__topline"><span>02</span><span>APP LINK</span></span>
               <span class="portal__icon" aria-hidden="true">
                 <svg viewBox="0 0 24 24"><path d="M21 8.1a3 3 0 0 0-2.1-2.2C17 5.4 12 5.4 12 5.4s-5 0-6.9.5A3 3 0 0 0 3 8.1 31 31 0 0 0 2.5 12 31 31 0 0 0 3 15.9a3 3 0 0 0 2.1 2.2c1.9.5 6.9.5 6.9.5s5 0 6.9-.5a3 3 0 0 0 2.1-2.2 31 31 0 0 0 .5-3.9 31 31 0 0 0-.5-3.9Z"/><path class="cutout" d="m10 15 5-3-5-3Z"/></svg>
               </span>
-              <strong>YouTube</strong>
-              <small>ورود به دنیای ویدیو</small>
-              <span class="portal__action">بازکردن <span aria-hidden="true">↗</span></span>
+              <strong>YouTube App</strong>
+              <small>ورود مستقیم به اپلیکیشن</small>
+              <span class="portal__action">بازکردن اپ <span aria-hidden="true">↗</span></span>
             </span>
           </a>
 
-          <a class="portal portal--telegram" id="telegramPortal" data-portal="telegram" data-phase="4.188" data-fallback="https://t.me/Mr_CaceRo" href="tg://resolve?domain=Mr_CaceRo">
+          <a class="portal portal--telegram" id="telegramPortal" data-portal="telegram" data-native-app="telegram" data-phase="4.188" data-fallback="https://t.me/Mr_CaceRo" href="tg://resolve?domain=Mr_CaceRo">
             <span class="portal__beam" aria-hidden="true"></span>
             <span class="portal__face">
               <span class="portal__topline"><span>03</span><span>APP LINK</span></span>
@@ -167,7 +169,7 @@
               </span>
               <strong>Telegram App</strong>
               <small>ورود مستقیم به اپلیکیشن</small>
-              <span class="portal__action">اجرای اپ <span aria-hidden="true">↗</span></span>
+              <span class="portal__action">بازکردن اپ <span aria-hidden="true">↗</span></span>
             </span>
           </a>
 
@@ -211,6 +213,54 @@
           <h3>کنترل کامل جلوه‌ها</h3>
           <p>تم، صدا، ذرات، حرکت، کیفیت گرافیکی و کاهش انیمیشن همگی در اختیار شما هستند.</p>
         </article>
+      </div>
+    </section>
+
+    <section class="android-section section" id="android-app" aria-labelledby="android-title">
+      <div class="android-visual" data-glass aria-hidden="true">
+        <div class="phone-frame">
+          <div class="phone-frame__camera"></div>
+          <div class="phone-frame__screen">
+            <div class="phone-frame__status"><span>۱۲:۴۸</span><span>● 5G ▰</span></div>
+            <img src="assets/icons/icon-192.png" width="96" height="96" alt="" loading="lazy" decoding="async">
+            <strong>Mamali Orbit</strong>
+            <small>اپ اجتماعی سه‌بعدی</small>
+            <div class="phone-frame__install"><span>✓</span> آماده نصب روی Android</div>
+          </div>
+        </div>
+        <span class="android-visual__orbit android-visual__orbit--one"></span>
+        <span class="android-visual__orbit android-visual__orbit--two"></span>
+      </div>
+
+      <div class="android-copy">
+        <span class="section__kicker">ANDROID APP / PWA</span>
+        <h2 id="android-title">همین سایت، یک اپ واقعی روی گوشی شماست.</h2>
+        <p>
+          ماملی با استاندارد Progressive Web App ساخته شده؛ یعنی از Chrome روی اندروید نصب می‌شود،
+          آیکون اختصاصی دارد، در پنجره مستقل اجرا می‌شود و حتی بدون اینترنت هم بالا می‌آید.
+        </p>
+
+        <div class="android-stack" role="group" aria-label="اجزای فنی اپ اندروید">
+          <span><strong>HTTPS</strong><small>میزبانی امن</small></span>
+          <span><strong>MANIFEST</strong><small>هویت اپ</small></span>
+          <span><strong>192 / 512</strong><small>آیکون اندروید</small></span>
+          <span><strong>OFFLINE</strong><small>Service Worker</small></span>
+        </div>
+
+        <ol class="install-steps">
+          <li><span>۱</span><div><strong>بازکردن در Chrome</strong><small>نسخه زنده ماملی را در Chrome اندروید باز کنید.</small></div></li>
+          <li><span>۲</span><div><strong>زدن دکمه نصب</strong><small>روی «نصب اپ روی دستگاه» یا گزینه Install app در منوی مرورگر بزنید.</small></div></li>
+          <li><span>۳</span><div><strong>اجرای مستقل</strong><small>آیکون M به صفحه اصلی اضافه می‌شود و اپ بدون نوار مرورگر اجرا خواهد شد.</small></div></li>
+        </ol>
+
+        <div class="android-copy__actions">
+          <button class="button button--primary install-trigger" id="installButtonSecondary" type="button">
+            نصب اپ اندروید
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14"/></svg>
+          </button>
+          <button class="button button--ghost open-install-guide" type="button">جزئیات فنی نصب</button>
+        </div>
+        <p class="android-note">این نسخه یک PWA نصب‌شونده است، نه فایل APK مستقل؛ برای انتشار در Google Play می‌توان همین پروژه را بعداً با Trusted Web Activity بسته‌بندی کرد.</p>
       </div>
     </section>
 
@@ -285,6 +335,55 @@
     <div class="dialog__footer">
       <button class="button button--danger" id="resetSettings" type="button">بازنشانی تنظیمات</button>
       <form method="dialog"><button class="button button--primary" value="done">انجام شد</button></form>
+    </div>
+  </dialog>
+
+  <dialog class="install-guide" id="installDialog" aria-labelledby="installGuideTitle">
+    <form method="dialog" class="dialog__header">
+      <div>
+        <span class="dialog__kicker">INSTALLATION CENTER</span>
+        <h2 id="installGuideTitle">ماملی چطور اپ اندروید می‌شود؟</h2>
+      </div>
+      <button class="icon-button" value="close" aria-label="بستن راهنمای نصب">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg>
+      </button>
+    </form>
+
+    <div class="install-guide__body">
+      <div class="install-guide__intro">
+        <img src="assets/icons/icon-192.png" width="72" height="72" alt="آیکون اپ ماملی" loading="lazy" decoding="async">
+        <div><strong>Mamali Orbit for Android</strong><small>Progressive Web App · نسخه نصب‌شونده</small></div>
+      </div>
+
+      <section aria-labelledby="androidGuideHeading">
+        <h3 id="androidGuideHeading">نصب روی Android</h3>
+        <ol>
+          <li>سایت را با <strong>Google Chrome</strong> باز کنید.</li>
+          <li>دکمه «نصب اپ اندروید» را بزنید؛ اگر نمایش داده نشد، منوی سه‌نقطه Chrome را باز کنید.</li>
+          <li>گزینه <strong>Install app</strong> یا <strong>Add to Home screen</strong> را انتخاب و نصب را تأیید کنید.</li>
+          <li>اپ با آیکون اختصاصی M در Launcher قرار می‌گیرد و مستقل از مرورگر اجرا می‌شود.</li>
+        </ol>
+      </section>
+
+      <section aria-labelledby="pwaTechHeading">
+        <h3 id="pwaTechHeading">چه چیزی آن را قابل نصب کرده؟</h3>
+        <dl class="tech-list">
+          <div><dt>Web App Manifest</dt><dd>نام، رنگ، مسیر اجرا، حالت Standalone و آیکون‌های ۱۹۲ و ۵۱۲ پیکسلی</dd></div>
+          <div><dt>Service Worker</dt><dd>کش فایل‌های اصلی، اجرای آفلاین و به‌روزرسانی خودکار نسخه</dd></div>
+          <div><dt>HTTPS</dt><dd>میزبانی امن GitHub Pages؛ شرط اجرای Service Worker و نصب مطمئن</dd></div>
+          <div><dt>Responsive UI</dt><dd>رابط تطبیقی برای نمایشگر، لمس، صفحه‌کلید و حالت اپ</dd></div>
+        </dl>
+      </section>
+
+      <aside class="install-guide__notice">
+        <strong>PWA با APK چه فرقی دارد؟</strong>
+        <p>PWA مستقیماً از مرورگر نصب و خودکار از GitHub به‌روزرسانی می‌شود. APK یک بسته بومی اندروید است. در صورت نیاز، همین PWA را می‌توان با Trusted Web Activity به بسته مناسب Google Play تبدیل کرد.</p>
+      </aside>
+    </div>
+
+    <div class="dialog__footer">
+      <a class="button button--ghost" href="https://hydryanamyrly33-rgb.github.io/Mamali/" target="_blank" rel="noopener noreferrer">بازکردن نسخه زنده</a>
+      <button class="button button--primary install-trigger" id="installButtonDialog" type="button">نصب همین حالا</button>
     </div>
   </dialog>
 

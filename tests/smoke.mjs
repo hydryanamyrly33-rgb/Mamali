@@ -8,6 +8,12 @@ const requiredFiles = [
   'assets/app.js',
   'assets/favicon.svg',
   'assets/social-preview.svg',
+  'assets/icons/icon-192.png',
+  'assets/icons/icon-512.png',
+  'assets/icons/icon-maskable-512.png',
+  'assets/icons/apple-touch-icon.png',
+  'assets/screenshots/android-install-wide.png',
+  'assets/screenshots/android-install-narrow.png',
   'manifest.webmanifest',
   'sw.js',
   'robots.txt',
@@ -33,7 +39,12 @@ const requiredHtmlPatterns = [
   ['Manifest', /rel="manifest"/i],
   ['Skip link', /class="skip-link"/i],
   ['عنوان اصلی', /<h1\b/i],
-  ['Telegram app deep link', /href="tg:\/\/resolve\?domain=/i],
+  ['Instagram native app portal', /data-native-app="instagram"/i],
+  ['YouTube native app portal', /data-native-app="youtube"/i],
+  ['Telegram native app portal', /data-native-app="telegram"[^>]+href="tg:\/\/resolve\?domain=/i],
+  ['Unified app action label', />بازکردن اپ\s*</i],
+  ['Android install section', /id="android-app"/i],
+  ['In-app PWA explanation', /PWA با APK چه فرقی دارد؟/i],
 ];
 
 for (const [label, pattern] of requiredHtmlPatterns) {
@@ -57,6 +68,26 @@ for (const pattern of secretPatterns) {
 
 if (manifest.start_url !== '/Mamali/') failures.push('start_url مانیفست باید /Mamali/ باشد.');
 if (manifest.display !== 'standalone') failures.push('PWA باید standalone باشد.');
+if (manifest.prefer_related_applications !== false) failures.push('prefer_related_applications باید false باشد.');
+
+const icons = manifest.icons || [];
+if (!icons.some(icon => icon.sizes === '192x192' && icon.src.includes('icon-192.png'))) failures.push('آیکون 192x192 در مانیفست تعریف نشده است.');
+if (!icons.some(icon => icon.sizes === '512x512' && icon.src.includes('icon-512.png'))) failures.push('آیکون 512x512 در مانیفست تعریف نشده است.');
+if (!icons.some(icon => icon.sizes === '512x512' && /maskable/.test(icon.purpose || '') && icon.src.includes('icon-maskable-512.png'))) failures.push('آیکون maskable در مانیفست تعریف نشده است.');
+const screenshots = manifest.screenshots || [];
+if (!screenshots.some(item => item.form_factor === 'wide')) failures.push('اسکرین‌شات wide در مانیفست تعریف نشده است.');
+if (!screenshots.some(item => item.form_factor === 'narrow')) failures.push('اسکرین‌شات narrow در مانیفست تعریف نشده است.');
+
+const requiredAppPatterns = [
+  ['Instagram Android package', /package=com\.instagram\.android/],
+  ['YouTube Android package', /package=com\.google\.android\.youtube/],
+  ['Android browser fallback', /S\.browser_fallback_url=/],
+  ['Telegram custom scheme', /tg:\/\/resolve\?domain=Mr_CaceRo/],
+  ['Generic native launcher', /function openNativeApp\(/],
+];
+for (const [label, pattern] of requiredAppPatterns) {
+  if (!pattern.test(app)) failures.push(`الزام App Link پیدا نشد: ${label}`);
+}
 
 if (failures.length) {
   console.error(`Smoke test failed with ${failures.length} problem(s):`);
