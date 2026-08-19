@@ -1,5 +1,5 @@
 /**
- * Mamali Orbit 3.5.0 — single-session lock (one Google email = one live device).
+ * Mamali Orbit 3.6.2 — single-session lock (one Google email = one live device).
  *
  * Persistence:
  *  1) Vercel KV / Upstash REST if KV_REST_API_URL + KV_REST_API_TOKEN exist
@@ -11,7 +11,7 @@
  *
  * GET /api/session → live health for the Google/session test panel
  */
-const APP_VERSION = '3.5.0';
+const APP_VERSION = '3.6.2';
 const LOCK_TTL_MS = 15 * 60 * 1000;
 const ALLOWED_ORIGINS = [
   'https://mamali-orbit.vercel.app',
@@ -192,8 +192,21 @@ export default async function handler(req, res) {
   }
 
   if (action === 'heartbeat') {
+    // 3.6.2: an expired/missing lock from the same trusted browser must not kick
+    // the user out mid-session. Recreate the lock and let claim remain the only
+    // hard conflict point for another fresh device.
     if (!fresh) {
-      json(res, 409, { ok: false, error: 'lock_expired', holder: null });
+      const revived = {
+        email,
+        subject: subject || existing?.subject || '',
+        deviceId,
+        deviceLabel: deviceLabel || existing?.deviceLabel || '',
+        claimedAt: existing?.claimedAt || now(),
+        lastSeen: now(),
+        sessionId: existing?.sessionId || `${now().toString(36)}-${deviceId.slice(0, 8)}`,
+      };
+      await writeLock(email, revived);
+      json(res, 200, { ok: true, revived: true, holder: publicRecord(revived), store: kvConfigured() ? 'kv' : 'memory' });
       return;
     }
     if (existing.deviceId !== deviceId) {
@@ -202,7 +215,7 @@ export default async function handler(req, res) {
     }
     const next = { ...existing, lastSeen: now(), deviceLabel: deviceLabel || existing.deviceLabel };
     await writeLock(email, next);
-    json(res, 200, { ok: true, holder: publicRecord(next) });
+    json(res, 200, { ok: true, holder: publicRecord(next), store: kvConfigured() ? 'kv' : 'memory' });
     return;
   }
 

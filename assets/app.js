@@ -1,7 +1,7 @@
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
-const APP_VERSION = '3.5.0';
+const APP_VERSION = '3.6.2';
 
 const SITE_CONFIG = Object.freeze({
   version: APP_VERSION,
@@ -2355,7 +2355,7 @@ function setupCommandPalette() {
     { icon: 'YT', title: 'بازکردن اپ یوتیوب', hint: 'Deep Link مستقیم', keywords: 'youtube یوتیوب ویدیو app اپ', run: () => openNativeApp('youtube') },
     { icon: 'TG', title: 'بازکردن اپ تلگرام', hint: 'Deep Link مستقیم', keywords: 'telegram تلگرام app اپ', run: () => openNativeApp('telegram') },
     { icon: 'APP', title: 'نصب اپ عمودی و امن', hint: 'Android portrait + secure', keywords: 'android windows اندروید ویندوز install نصب pwa portrait secure عمودی امن', run: () => $('#installDialog').showModal() },
-    { icon: 'UP', title: 'بررسی بروزرسانی ۳.۳', hint: `نسخه ${toPersianDigits(APP_VERSION)} · کانال پایدار`, keywords: 'update بروزرسانی آپدیت version نسخه 3.3', run: () => { $('#updateCenter').scrollIntoView({ behavior: settings.reducedMotion ? 'auto' : 'smooth', block: 'center' }); updateManager?.check(); } },
+    { icon: 'UP', title: 'بررسی بروزرسانی ۳.۶.۲', hint: `نسخه ${toPersianDigits(APP_VERSION)} · کانال پایدار`, keywords: 'update بروزرسانی آپدیت version نسخه 3.6.2 3.6' , run: () => { $('#updateCenter').scrollIntoView({ behavior: settings.reducedMotion ? 'auto' : 'smooth', block: 'center' }); updateManager?.check(); } },
     { icon: '◐', title: 'تغییر تم رنگی',  hint: 'نئون، شفق، خورشیدی', keywords: 'theme تم رنگ ظاهر', run: cycleTheme },
     { icon: '⚙', title: 'تنظیمات امن و عمودی', hint: 'کنترل جلوه‌ها + portrait + secure', keywords: 'settings تنظیمات کنترل secure portrait عمودی امن', run: () => $('#settingsDialog').showModal() },
     { icon: '⌁', title: 'حساب و امنیت دستگاه', hint: 'قفل، خروج یا حذف حساب محلی', keywords: 'google account حساب امنیت قفل خروج', run: () => $('#accountDialog').showModal() },
@@ -2480,7 +2480,7 @@ function setupControls() {
     void core.offsetWidth;
     core.classList.add('is-pulsing');
     sound.play('energy');
-    toast('موج انرژی مدار امن ۳.۳ فعال شد.');
+    toast('موج انرژی مدار امن ۳.۶.۲ فعال شد.');
     window.setTimeout(() => core.classList.remove('is-pulsing'), 1000);
   });
 
@@ -2570,7 +2570,7 @@ class UpdateManager {
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (!this.applying || this.reloading) return;
         this.reloading = true;
-        toast('نسخه امن ۳.۳ فعال شد؛ در حال راه‌اندازی دوباره ماملی…', 3000);
+        toast('نسخه امن ۳.۶.۲ فعال شد؛ در حال راه‌اندازی دوباره ماملی…', 3000);
         window.setTimeout(() => window.location.reload(), 350);
       });
     }
@@ -2604,7 +2604,7 @@ class UpdateManager {
   watchRegistration(registration) {
     const watchWorker = worker => {
       if (!worker) return;
-      this.setMagnet('pulling', 'نسخه امن ۳.۳ پیدا شد؛ در حال آماده‌سازی بسته…');
+      this.setMagnet('pulling', 'نسخه امن ۳.۶.۲ پیدا شد؛ در حال آماده‌سازی بسته…');
       const inspect = () => {
         if (worker.state === 'installed' && navigator.serviceWorker.controller) {
           this.setAvailable(this.latestVersion, [], { workerReady: true });
@@ -2656,7 +2656,7 @@ class UpdateManager {
     this.latestVersion = compareVersions(version, APP_VERSION) >= 0 ? version : APP_VERSION;
     this.latest.textContent = toPersianDigits(this.latestVersion);
     this.setState('available', { workerReady });
-    const note = Array.isArray(notes) && notes.length ? notes[0] : 'نسخه امن ۳.۳ با تعمیر ورود گوگل در اپ.';
+    const note = Array.isArray(notes) && notes.length ? notes[0] : 'نسخه امن ۳.۶.۲ با آرشیو قابل‌بازی و تعمیر ورود گوگل در اپ.';
     this.bannerCopy.textContent = `نسخه ${toPersianDigits(this.latestVersion)} — ${note}`;
     if (workerReady && !this.dismissed) this.banner.hidden = false;
     if (workerReady) {
@@ -2877,7 +2877,7 @@ function setupInstall() {
     installed = true;
     installPrompt = null;
     updateInstallState();
-    toast('ماملی امن ۳.۳ با موفقیت نصب شد و اکنون عمودی و محافظت‌شده اجرا می‌شود.', 4500);
+    toast('ماملی امن ۳.۶.۲ با موفقیت نصب شد و اکنون عمودی و محافظت‌شده اجرا می‌شود.', 4500);
   });
 
   updateInstallState();
@@ -2887,12 +2887,20 @@ function setupVersionArchive() {
   const root = $('#versionArchive');
   if (!root || root.dataset.ready === '1') return;
   root.dataset.ready = '1';
+  const safeText = value => String(value ?? '').replace(/[&<>"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[char]));
+  const playUrlFor = item => {
+    if (typeof item.play === 'string' && item.play.trim()) return item.play;
+    if (item.version === APP_VERSION || item.status === 'current') return './';
+    if (item.version === '3.4.0') return './history/play/3.4.0/';
+    return `./history/play/era.html?v=${encodeURIComponent(item.version || '')}`;
+  };
   const render = items => {
     root.replaceChildren();
     for (const item of items) {
       const article = document.createElement('article');
+      const play = playUrlFor(item);
       article.className = `version-card${item.status === 'current' ? ' is-current' : ''}`;
-      article.innerHTML = `<small>${item.version}</small><strong>${item.title || ''}</strong><span>${item.date || ''}</span><ul>${(item.highlights || []).map(h => `<li>${h}</li>`).join('')}</ul>`;
+      article.innerHTML = `<small>${safeText(item.version)}</small><strong>${safeText(item.title || '')}</strong><span>${safeText(item.date || '')}</span><ul>${(item.highlights || []).map(h => `<li>${safeText(h)}</li>`).join('')}</ul><div class="version-card__actions"><a class="version-card__play" href="${safeText(play)}">اجرای این نسخه</a></div>`;
       root.append(article);
     }
   };
@@ -2900,7 +2908,7 @@ function setupVersionArchive() {
     .then(res => res.ok ? res.json() : Promise.reject())
     .then(data => render(Array.isArray(data.archive) ? data.archive : []))
     .catch(() => render([
-      { version: APP_VERSION, title: 'نسخه فعلی', date: '2026', status: 'current', highlights: ['ورود گوگل در PWA', 'قفل یک‌دستگاهی'] },
+      { version: APP_VERSION, title: 'نسخه فعلی', date: '2026', status: 'current', play: './', highlights: ['ورود گوگل در PWA', 'قفل یک‌دستگاهی', 'آرشیو قابل‌بازی'] },
     ]));
 }
 

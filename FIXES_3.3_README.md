@@ -214,13 +214,13 @@ ScreenSecurity.enableSecure();
 ## ⚠️ امنیت توکن‌ها
 
 شما توکن‌های زیر رو در چت فرستادید:
-- `vcp_...` Vercel
-- `ghp_...` GitHub
+- `Vercel token` (الگوی محرمانه حذف شد)
+- `GitHub token` (الگوی محرمانه حذف شد)
 - Client ID گوگل (عمومیه، مشکلی نداره)
 
 **توصیه فوری:**
 1. توی Vercel Dashboard → Settings → Tokens → اون توکن رو Revoke کنید و یکی جدید بسازید
-2. توی GitHub → Settings → Developer settings → Personal access tokens → اون ghp رو Revoke کنید
+2. توی GitHub → Settings → Developer settings → Personal access tokens → اون توکن GitHub رو Revoke کنید
 3. توکن جدید رو فقط تو Vercel Environment Variables ذخیره کنید، نه تو چت
 
 ---
