@@ -23,6 +23,9 @@ const requiredFiles = [
   'robots.txt',
   'sitemap.xml',
   '.nojekyll',
+  'api/session.js',
+  'history/versions.json',
+  'PROJECT_GUIDE_FOR_NEXT_AI.md',
 ];
 
 const failures = [];
@@ -85,6 +88,9 @@ const requiredHtmlPatterns = [
   ['Lock and local account removal', /id="lockAppButton"[\s\S]+id="removeAccountButton"|id="removeAccountButton"[\s\S]+id="lockAppButton"/i],
   ['Google Identity CSP resources', /script-src[^;]+accounts\.google\.com\/gsi\/client[\s\S]+frame-src[^;]+accounts\.google\.com/i],
   ['Primary Vercel canonical URL', /rel="canonical" href="https:\/\/mamali-orbit\.vercel\.app\/Mamali\/"/i],
+  ['Custom Google primary button', /id="googlePrimaryButton"/i],
+  ['System permission dialog', /id="permissionDialog"/i],
+  ['Version archive', /id="versionArchive"/i],
 ];
 requiredHtmlPatterns.push(['Versioned application script', new RegExp(`assets/app\\.js\\?v=${escapedVersion}`, 'i')]);
 
@@ -155,6 +161,8 @@ const requiredAppPatterns = [
   ['Offline trusted-session continuation', /trusted-offline/],
   ['Only Google expiry metadata retained', /lastGoogleExpiry:\s*payload\.exp \* 1000/],
   ['Authentication before protected app init', /await authManager\.init\(\)/],
+  ['Single-session lock manager', /class SessionLockManager/],
+  ['PWA Google primary login', /startGoogleLogin\(/],
 ];
 if ((html.match(/class="feature-card"/g) || []).length !== 6) failures.push('شبکه قابلیت‌ها باید دقیقاً شش کارت داشته باشد.');
 

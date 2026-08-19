@@ -1,7 +1,7 @@
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
-const APP_VERSION = '3.4.0';
+const APP_VERSION = '3.5.0';
 
 const SITE_CONFIG = Object.freeze({
   version: APP_VERSION,
@@ -14,6 +14,11 @@ const SITE_CONFIG = Object.freeze({
   googleOAuthEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
   authDatabase: 'mamali-trusted-identity-v1',
   authStore: 'sessions',
+  eventStore: 'events',
+  sessionEndpoint: './api/session',
+  versionsEndpoint: './history/versions.json',
+  canonicalOrigin: 'https://mamali-orbit.vercel.app',
+  canonicalRedirect: 'https://mamali-orbit.vercel.app/Mamali/',
   apps: {
     instagram: {
       label: 'اینستاگرام',
@@ -71,19 +76,58 @@ function isAndroid() {
 }
 function getRedirectUri() {
   try {
+    const origin = window.location.origin;
+    if (origin === SITE_CONFIG.canonicalOrigin || origin.endsWith('.vercel.app')) {
+      return SITE_CONFIG.canonicalRedirect;
+    }
     const url = new URL(window.location.href);
-    url.hash = ''; url.search = '';
-    // Ensure trailing slash for /Mamali/
-    let path = url.pathname;
+    url.hash = '';
+    url.search = '';
+    let path = url.pathname.replace(/index\.html$/i, '');
+    if (path.endsWith('/Mamali')) path += '/';
     if (!path.endsWith('/')) {
       const lastSeg = path.split('/').pop();
-      if (!lastSeg.includes('.')) path += '/';
+      if (lastSeg && !lastSeg.includes('.')) path += '/';
     }
     url.pathname = path;
     return url.href;
   } catch {
-    return window.location.origin + '/Mamali/';
+    return SITE_CONFIG.canonicalRedirect;
   }
+}
+
+function getOrCreateDeviceId() {
+  try {
+    const key = 'mamali_device_id_v1';
+    let id = localStorage.getItem(key);
+    if (!id) {
+      id = (crypto.randomUUID && crypto.randomUUID()) || `d-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+      localStorage.setItem(key, id);
+    }
+    return id;
+  } catch {
+    return `tmp-${Date.now().toString(36)}`;
+  }
+}
+
+function getDeviceLabel() {
+  const ua = navigator.userAgent;
+  const platform = detectSimpleDevice();
+  const mode = isStandalonePWA() ? 'PWA' : 'Browser';
+  return `${platform} · ${mode} · ${ua.slice(0, 80)}`;
+}
+
+function detectSimpleDevice() {
+  const ua = navigator.userAgent.toLowerCase();
+  if (/android/.test(ua)) return 'android';
+  if (/iphone|ipad|ipod/.test(ua)) return 'ios';
+  if (ua.includes('windows')) return 'windows';
+  if (ua.includes('mac')) return 'macos';
+  return 'desktop';
+}
+
+function prefersOAuthRedirect() {
+  return isStandalonePWA() || isAndroidWrapper() || isAndroid();
 }
 
 class SafeStorage {
@@ -152,7 +196,10 @@ class OrientationLockManager {
     const desired = this.getDesiredOrientation();
     if (!desired) {
       document.body.classList.remove('is-landscape', 'is-portrait');
-      if (this.prompt) this.prompt.hidden = true;
+      if (this.prompt) {
+        this.prompt.hidden = true;
+        this.prompt.classList.remove('is-visible');
+      }
       return false;
     }
     try {
@@ -186,6 +233,7 @@ class OrientationLockManager {
         document.body.classList.add('is-wrong-orientation');
         if (this.prompt && document.documentElement.dataset.authState !== 'booting') {
           this.prompt.hidden = false;
+          this.prompt.classList.add('is-visible');
           const strong = this.prompt.querySelector('strong');
           if (strong) {
             if (shouldBePortrait) strong.textContent = 'لطفاً گوشی را عمودی نگه دارید';
@@ -194,7 +242,10 @@ class OrientationLockManager {
         }
       } else {
         document.body.classList.remove('is-wrong-orientation');
-        if (this.prompt) this.prompt.hidden = true;
+        if (this.prompt) {
+          this.prompt.hidden = true;
+          this.prompt.classList.remove('is-visible');
+        }
       }
     } catch {}
   }
@@ -205,7 +256,10 @@ class OrientationLockManager {
     window.addEventListener('orientationchange', () => { setTimeout(()=>{ this.checkOrientation(); this.lock(); }, 200); }, {passive:true});
     document.addEventListener('visibilitychange', () => { if (!document.hidden) { this.lock(); this.checkOrientation(); } });
     $('#rotatePromptClose')?.addEventListener('click', () => {
-      if (this.prompt) this.prompt.hidden = true;
+      if (this.prompt) {
+        this.prompt.hidden = true;
+        this.prompt.classList.remove('is-visible');
+      }
       this.lock();
       if (this.getDesiredOrientation().includes('portrait')) toast('📱 قفل عمودی برای اندروید/iOS فعال است.');
       else toast('🪟 قفل افقی برای ویندوز فعال است.');
@@ -221,50 +275,72 @@ class OrientationLockManager {
 class ScreenshotProtectionManager {
   constructor() {
     this.enabled = settings.secure !== false;
+    this.guard = $('#secureGuard');
+    this.lastToast = 0;
+  }
+  applyNative(enabled) {
+    try {
+      if (window.Android && typeof window.Android.setSecureFlag === 'function') window.Android.setSecureFlag(Boolean(enabled));
+      if (enabled && window.Capacitor?.Plugins?.ScreenSecurity?.enableSecure) window.Capacitor.Plugins.ScreenSecurity.enableSecure();
+      if (!enabled && window.Capacitor?.Plugins?.ScreenSecurity?.disableSecure) window.Capacitor.Plugins.ScreenSecurity.disableSecure();
+    } catch {}
+  }
+  showGuard(show) {
+    if (!this.guard) return;
+    this.guard.hidden = !show;
+    this.guard.classList.toggle('is-visible', show);
+  }
+  warnOnce(message) {
+    const now = Date.now();
+    if (now - this.lastToast < 8000) return;
+    this.lastToast = now;
+    toast(message, 2400);
   }
   init() {
-    if (!this.enabled) return;
-
-    // Try native Android FLAG_SECURE bridge if available (real prevention in APK)
-    try {
-      if (window.Android && typeof window.Android.setSecureFlag === 'function') {
-        window.Android.setSecureFlag(true);
+    this.setEnabled(this.enabled);
+    document.addEventListener('visibilitychange', () => {
+      if (!this.enabled) return;
+      this.showGuard(document.hidden);
+    });
+    window.addEventListener('blur', () => { if (this.enabled) this.showGuard(true); });
+    window.addEventListener('focus', () => { if (!document.hidden) this.showGuard(false); });
+    window.addEventListener('pagehide', () => { if (this.enabled) this.showGuard(true); });
+    window.addEventListener('beforeprint', event => {
+      if (!this.enabled) return;
+      event.preventDefault();
+      this.showGuard(true);
+      this.warnOnce('چاپ و عکس صفحه در ماملی محدود شده است.');
+    });
+    document.addEventListener('contextmenu', event => {
+      if (!this.enabled) return;
+      if (event.target.closest('input, textarea, [contenteditable]')) return;
+      event.preventDefault();
+    });
+    document.addEventListener('keydown', event => {
+      if (!this.enabled) return;
+      const key = event.key?.toLowerCase();
+      if (event.key === 'PrintScreen' || ((event.metaKey || event.ctrlKey) && event.shiftKey && ['3','4','s'].includes(key))) {
+        event.preventDefault();
+        this.showGuard(true);
+        try { navigator.clipboard?.writeText(''); } catch {}
+        this.warnOnce('اسکرین‌شات در این برنامه محدود شده است.');
+        setTimeout(() => { if (!document.hidden) this.showGuard(false); }, 900);
       }
-      // Capacitor / Cordova
-      if (window.Capacitor?.Plugins?.ScreenSecurity?.enableSecure) {
-        window.Capacitor.Plugins.ScreenSecurity.enableSecure();
+      if ((event.ctrlKey || event.metaKey) && key === 'p') {
+        event.preventDefault();
+        this.warnOnce('چاپ صفحه غیرفعال است.');
       }
-      // For TWA / PWABuilder, try to set via experimental API
-      if (navigator.mediaDevices && window.Android) {
-        // No-op, just attempt
-      }
-    } catch {}
-
-    // For web version, we DO NOT block PrintScreen or show overlay/toast.
-    // Only add subtle protection: disable drag of images, but allow normal use.
-    // This keeps original design intact.
-
-    document.addEventListener('dragstart', (e)=>{
-      if (this.enabled && e.target.tagName === 'IMG' && !e.target.closest('.phone-frame')) {
-        // allow phone frame drag but block other images drag
-      }
-    }, {passive:true});
-
-    // Add class for CSS (no user-select only on sensitive? keep minimal)
-    if (this.enabled) document.body.classList.add('secure-mode-minimal');
+    }, true);
+    document.addEventListener('dragstart', event => {
+      if (this.enabled && event.target.tagName === 'IMG') event.preventDefault();
+    });
   }
   setEnabled(enabled) {
     this.enabled = enabled;
     document.body.classList.toggle('secure-mode-minimal', enabled);
-    if (enabled) {
-      try {
-        if (window.Android && typeof window.Android.setSecureFlag === 'function') window.Android.setSecureFlag(true);
-      } catch {}
-    } else {
-      try {
-        if (window.Android && typeof window.Android.clearSecureFlag === 'function') window.Android.clearSecureFlag();
-      } catch {}
-    }
+    document.body.classList.toggle('secure-mode-max', enabled);
+    this.applyNative(enabled);
+    if (!enabled) this.showGuard(false);
   }
 }
 
@@ -350,6 +426,9 @@ class DeviceDetectionManager {
     }
     if (this.device.os === 'android') {
       document.body.classList.add('is-android');
+    }
+    if (this.device.os === 'ios') {
+      document.body.classList.add('is-ios', 'is-android');
     }
   }
 }
@@ -462,6 +541,7 @@ class LiveGoogleTestManager {
       jwks: false,
       clientId: false,
       origin: false,
+      sessionApi: false,
     };
     this.latencies = {};
   }
@@ -499,7 +579,15 @@ class LiveGoogleTestManager {
     const origin = window.location.origin;
     this.results.origin = origin === 'https://mamali-orbit.vercel.app' || origin.includes('vercel.app') || origin.includes('github.io') || origin.includes('localhost');
 
-    // Update UI
+    try {
+      const t0 = performance.now();
+      const res = await fetch('./api/session', { cache: 'no-store' });
+      this.results.sessionApi = res.ok;
+      this.latencies.sessionApi = Math.round(performance.now() - t0);
+    } catch {
+      this.results.sessionApi = false;
+    }
+
     this.updateUI();
 
     // Return summary
@@ -507,7 +595,7 @@ class LiveGoogleTestManager {
   }
   updateUI() {
     if (!this.networkEl) return;
-    const allGood = Object.values(this.results).every(v=>v===true);
+    const allGood = ['internet','gsiScript','jwks','clientId','origin'].every(key => this.results[key] === true);
     this.networkEl.dataset.state = allGood ? 'online' : (this.results.internet ? 'warning' : 'offline');
     const span = this.networkEl.querySelector('span');
     if (span) {
@@ -525,6 +613,7 @@ class LiveGoogleTestManager {
         <div class="live-test-row ${this.results.jwks?'ok':'fail'}"><span>JWKs Certs</span><span>${this.results.jwks?`✓ ${this.latencies.jwks}ms`:'✗'}</span></div>
         <div class="live-test-row ${this.results.clientId?'ok':'fail'}"><span>Client ID</span><span>${this.results.clientId?'✓ معتبر':'✗ نامعتبر'}</span></div>
         <div class="live-test-row ${this.results.origin?'ok':'fail'}"><span>Origin</span><span>${this.results.origin?'✓ '+window.location.origin:'✗ '+window.location.origin}</span></div>
+        <div class="live-test-row ${this.results.sessionApi?'ok':'fail'}"><span>قفل نشست</span><span>${this.results.sessionApi?`✓ ${this.latencies.sessionApi}ms`:'✗'}</span></div>
       `;
     }
   }
@@ -670,6 +759,8 @@ class PermissionManager {
     setTimeout(()=>{ try{ this.dialog?.close(); }catch{} }, 900);
   }
   init() {
+    if (this.bound) return;
+    this.bound = true;
     if (this.hasRequested) return;
     const isPWA = isStandalonePWA();
     const isAndroidWrap = isAndroidWrapper();
@@ -719,17 +810,85 @@ class PermissionManager {
   }
 }
 
+class SessionLockManager {
+  constructor() {
+    this.timer = 0;
+    this.deviceId = getOrCreateDeviceId();
+    this.online = true;
+  }
+  endpoint() {
+    return SITE_CONFIG.sessionEndpoint || './api/session';
+  }
+  async request(action, profile = {}) {
+    const body = {
+      action,
+      email: profile.email || '',
+      subject: profile.subject || '',
+      deviceId: this.deviceId,
+      deviceLabel: getDeviceLabel(),
+    };
+    const response = await fetch(this.endpoint(), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      cache: 'no-store',
+      body: JSON.stringify(body),
+    });
+    let data = {};
+    try { data = await response.json(); } catch { data = {}; }
+    return { status: response.status, data };
+  }
+  async claim(profile) {
+    if (!navigator.onLine || !profile?.email) return { ok: true, skipped: true };
+    try {
+      const { status, data } = await this.request('claim', profile);
+      if (status === 409) return { ok: false, blocked: true, holder: data.holder, error: data.error };
+      if (!data.ok) return { ok: true, skipped: true, warning: data.error || 'session_api_failed' };
+      this.startHeartbeat(profile);
+      return { ok: true, holder: data.holder, store: data.store };
+    } catch {
+      return { ok: true, skipped: true, warning: 'session_api_unreachable' };
+    }
+  }
+  startHeartbeat(profile) {
+    this.stopHeartbeat();
+    this.timer = window.setInterval(() => {
+      if (!navigator.onLine || document.hidden) return;
+      this.request('heartbeat', profile).catch(() => {});
+    }, 25000);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden && navigator.onLine) this.request('heartbeat', profile).catch(() => {});
+    });
+  }
+  stopHeartbeat() {
+    if (this.timer) window.clearInterval(this.timer);
+    this.timer = 0;
+  }
+  async release(profile) {
+    this.stopHeartbeat();
+    if (!navigator.onLine || !profile?.email) return;
+    try { await this.request('release', profile); } catch {}
+  }
+}
+
+const sessionLock = new SessionLockManager();
+
 class TrustedDeviceStore {
   constructor() { this.databasePromise = null; }
   open() {
     if (!('indexedDB' in window)) return Promise.reject(new Error('IndexedDB is unavailable'));
     if (this.databasePromise) return this.databasePromise;
     this.databasePromise = new Promise((resolve, reject) => {
-      const request = indexedDB.open(SITE_CONFIG.authDatabase, 1);
+      const request = indexedDB.open(SITE_CONFIG.authDatabase, 2);
       request.addEventListener('upgradeneeded', () => {
         const database = request.result;
         if (!database.objectStoreNames.contains(SITE_CONFIG.authStore)) {
-          database.createObjectStore(SITE_CONFIG.authStore, { keyPath: 'key' });
+          const sessions = database.createObjectStore(SITE_CONFIG.authStore, { keyPath: 'key' });
+          try { sessions.createIndex('email', 'email', { unique: false }); } catch {}
+          try { sessions.createIndex('subject', 'subject', { unique: false }); } catch {}
+        }
+        if (SITE_CONFIG.eventStore && !database.objectStoreNames.contains(SITE_CONFIG.eventStore)) {
+          const events = database.createObjectStore(SITE_CONFIG.eventStore, { keyPath: 'id', autoIncrement: true });
+          try { events.createIndex('at', 'at', { unique: false }); } catch {}
         }
       });
       request.addEventListener('success', () => resolve(request.result));
@@ -839,6 +998,7 @@ class AuthManager {
     this.accountDialog = $('#accountDialog');
     this.externalButton = $('#externalGoogleButton');
     this.oauthButton = $('#oauthRedirectButton');
+    this.primaryButton = $('#googlePrimaryButton');
   }
 
   async init() {
@@ -850,6 +1010,13 @@ class AuthManager {
     this.updateNetworkState({ loadGoogle: false });
     this.registerAppShell();
     this.checkExternalToken();
+    try {
+      const oauthError = sessionStorage.getItem('mamali_oauth_error');
+      if (oauthError) {
+        sessionStorage.removeItem('mamali_oauth_error');
+        this.setMessage(`ورود گوگل لغو یا رد شد: ${oauthError}. دوباره از دکمه سفید «ورود با گوگل» تلاش کنید.`, 'error');
+      }
+    } catch {}
 
     try {
       const stored = await this.store.get();
@@ -883,9 +1050,9 @@ class AuthManager {
     $('#lockAppButton').addEventListener('click', () => this.lock());
     $('#removeAccountButton').addEventListener('click', event => this.removeAccount(event.currentTarget));
 
-    // New 3.3 external buttons
     this.externalButton?.addEventListener('click', () => this.launchExternalBrowserLogin());
     this.oauthButton?.addEventListener('click', () => this.launchOAuthRedirect());
+    this.primaryButton?.addEventListener('click', () => this.startGoogleLogin());
 
     this.accountDialog.addEventListener('click', event => {
       if (event.target !== this.accountDialog) return;
@@ -955,13 +1122,34 @@ class AuthManager {
     const isStandalone = isStandalonePWA() || isAndroidWrapper();
     if (this.externalButton) this.externalButton.hidden = !isStandalone;
     if (this.oauthButton) this.oauthButton.hidden = false;
+    if (this.primaryButton) {
+      this.primaryButton.hidden = false;
+      const hint = $('#googlePrimaryHint');
+      if (hint) hint.textContent = prefersOAuthRedirect()
+        ? 'روی اپ اندروید این دکمه شما را به صفحه امن گوگل می‌برد و بعد به ماملی برمی‌گرداند.'
+        : 'با حساب گوگل وارد شوید. اگر پاپ‌آپ بسته شد، همین دکمه ریدایرکت امن را شروع می‌کند.';
+    }
 
-    window.setTimeout(() => (this.session ? $('#continueTrustedButton') : this.googleButton).focus?.(), 50);
+    window.setTimeout(() => (this.session ? $('#continueTrustedButton') : this.primaryButton || this.googleButton).focus?.(), 50);
   }
 
   async unlock({ source = 'google' } = {}) {
     if (!this.session) return;
-    const nextSession = { ...this.session, active: true, lastAccessAt: Date.now(), lastAccessMode: source };
+    if (navigator.onLine && source !== 'trusted-offline') {
+      const claim = await sessionLock.claim(this.session);
+      if (claim.blocked) {
+        this.setProgress(false);
+        this.googleAuth.hidden = !navigator.onLine;
+        const other = claim.holder?.deviceLabel || 'دستگاه دیگر';
+        this.setMessage(`این ایمیل الان روی دستگاه دیگری فعال است (${other}). اول آنجا خروج بزنید، بعد اینجا وارد شوید.`, 'error');
+        this.showLockedGate();
+        return;
+      }
+      if (claim.warning) {
+        toast('قفل چنددستگاهی الان در دسترس نبود؛ ورود محلی ادامه پیدا کرد.', 4200);
+      }
+    }
+    const nextSession = { ...this.session, active: true, lastAccessAt: Date.now(), lastAccessMode: source, deviceId: sessionLock.deviceId };
     this.session = nextSession;
     try { await this.store.save(nextSession); } catch { this.storageAvailable = false; }
     this.renderProfile(nextSession);
@@ -1110,17 +1298,31 @@ class AuthManager {
       state: state,
       prompt: 'select_account',
       include_granted_scopes: 'true',
-      ux_mode: 'redirect',
+      hl: 'fa',
     });
     return `${SITE_CONFIG.googleOAuthEndpoint}?${params.toString()}`;
+  }
+
+  startGoogleLogin() {
+    if (prefersOAuthRedirect() || !this.googleReady) {
+      this.launchOAuthRedirect();
+      return;
+    }
+    const official = this.googleButton?.querySelector('div[role="button"], iframe');
+    if (official) {
+      official.click();
+      window.setTimeout(() => {
+        if (document.documentElement.dataset.authState !== 'authenticated') this.launchOAuthRedirect();
+      }, 1800);
+      return;
+    }
+    this.launchOAuthRedirect();
   }
 
   launchOAuthRedirect() {
     const url = this.buildOAuthUrl();
     toast('در حال انتقال به صفحه امن گوگل...', 3500);
-    // For PWA, we need to allow redirect which will come back with hash
-    // Save current scroll etc
-    setTimeout(()=>{ window.location.href = url; }, 400);
+    setTimeout(()=>{ window.location.assign(url); }, 280);
   }
 
   launchExternalBrowserLogin() {
@@ -1222,7 +1424,6 @@ class AuthManager {
         use_fedcm_for_prompt: true,
         use_fedcm_for_button: true,
         itp_support: true,
-        // Enable One Tap for better PWA experience
         prompt_parent_id: 'googleAuth',
       });
 
@@ -1336,6 +1537,7 @@ class AuthManager {
     }
     window.clearTimeout(this.removeConfirmationTimer);
     window.google?.accounts?.id?.disableAutoSelect?.();
+    await sessionLock.release(this.session || {});
     try { await this.store.clear(); } catch { this.storageAvailable = false; }
     this.session = null;
     button.classList.remove('is-confirming');
@@ -1407,19 +1609,21 @@ function applySettings({ notify = false } = {}) {
   const themeColor = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
   $('meta[name="theme-color"]')?.setAttribute('content', themeColor || '#050816');
 
-  $('#particlesSetting').checked = Boolean(settings.particles);
-  $('#glowSetting').checked = Boolean(settings.glow);
-  $('#motionSetting').checked = Boolean(settings.motion);
-  $('#reducedMotionSetting').checked = Boolean(settings.reducedMotion);
-  $('#soundSetting').checked = Boolean(settings.sound);
-  $('#autoUpdateSetting').checked = settings.autoUpdate !== false;
-  $('#secureSetting').checked = settings.secure !== false;
-  $('#portraitSetting').checked = settings.portrait !== false;
-  $('#themeSetting').value = SITE_CONFIG.themes.includes(settings.theme) ? settings.theme : defaults.theme;
-  $('#deviceMotionSetting').value = ['soft', 'balanced', 'free'].includes(settings.deviceMotion) ? settings.deviceMotion : defaults.deviceMotion;
-  $('#phoneDepth').value = String(Math.min(145, Math.max(55, Number(settings.phoneDepth) || defaults.phoneDepth)));
-  $('#phoneDepthValue').value = toPersianDigits($('#phoneDepth').value);
-  $('#qualitySetting').value = ['auto', 'high', 'low'].includes(settings.quality) ? settings.quality : 'auto';
+  const setChecked = (id, value) => { const el = $(id); if (el) el.checked = value; };
+  const setValue = (id, value) => { const el = $(id); if (el) el.value = value; };
+  setChecked('#particlesSetting', Boolean(settings.particles));
+  setChecked('#glowSetting', Boolean(settings.glow));
+  setChecked('#motionSetting', Boolean(settings.motion));
+  setChecked('#reducedMotionSetting', Boolean(settings.reducedMotion));
+  setChecked('#soundSetting', Boolean(settings.sound));
+  setChecked('#autoUpdateSetting', settings.autoUpdate !== false);
+  setChecked('#secureSetting', settings.secure !== false);
+  setChecked('#portraitSetting', settings.portrait !== false);
+  setValue('#themeSetting', SITE_CONFIG.themes.includes(settings.theme) ? settings.theme : defaults.theme);
+  setValue('#deviceMotionSetting', ['soft', 'balanced', 'free'].includes(settings.deviceMotion) ? settings.deviceMotion : defaults.deviceMotion);
+  setValue('#phoneDepth', String(Math.min(145, Math.max(55, Number(settings.phoneDepth) || defaults.phoneDepth))));
+  if ($('#phoneDepthValue') && $('#phoneDepth')) $('#phoneDepthValue').value = toPersianDigits($('#phoneDepth').value);
+  setValue('#qualitySetting', ['auto', 'high', 'low'].includes(settings.quality) ? settings.quality : 'auto');
 
   screenshotManager?.setEnabled(settings.secure !== false);
   if (settings.portrait) orientationManager?.lock();
@@ -2679,6 +2883,27 @@ function setupInstall() {
   updateInstallState();
 }
 
+function setupVersionArchive() {
+  const root = $('#versionArchive');
+  if (!root || root.dataset.ready === '1') return;
+  root.dataset.ready = '1';
+  const render = items => {
+    root.replaceChildren();
+    for (const item of items) {
+      const article = document.createElement('article');
+      article.className = `version-card${item.status === 'current' ? ' is-current' : ''}`;
+      article.innerHTML = `<small>${item.version}</small><strong>${item.title || ''}</strong><span>${item.date || ''}</span><ul>${(item.highlights || []).map(h => `<li>${h}</li>`).join('')}</ul>`;
+      root.append(article);
+    }
+  };
+  fetch(`${SITE_CONFIG.versionsEndpoint}?t=${Date.now()}`, { cache: 'no-store' })
+    .then(res => res.ok ? res.json() : Promise.reject())
+    .then(data => render(Array.isArray(data.archive) ? data.archive : []))
+    .catch(() => render([
+      { version: APP_VERSION, title: 'نسخه فعلی', date: '2026', status: 'current', highlights: ['ورود گوگل در PWA', 'قفل یک‌دستگاهی'] },
+    ]));
+}
+
 function initProtectedApp() {
   if (protectedAppInitialized) return;
   protectedAppInitialized = true;
@@ -2740,6 +2965,9 @@ async function bootstrap() {
   liveGoogleTestManager.init();
   scrollCinematicManager = new ScrollCinematicManager();
   scrollCinematicManager.init();
+  permissionManager = new PermissionManager();
+  permissionManager.init();
+  setupVersionArchive();
 
   authManager = new AuthManager();
   await authManager.init();

@@ -29,3 +29,7 @@ Authorized JS origins:
 - https://hydryanamyrly33-rgb.github.io
 Authorized redirect URIs:
 - https://mamali-orbit.vercel.app/Mamali/
+
+## Session lock API
+`GET/POST /api/session` and `/Mamali/api/session`
+Optional durable store: set `KV_REST_API_URL` + `KV_REST_API_TOKEN` on Vercel.
