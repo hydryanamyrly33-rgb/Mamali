@@ -26,6 +26,14 @@
       "destination": "/index.html"
     },
     {
+      "source": "/Mamali/history/play/:ver",
+      "destination": "/history/play/:ver/index.html"
+    },
+    {
+      "source": "/Mamali/history/play/:ver/",
+      "destination": "/history/play/:ver/index.html"
+    },
+    {
       "source": "/Mamali/:path*",
       "destination": "/:path*"
     }

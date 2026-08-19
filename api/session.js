@@ -1,18 +1,24 @@
 /**
- * Mamali Orbit 3.6.2 — single-session lock (one Google email = one live device).
+ * Mamali Orbit 3.7.0 — single-session lock (one Google email = one live device).
  *
  * Persistence:
  *  1) Vercel KV / Upstash REST if KV_REST_API_URL + KV_REST_API_TOKEN exist
- *  2) /tmp JSON on the current instance (best-effort)
+ *  2) /tmp JSON on the current instance (survives warm invocations)
  *  3) in-memory Map
+ *
+ * A live lock lasts until explicit release (قفل و خروج / حذف حساب)
+ * or 14 days of silence — not a 15-minute heartbeat timeout.
  *
  * Contract (POST JSON):
  *  { action: 'claim'|'heartbeat'|'release'|'status', email, subject, deviceId, deviceLabel }
  *
  * GET /api/session → live health for the Google/session test panel
  */
-const APP_VERSION = '3.6.2';
-const LOCK_TTL_MS = 15 * 60 * 1000;
+import { readFileSync, writeFileSync } from 'node:fs';
+
+const APP_VERSION = '3.7.0';
+const LOCK_TTL_MS = 14 * 24 * 60 * 60 * 1000;
+const TMP_PATH = '/tmp/mamali-session-locks.json';
 const ALLOWED_ORIGINS = [
   'https://mamali-orbit.vercel.app',
   'https://hydryanamyrly33-rgb.github.io',
@@ -22,6 +28,23 @@ const ALLOWED_ORIGINS = [
 
 const memory = globalThis.__mamaliSessionLocks || new Map();
 globalThis.__mamaliSessionLocks = memory;
+
+function hydrateFromTmp() {
+  try {
+    const parsed = JSON.parse(readFileSync(TMP_PATH, 'utf8'));
+    for (const [email, record] of Object.entries(parsed || {})) {
+      if (!memory.has(email)) memory.set(email, record);
+    }
+  } catch {}
+}
+
+function persistToTmp() {
+  try {
+    writeFileSync(TMP_PATH, JSON.stringify(Object.fromEntries(memory)));
+  } catch {}
+}
+
+hydrateFromTmp();
 
 function json(res, status, body) {
   res.statusCode = status;
@@ -55,6 +78,10 @@ function kvConfigured() {
   return Boolean(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
 }
 
+function storeName() {
+  return kvConfigured() ? 'kv' : 'memory+tmp';
+}
+
 async function kvCommand(command) {
   const response = await fetch(`${process.env.KV_REST_API_URL}`, {
     method: 'POST',
@@ -69,6 +96,7 @@ async function kvCommand(command) {
 }
 
 async function readLock(email) {
+  hydrateFromTmp();
   if (kvConfigured()) {
     try {
       const result = await kvCommand(['GET', `mamali:lock:${email}`]);
@@ -80,6 +108,7 @@ async function readLock(email) {
 
 async function writeLock(email, record) {
   memory.set(email, record);
+  persistToTmp();
   if (kvConfigured()) {
     try {
       await kvCommand(['SET', `mamali:lock:${email}`, JSON.stringify(record), 'PX', String(LOCK_TTL_MS)]);
@@ -89,6 +118,7 @@ async function writeLock(email, record) {
 
 async function deleteLock(email) {
   memory.delete(email);
+  persistToTmp();
   if (kvConfigured()) {
     try { await kvCommand(['DEL', `mamali:lock:${email}`]); } catch {}
   }
@@ -137,7 +167,7 @@ export default async function handler(req, res) {
       ok: true,
       service: 'mamali-session-lock',
       version: APP_VERSION,
-      store: kvConfigured() ? 'kv' : 'memory',
+      store: storeName(),
       ttlMs: LOCK_TTL_MS,
       time: now(),
     });
@@ -180,7 +210,7 @@ export default async function handler(req, res) {
       locked: fresh,
       sameDevice: Boolean(fresh && existing.deviceId === deviceId),
       holder: fresh ? publicRecord(existing) : null,
-      store: kvConfigured() ? 'kv' : 'memory',
+      store: storeName(),
     });
     return;
   }
@@ -192,9 +222,8 @@ export default async function handler(req, res) {
   }
 
   if (action === 'heartbeat') {
-    // 3.6.2: an expired/missing lock from the same trusted browser must not kick
-    // the user out mid-session. Recreate the lock and let claim remain the only
-    // hard conflict point for another fresh device.
+    // Keep the same trusted browser alive. Recreate an expired lock instead of
+    // kicking the user out mid-session. Claim remains the only hard conflict.
     if (!fresh) {
       const revived = {
         email,
@@ -206,7 +235,7 @@ export default async function handler(req, res) {
         sessionId: existing?.sessionId || `${now().toString(36)}-${deviceId.slice(0, 8)}`,
       };
       await writeLock(email, revived);
-      json(res, 200, { ok: true, revived: true, holder: publicRecord(revived), store: kvConfigured() ? 'kv' : 'memory' });
+      json(res, 200, { ok: true, revived: true, holder: publicRecord(revived), store: storeName() });
       return;
     }
     if (existing.deviceId !== deviceId) {
@@ -215,11 +244,10 @@ export default async function handler(req, res) {
     }
     const next = { ...existing, lastSeen: now(), deviceLabel: deviceLabel || existing.deviceLabel };
     await writeLock(email, next);
-    json(res, 200, { ok: true, holder: publicRecord(next), store: kvConfigured() ? 'kv' : 'memory' });
+    json(res, 200, { ok: true, holder: publicRecord(next), store: storeName() });
     return;
   }
 
-  // claim
   if (fresh && existing.deviceId !== deviceId) {
     json(res, 409, {
       ok: false,
@@ -239,5 +267,5 @@ export default async function handler(req, res) {
     sessionId: fresh && existing.deviceId === deviceId ? existing.sessionId : `${now().toString(36)}-${deviceId.slice(0, 8)}`,
   };
   await writeLock(email, record);
-  json(res, 200, { ok: true, claimed: true, holder: publicRecord(record), store: kvConfigured() ? 'kv' : 'memory' });
+  json(res, 200, { ok: true, claimed: true, holder: publicRecord(record), store: storeName() });
 }

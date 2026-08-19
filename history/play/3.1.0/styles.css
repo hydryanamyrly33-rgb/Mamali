@@ -580,7 +580,7 @@
   }
   .scene__hint svg { width: 17px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 
-  .section { padding: 105px 0; scroll-margin-top: 100px; }
+  .section { padding: 105px 0; }
   .features,
   .android-section,
   .system-strip,
@@ -642,7 +642,7 @@
     transition: background .3s ease;
   }
   .android-visual::after {
-    content: "ANDROID + WINDOWS / PWA 3.2.0";
+    content: "ANDROID + WINDOWS / PWA 3.1";
     position: absolute;
     bottom: 18px;
     left: 22px;
@@ -1241,7 +1241,7 @@
   .auth-gate__footer {
     padding-top: 12px;
     color: var(--soft);
-    font: 700 .75rem/1.4 ui-monospace, monospace;
+    font: 700 .55rem/1.4 ui-monospace, monospace;
     letter-spacing: .12em;
     direction: ltr;
   }
@@ -1256,7 +1256,7 @@
     border-radius: 999px;
     background: rgba(255,255,255,.025);
     color: var(--muted);
-    font-size: .75rem;
+    font-size: .68rem;
     backdrop-filter: blur(14px);
   }
   .auth-network i { width: 7px; aspect-ratio: 1; border-radius: 50%; background: var(--soft); box-shadow: 0 0 9px currentColor; }
@@ -1366,7 +1366,7 @@
   }
   .auth-core__shield svg { width: 42px; fill: none; stroke: currentColor; stroke-width: 1.45; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 8px var(--primary)); }
   .auth-core strong { margin-top: 20px; font: 900 .9rem/1 ui-monospace, monospace; letter-spacing: .15em; transform: translateZ(28px); }
-  .auth-core small { margin-top: 8px; color: var(--soft); font: 700 .75rem/1 ui-monospace, monospace; letter-spacing: .12em; transform: translateZ(22px); }
+  .auth-core small { margin-top: 8px; color: var(--soft); font: 700 .47rem/1 ui-monospace, monospace; letter-spacing: .12em; transform: translateZ(22px); }
   .auth-visual__label { position: absolute; padding: 7px 10px; border: 1px solid var(--line); border-radius: 9px; background: rgba(5,8,22,.62); color: var(--soft); font: 700 .48rem/1 ui-monospace, monospace; letter-spacing: .11em; backdrop-filter: blur(12px); }
   .auth-visual__label--top { top: 16%; right: 4%; }
   .auth-visual__label--bottom { bottom: 18%; left: 4%; }
@@ -1397,18 +1397,18 @@
     transform: rotate(18deg);
     animation: auth-card-shine 7s 1.4s ease-in-out infinite;
   }
-  .auth-card__status { display: inline-flex; width: max-content; align-items: center; gap: 8px; padding: 7px 11px; border: 1px solid color-mix(in srgb, var(--success) 22%, var(--line)); border-radius: 999px; background: color-mix(in srgb, var(--success) 5%, transparent); color: var(--success); font-size: .75rem; }
+  .auth-card__status { display: inline-flex; width: max-content; align-items: center; gap: 8px; padding: 7px 11px; border: 1px solid color-mix(in srgb, var(--success) 22%, var(--line)); border-radius: 999px; background: color-mix(in srgb, var(--success) 5%, transparent); color: var(--success); font-size: .65rem; }
   .auth-card__status span { width: 7px; aspect-ratio: 1; border-radius: 50%; background: currentColor; box-shadow: 0 0 12px currentColor; animation: signal-pulse 1.8s ease-in-out infinite; }
   .auth-card h1 { max-width: 470px; font-size: clamp(2.25rem, 4.6vw, 4.2rem); line-height: 1.05; letter-spacing: -.055em; }
   .auth-card h1 span { display: block; padding-block: .07em; background: linear-gradient(100deg, var(--primary), white 48%, var(--accent)); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .auth-card__lead { color: var(--muted); font-size: .9rem; line-height: 1.9; }
 
-  .auth-progress { display: flex; min-height: 52px; align-items: center; gap: 11px; padding: 10px 13px; border: 1px solid var(--line); border-radius: 14px; background: rgba(0,0,0,.13); color: var(--muted); font-size: .75rem; }
+  .auth-progress { display: flex; min-height: 52px; align-items: center; gap: 11px; padding: 10px 13px; border: 1px solid var(--line); border-radius: 14px; background: rgba(0,0,0,.13); color: var(--muted); font-size: .72rem; }
   .auth-progress__spinner { width: 19px; aspect-ratio: 1; flex: 0 0 auto; border: 2px solid color-mix(in srgb, var(--primary) 18%, transparent); border-top-color: var(--primary); border-radius: 50%; animation: spin .85s linear infinite; }
 
   .trusted-account { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 13px; padding: 15px; border: 1px solid color-mix(in srgb, var(--primary) 27%, var(--line)); border-radius: 19px; background: linear-gradient(120deg, color-mix(in srgb, var(--primary) 8%, transparent), rgba(255,255,255,.018)); box-shadow: inset 0 1px rgba(255,255,255,.06); }
   .trusted-account__copy { display: grid; min-width: 0; }
-  .trusted-account__copy small { color: var(--success); font-size: .75rem; }
+  .trusted-account__copy small { color: var(--success); font-size: .59rem; }
   .trusted-account__copy strong { overflow: hidden; margin-top: 2px; font-size: .86rem; text-overflow: ellipsis; white-space: nowrap; }
   .trusted-account__copy > span { overflow: hidden; color: var(--soft); font: 600 .65rem/1.5 ui-monospace, monospace; direction: ltr; text-align: right; text-overflow: ellipsis; white-space: nowrap; }
   .trusted-account__continue { grid-column: 1 / -1; width: 100%; min-height: 46px; font-size: .75rem; }
@@ -1418,7 +1418,7 @@
   .account-avatar--large { width: 50px; border-radius: 16px; font-size: 1rem; }
   .account-avatar--profile { width: 68px; border-radius: 21px; font-size: 1.25rem; }
 
-  .auth-divider { display: flex; align-items: center; gap: 11px; color: var(--soft); font-size: .75rem; }
+  .auth-divider { display: flex; align-items: center; gap: 11px; color: var(--soft); font-size: .62rem; }
   .auth-divider::before, .auth-divider::after { content: ""; height: 1px; flex: 1; background: var(--line); }
   .google-auth { display: grid; justify-items: stretch; gap: 9px; }
   .google-button-shell { display: grid; min-height: 46px; place-items: center; overflow: hidden; border-radius: 999px; }
@@ -1431,8 +1431,8 @@
   .auth-trust-note { display: flex; align-items: flex-start; gap: 11px; padding-top: 3px; }
   .auth-trust-note > svg { width: 24px; flex: 0 0 auto; margin-top: 2px; fill: none; stroke: var(--primary); stroke-width: 1.45; stroke-linecap: round; stroke-linejoin: round; }
   .auth-trust-note p { display: grid; }
-  .auth-trust-note strong { font-size: .75rem; }
-  .auth-trust-note span { margin-top: 3px; color: var(--soft); font-size: .75rem; line-height: 1.65; }
+  .auth-trust-note strong { font-size: .67rem; }
+  .auth-trust-note span { margin-top: 3px; color: var(--soft); font-size: .6rem; line-height: 1.65; }
 
   .auth-resume-chip { position: fixed; z-index: 12; bottom: 26px; left: 26px; display: none; min-width: 300px; align-items: center; gap: 11px; padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--primary) 34%, var(--line)); border-radius: 17px; background: linear-gradient(120deg, color-mix(in srgb, var(--primary) 9%, rgba(9,14,31,.92)), rgba(7,10,24,.94)); box-shadow: 0 22px 60px rgba(0,0,0,.48), inset 0 1px rgba(255,255,255,.07); color: var(--text); text-align: right; cursor: pointer; backdrop-filter: blur(22px); transition: transform .25s var(--ease), border-color .25s ease, box-shadow .25s ease; }
   .auth-resume-chip:hover { border-color: var(--primary); box-shadow: 0 25px 65px rgba(0,0,0,.52), 0 0 27px var(--glow-primary); transform: translateY(-4px); }
@@ -1459,7 +1459,7 @@
   .account-security-state i { width: 9px; aspect-ratio: 1; flex: 0 0 auto; border-radius: 50%; background: var(--success); box-shadow: 0 0 13px var(--success); }
   .account-security-state p { display: grid; }
   .account-security-state strong { font-size: .73rem; }
-  .account-security-state span { color: var(--soft); font-size: .75rem; }
+  .account-security-state span { color: var(--soft); font-size: .62rem; }
   .account-dialog__privacy { color: var(--soft); font-size: .65rem; }
   .account-dialog__actions { flex-wrap: wrap; }
   .account-dialog__actions .button { font-size: .7rem; }
@@ -1494,21 +1494,21 @@
     .auth-card { width: min(100%, 535px); max-width: none; padding: 26px; border-radius: 27px; backdrop-filter: blur(29px) saturate(140%); }
     .auth-card h1 { font-size: clamp(2.45rem, 10.5vw, 4rem); }
     .auth-card__lead { font-size: .82rem; }
-    .auth-gate__footer { font-size: .75rem; }
+    .auth-gate__footer { font-size: .49rem; }
     .auth-resume-chip { display: none !important; }
   }
 
   @media (max-width: 480px) {
     .auth-gate__header .brand__copy { display: grid; }
-    .auth-gate__header .brand__copy strong { font-size: .75rem; }
+    .auth-gate__header .brand__copy strong { font-size: .73rem; }
     .auth-gate__header .brand__copy small { display: none; }
-    .auth-network { padding: 7px 9px; font-size: .75rem; }
+    .auth-network { padding: 7px 9px; font-size: .59rem; }
     .auth-card { gap: 14px; padding: 21px 17px; border-radius: 23px; }
     .auth-card h1 { font-size: clamp(2.25rem, 13vw, 3.25rem); }
     .auth-card__lead { line-height: 1.75; }
     .auth-progress { min-height: 46px; }
     .trusted-account { padding: 12px; }
-    .auth-trust-note span { font-size: .75rem; }
+    .auth-trust-note span { font-size: .57rem; }
     .auth-gate__footer span:first-child { display: none; }
     .auth-gate__footer { justify-content: flex-end; }
     .account-dialog__actions { flex-direction: column; }
@@ -1525,875 +1525,5 @@
 
   @media (prefers-reduced-motion: reduce) {
     .auth-core { transform: translate(-50%, -50%); }
-  }
-}
-
-
-/* Mamali Orbit 3.2 — richer identity, device, platform and live-update surfaces. */
-@layer base {
-  html[data-theme="prism"] {
-    --bg: #0b0621;
-    --bg-deep: #03010d;
-    --surface: rgba(25, 13, 58, .7);
-    --surface-strong: rgba(30, 16, 67, .94);
-    --line: rgba(183, 162, 255, .19);
-    --line-strong: rgba(114, 246, 255, .39);
-    --primary: #71f6ff;
-    --secondary: #b96dff;
-    --accent: #ff6fcf;
-    --success: #7cffba;
-    --glow-primary: rgba(113, 246, 255, .28);
-    --glow-secondary: rgba(185, 109, 255, .24);
-  }
-
-  html[data-theme="prism"] body {
-    background:
-      radial-gradient(circle at 16% 8%, rgba(255, 111, 207, .13), transparent 27rem),
-      radial-gradient(circle at 84% 3%, rgba(113, 246, 255, .14), transparent 31rem),
-      radial-gradient(circle at 50% 80%, rgba(185, 109, 255, .1), transparent 35rem),
-      linear-gradient(180deg, var(--bg), var(--bg-deep) 84%);
-  }
-}
-
-@layer components {
-  /* Official-color Google emblem presented as a dimensional identity object. */
-  .auth-google-orb {
-    position: relative;
-    z-index: 4;
-    isolation: isolate;
-    overflow: hidden;
-    border-color: rgba(255, 255, 255, .55);
-    border-radius: 50% !important;
-    background:
-      radial-gradient(circle at 31% 23%, #fff, rgba(255,255,255,.9) 12%, transparent 32%),
-      radial-gradient(circle at 50% 50%, #ffffff 0%, #eef2f7 42%, #cbd6e8 78%);
-    transform-style: flat;
-    box-shadow:
-      0 18px 40px rgba(0,0,0,.32),
-      0 0 36px rgba(66,133,244,.22),
-      inset 2px 2px 3px rgba(255,255,255,.85),
-      inset -8px -10px 18px rgba(0,0,0,.22);
-    transform: translateZ(44px);
-    transform-style: preserve-3d;
-  }
-  .auth-google-orb::before,
-  .auth-google-orb::after {
-    content: "";
-    position: absolute;
-    border-radius: inherit;
-    pointer-events: none;
-  }
-  .auth-google-orb::before {
-    display: none;
-    z-index: -2;
-    inset: 5px -9px -11px 8px;
-    border: 1px solid rgba(255,255,255,.13);
-    background: linear-gradient(140deg, #212942, #080b15 54%, #28314e);
-    box-shadow: 0 18px 28px rgba(0,0,0,.44);
-    transform: translateZ(-22px);
-  }
-  .auth-google-orb::after {
-    z-index: 3;
-    inset: -8px;
-    border: 1px solid rgba(66,133,244,.3);
-    box-shadow: 0 0 24px rgba(66,133,244,.2), inset 0 0 17px rgba(52,168,83,.11);
-    animation: google-emblem-ring 3.8s ease-in-out infinite;
-  }
-  .auth-google-orb__depth {
-    position: absolute;
-    z-index: 0;
-    inset: 13%;
-    border-radius: 24px;
-    background: conic-gradient(from 25deg, rgba(66,133,244,.24), rgba(234,67,53,.19), rgba(251,188,5,.2), rgba(52,168,83,.2), rgba(66,133,244,.24));
-    filter: blur(11px);
-    transform: translateZ(-7px) scale(1.17);
-  }
-  .google-g {
-    position: relative;
-    z-index: 2;
-    width: 49px !important;
-    height: 49px;
-    overflow: visible;
-    filter: drop-shadow(0 8px 7px rgba(0,0,0,.4));
-    transform: translateZ(27px);
-  }
-  .google-g path { stroke: none; }
-
-  /* The orbit control now lives beneath the social portals. */
-  .scene-controls-dock {
-    position: absolute;
-    z-index: 45;
-    right: 16px;
-    bottom: 16px;
-    left: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    pointer-events: none;
-  }
-  .scene-controls-dock > * { pointer-events: auto; }
-  .scene-controls-dock .scene__hint {
-    position: static;
-    min-height: 42px;
-    padding: 8px 12px;
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    background: rgba(4, 8, 20, .67);
-    box-shadow: inset 0 1px rgba(255,255,255,.05);
-    color: var(--muted);
-    font-size: .64rem;
-    transform: none;
-    backdrop-filter: blur(14px);
-  }
-  .orbit-motion-control {
-    position: relative;
-    display: inline-flex;
-    min-height: 48px;
-    overflow: hidden;
-    align-items: center;
-    gap: 10px;
-    padding: 7px 13px;
-    border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--line));
-    border-radius: 15px;
-    background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 10%, rgba(5,9,22,.88)), rgba(5,9,22,.88));
-    box-shadow: 0 14px 36px rgba(0,0,0,.31), inset 0 1px rgba(255,255,255,.08);
-    color: var(--text);
-    text-align: right;
-    cursor: pointer;
-    backdrop-filter: blur(16px);
-    transition: transform .25s var(--ease), border-color .25s ease, box-shadow .25s ease;
-  }
-  .orbit-motion-control::after {
-    content: "";
-    position: absolute;
-    top: -60%;
-    bottom: -60%;
-    left: -35%;
-    width: 24%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
-    transform: skewX(-20deg);
-    transition: left .62s var(--ease);
-  }
-  .orbit-motion-control:hover { border-color: var(--primary); box-shadow: 0 17px 41px rgba(0,0,0,.38), 0 0 25px var(--glow-primary); transform: translateY(-3px); }
-  .orbit-motion-control:hover::after { left: 120%; }
-  .orbit-motion-control__icon {
-    position: relative;
-    display: grid;
-    width: 32px;
-    aspect-ratio: 1;
-    flex: 0 0 auto;
-    place-items: center;
-    border: 1px solid color-mix(in srgb, var(--primary) 42%, transparent);
-    border-radius: 10px;
-    background: color-mix(in srgb, var(--primary) 8%, transparent);
-    box-shadow: inset 0 0 13px var(--glow-primary);
-  }
-  .orbit-motion-control__icon i { position: absolute; width: 3px; height: 13px; border-radius: 4px; background: var(--primary); box-shadow: 0 0 8px var(--primary); transition: transform .28s var(--ease), width .28s ease; }
-  .orbit-motion-control__icon i:first-child { transform: translateX(-4px); }
-  .orbit-motion-control__icon i:last-child { transform: translateX(4px); }
-  .orbit-motion-control[aria-pressed="true"] .orbit-motion-control__icon i { width: 3px; height: 15px; transform-origin: bottom; }
-  .orbit-motion-control[aria-pressed="true"] .orbit-motion-control__icon i:first-child { transform: translate(-2px, -1px) rotate(-31deg); }
-  .orbit-motion-control[aria-pressed="true"] .orbit-motion-control__icon i:last-child { transform: translate(2px, 2px) rotate(-31deg); }
-  .orbit-motion-control__copy { display: grid; }
-  .orbit-motion-control__copy small { color: var(--primary); font: 750 .46rem/1.3 ui-monospace, monospace; letter-spacing: .12em; }
-  .orbit-motion-control__copy strong { margin-top: 2px; font-size: .68rem; }
-
-  /* Six capability cards form a balanced responsive matrix. */
-  .feature-grid { grid-template-columns: repeat(3, 1fr); }
-  .feature-card {
-    min-height: 255px;
-    overflow: hidden;
-    background:
-      radial-gradient(circle at 85% 7%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 38%),
-      linear-gradient(145deg, rgba(255,255,255,.06), rgba(255,255,255,.014)), var(--surface);
-    transform-style: preserve-3d;
-  }
-  .feature-card::after { content: ""; position: absolute; right: -22%; bottom: -55%; width: 70%; aspect-ratio: 1; border: 1px solid color-mix(in srgb, var(--primary) 13%, transparent); border-radius: 50%; transition: transform .5s var(--ease), border-color .3s ease; }
-  .feature-card:hover::after { border-color: color-mix(in srgb, var(--primary) 34%, transparent); transform: scale(1.16) rotate(22deg); }
-
-  /* Straight neutral pose with free, inertial pointer and touch depth. */
-  .android-visual {
-    --phone-x: 0px;
-    --phone-y: 0px;
-    --phone-z: 42px;
-    --phone-rx: 0deg;
-    --phone-ry: 0deg;
-    --phone-rz: 0deg;
-    --phone-depth: 1;
-    --phone-scale: 1;
-    --shadow-x: 0px;
-    --shadow-y: 42px;
-    --shadow-blur: 90px;
-  }
-  .phone-stage { perspective: calc(1350px / var(--phone-depth)); perspective-origin: 50% 45%; }
-  .phone-frame {
-    box-shadow:
-      var(--shadow-x) var(--shadow-y) var(--shadow-blur) rgba(0,0,0,.63),
-      0 0 calc(56px * var(--phone-depth)) var(--glow-primary),
-      inset 2px 1px 1px rgba(255,255,255,.34),
-      inset -4px -2px 8px rgba(0,0,0,.8);
-    transform: translate3d(var(--phone-x), var(--phone-y), var(--phone-z)) rotateX(var(--phone-rx)) rotateY(var(--phone-ry)) rotateZ(var(--phone-rz)) scale(var(--phone-scale));
-  }
-  .android-visual.is-free-moving .phone-frame,
-  .android-visual.is-dragging .phone-frame { transition: box-shadow .18s ease, filter .18s ease; }
-  .android-visual.is-dragging .phone-frame { filter: saturate(1.14) brightness(1.05); }
-  .android-visual.is-releasing .phone-frame { transition: box-shadow .24s ease; }
-  .phone-frame__clock { display: grid; gap: 3px; text-align: left; }
-  .phone-frame__clock > span { display: inline-flex; align-items: baseline; direction: ltr; }
-  .phone-frame__clock time { color: var(--text); font-size: .58rem; font-variant-numeric: tabular-nums; }
-  .phone-frame__clock b { color: var(--primary); font-size: .43rem; font-variant-numeric: tabular-nums; }
-  .phone-frame__clock small { max-width: 112px; overflow: hidden; color: var(--soft); font-size: .36rem; letter-spacing: .035em; text-overflow: ellipsis; white-space: nowrap; }
-  .android-visual.is-dragging .phone-frame__screen img { filter: drop-shadow(0 0 12px var(--primary)); transform: translateZ(39px) scale(1.025); }
-  .phone-frame__screen img { transition: transform .32s var(--ease), filter .32s ease; }
-
-  /* Explicit, independent Android and Windows selectors. */
-  .platform-quick-actions {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-    margin-top: 24px;
-  }
-  .platform-quick-actions button {
-    position: relative;
-    display: flex;
-    min-width: 0;
-    min-height: 76px;
-    overflow: hidden;
-    align-items: center;
-    gap: 12px;
-    padding: 12px;
-    border: 1px solid var(--line);
-    border-radius: 17px;
-    background: linear-gradient(135deg, rgba(255,255,255,.045), rgba(255,255,255,.012));
-    color: var(--muted);
-    text-align: right;
-    cursor: pointer;
-    transition: transform .28s var(--ease), border-color .25s ease, background .25s ease, box-shadow .25s ease;
-  }
-  .platform-quick-actions button::after { content: ""; position: absolute; right: -35%; bottom: -90%; width: 80%; aspect-ratio: 1; border: 1px solid currentColor; border-radius: 50%; opacity: .11; transition: transform .45s var(--ease); }
-  .platform-quick-actions button:hover { border-color: var(--line-strong); color: var(--text); transform: translateY(-4px); }
-  .platform-quick-actions button:hover::after { transform: scale(1.22); }
-  .platform-quick-actions button[aria-pressed="true"] { border-color: color-mix(in srgb, var(--primary) 58%, transparent); background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 14%, transparent), color-mix(in srgb, var(--secondary) 8%, transparent)); box-shadow: inset 0 1px rgba(255,255,255,.1), 0 13px 30px rgba(0,0,0,.22), 0 0 24px var(--glow-primary); color: var(--text); }
-  .platform-quick-actions__icon { display: grid; width: 40px; aspect-ratio: 1; flex: 0 0 auto; place-items: center; border: 1px solid color-mix(in srgb, var(--primary) 34%, transparent); border-radius: 12px; background: color-mix(in srgb, var(--primary) 8%, transparent); color: var(--primary); font-size: 1.2rem; }
-  .platform-quick-actions button > span:last-child { display: grid; min-width: 0; }
-  .platform-quick-actions small { color: var(--primary); font: 750 .45rem/1.3 ui-monospace, monospace; letter-spacing: .1em; }
-  .platform-quick-actions strong { margin-top: 4px; overflow: hidden; font-size: .72rem; text-overflow: ellipsis; white-space: nowrap; }
-  .platform-panel.is-active { animation: platform-panel-in .45s var(--ease); }
-  .platform-copy-link { display: inline-flex; min-height: 42px; align-items: center; gap: 8px; margin-top: 17px; padding: 9px 13px; border: 1px solid color-mix(in srgb, var(--primary) 28%, var(--line)); border-radius: 12px; background: color-mix(in srgb, var(--primary) 6%, transparent); color: var(--muted); cursor: pointer; transition: color .2s ease, border-color .2s ease, background .2s ease, transform .2s var(--ease); }
-  .platform-copy-link svg { width: 17px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-  .platform-copy-link:hover, .platform-copy-link.is-copied { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 11%, transparent); color: var(--primary); transform: translateY(-2px); }
-  body[data-install-platform="android"] #androidPanel,
-  body[data-install-platform="windows"] #windowsPanel { border-inline-start: 2px solid color-mix(in srgb, var(--primary) 42%, transparent); padding-inline-start: 15px; }
-
-  /* Automatic-update magnet: visible network, pull, ready and offline states. */
-  .update-magnet {
-    position: relative;
-    display: flex;
-    min-height: 72px;
-    overflow: hidden;
-    align-items: center;
-    gap: 14px;
-    padding: 11px 13px;
-    border: 1px solid color-mix(in srgb, var(--primary) 23%, var(--line));
-    border-radius: 16px;
-    background: radial-gradient(circle at 9% 50%, var(--glow-primary), transparent 27%), rgba(0,0,0,.13);
-    transition: border-color .28s ease, filter .28s ease, opacity .28s ease, background .28s ease;
-  }
-  .update-magnet > span:last-child { display: grid; min-width: 0; }
-  .update-magnet small { color: var(--primary); font: 750 .46rem/1.3 ui-monospace, monospace; letter-spacing: .12em; }
-  .update-magnet strong { margin-top: 4px; color: var(--muted); font-size: .65rem; }
-  .update-magnet__field { position: relative; display: grid; width: 48px; aspect-ratio: 1; flex: 0 0 auto; place-items: center; border: 1px solid color-mix(in srgb, var(--primary) 35%, transparent); border-radius: 15px; background: color-mix(in srgb, var(--primary) 7%, transparent); box-shadow: inset 0 0 17px var(--glow-primary); }
-  .update-magnet__field::before { content: "∩"; color: var(--primary); font: 900 1.55rem/1 ui-monospace, monospace; filter: drop-shadow(0 0 7px var(--primary)); transform: rotate(180deg); }
-  .update-magnet__field i { position: absolute; width: 4px; aspect-ratio: 1; border-radius: 50%; background: var(--primary); box-shadow: 0 0 8px var(--primary); opacity: .7; animation: magnet-particle 1.8s ease-in-out infinite; }
-  .update-magnet__field i:nth-child(1) { right: -5px; animation-delay: -.25s; }
-  .update-magnet__field i:nth-child(2) { right: -11px; top: 9px; animation-delay: -.85s; }
-  .update-magnet__field i:nth-child(3) { right: -10px; bottom: 8px; animation-delay: -1.35s; }
-  .update-magnet[data-state="captured"], .update-magnet[data-state="countdown"] { border-color: color-mix(in srgb, var(--success) 45%, transparent); background: radial-gradient(circle at 9% 50%, color-mix(in srgb, var(--success) 18%, transparent), transparent 29%), rgba(0,0,0,.13); }
-  .update-magnet[data-state="captured"] .update-magnet__field,
-  .update-magnet[data-state="countdown"] .update-magnet__field { border-color: var(--success); color: var(--success); box-shadow: inset 0 0 17px color-mix(in srgb, var(--success) 17%, transparent), 0 0 17px color-mix(in srgb, var(--success) 13%, transparent); }
-  .update-magnet[data-state="countdown"] { animation: magnet-ready 1.2s ease-in-out infinite; }
-  .update-magnet[data-state="activating"] .update-magnet__field { animation: magnet-activate .62s linear infinite; }
-  .update-magnet[data-state="offline"], body.is-offline .update-magnet { filter: grayscale(1); opacity: .52; }
-  .update-magnet[data-state="offline"] .update-magnet__field i,
-  body.is-offline .update-magnet__field i,
-  .update-magnet[data-auto="false"] .update-magnet__field i { animation-play-state: paused; opacity: .18; }
-  .update-center[data-state="countdown"] { border-color: color-mix(in srgb, var(--success) 45%, transparent); }
-  .update-center[data-state="countdown"] .update-center__track span { width: 88%; background: linear-gradient(90deg, var(--success), var(--primary)); }
-  .update-center[data-state="updating"] .update-center__track span { width: 100%; }
-
-  /* Animated range follows the same settings-system visual language. */
-  .setting-range {
-    position: relative;
-    display: flex;
-    min-height: 76px;
-    overflow: hidden;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-    padding: 12px 14px;
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    background: linear-gradient(100deg, rgba(255,255,255,.035), rgba(255,255,255,.012));
-    cursor: pointer;
-    transition: border-color .3s ease, background .3s ease, box-shadow .3s ease, transform .35s var(--ease);
-  }
-  .setting-range::after { content: attr(data-setting-code); position: absolute; top: 8px; left: 10px; color: color-mix(in srgb, var(--primary) 38%, transparent); font: 700 .46rem/1 ui-monospace, monospace; letter-spacing: .1em; direction: ltr; }
-  .setting-range:hover { z-index: 2; border-color: color-mix(in srgb, var(--primary) 42%, transparent); background: linear-gradient(100deg, color-mix(in srgb, var(--primary) 9%, transparent), rgba(255,255,255,.025)); box-shadow: 0 13px 30px rgba(0,0,0,.22), inset 0 1px rgba(255,255,255,.06); transform: translateX(-4px) rotateY(-1.5deg); }
-  .setting-range > label { display: grid; cursor: pointer; }
-  .setting-range strong { font-size: .86rem; }
-  .setting-range small { margin-top: 2px; color: var(--soft); font-size: .68rem; }
-  .range-control { display: flex; min-width: 165px; align-items: center; gap: 10px; direction: ltr; }
-  .range-control input { width: 122px; height: 5px; accent-color: var(--primary); cursor: ew-resize; }
-  .range-control output { display: grid; width: 38px; min-height: 31px; place-items: center; border: 1px solid var(--line); border-radius: 9px; background: rgba(0,0,0,.2); color: var(--primary); font: 750 .65rem/1 ui-monospace, monospace; }
-  .setting-range.is-switching { animation: setting-charge .58s var(--ease); }
-  .settings.is-resetting .setting-range { animation: setting-reset .62s var(--ease); }
-  .settings[open] .setting-range { animation: setting-row-in .52s var(--ease) both; }
-
-  @keyframes google-emblem-ring { 50% { border-color: rgba(52,168,83,.4); box-shadow: 0 0 32px rgba(66,133,244,.27), inset 0 0 22px rgba(251,188,5,.12); transform: scale(1.035) rotate(2deg); } }
-  @keyframes magnet-particle { 0% { opacity: 0; transform: translateX(12px) scale(.6); } 55% { opacity: 1; } 100% { opacity: 0; transform: translateX(-28px) scale(1.1); } }
-  @keyframes magnet-ready { 50% { box-shadow: inset 0 0 20px color-mix(in srgb, var(--success) 8%, transparent), 0 0 20px color-mix(in srgb, var(--success) 8%, transparent); } }
-  @keyframes magnet-activate { to { transform: rotateY(360deg); } }
-}
-
-@layer responsive {
-  @media (max-width: 1060px) {
-    .feature-grid { grid-template-columns: repeat(2, 1fr); }
-    .platform-quick-actions { grid-template-columns: 1fr; }
-  }
-
-  @media (max-width: 760px) {
-    .scene-controls-dock { bottom: 11px; gap: 8px; }
-    .scene-controls-dock .scene__hint { min-height: 40px; }
-    .orbit-motion-control { min-height: 44px; }
-    .android-visual.is-free-moving { overflow: clip; }
-    .platform-quick-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .platform-quick-actions button { min-height: 70px; }
-    .update-magnet { min-height: 68px; }
-  }
-
-  @media (max-width: 520px) {
-    .scene-controls-dock { right: 9px; left: 9px; align-items: stretch; }
-    .scene-controls-dock .scene__hint { width: auto; flex: 1; line-height: 1.45; }
-    .orbit-motion-control { flex: 1; justify-content: center; padding-inline: 8px; }
-    .orbit-motion-control__copy small { display: none; }
-    .platform-quick-actions { grid-template-columns: 1fr; }
-    .platform-quick-actions button { min-height: 64px; }
-    .platform-quick-actions strong { white-space: normal; }
-    .setting-range { min-height: 82px; gap: 10px; padding: 10px 11px; }
-    .setting-range::after { display: none; }
-    .range-control { min-width: 126px; gap: 7px; }
-    .range-control input { width: 84px; }
-    .update-magnet { align-items: flex-start; padding: 10px; }
-    .update-magnet__field { width: 42px; }
-  }
-
-  @media (max-width: 360px) {
-    .scene-controls-dock .scene__hint svg { display: none; }
-    .orbit-motion-control__copy strong { font-size: .6rem; }
-    .phone-frame { width: 205px; }
-    .range-control { min-width: 108px; }
-    .range-control input { width: 68px; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .auth-google-orb { transform: translateZ(18px); }
-    .android-visual .phone-frame { transform: translate3d(0, 0, 30px); }
-  }
-}
-
-@layer components {
-  .auth-google-orb__depth { display: none; }
-}
-
-@layer components {
-  .auth-core { transform-style: flat; }
-}
-
-/* ================= MAMALI 3.3.1 FIXES ================= */
-@layer components {
-  /* Google orb fully round - fix sharp corners */
-  .auth-core--round {
-    border-radius: 50% !important;
-    width: 200px !important;
-    height: 200px !important;
-    display: grid;
-    place-items: center;
-    background: radial-gradient(circle at 30% 25%, rgba(255,255,255,.12), transparent 35%),
-                linear-gradient(145deg, color-mix(in srgb, var(--primary) 10%, #10152a), color-mix(in srgb, var(--secondary) 10%, #080a18));
-    box-shadow: 0 30px 60px rgba(0,0,0,.38), 0 0 50px var(--glow-primary), inset 0 1px 0 rgba(255,255,255,.14);
-    border: 1px solid color-mix(in srgb, var(--primary) 22%, transparent) !important;
-  }
-  .auth-core--round::before { border-radius: 50% !important; inset: 10px !important; }
-  .auth-core--round::after { display: none; }
-  .auth-google-orb--round {
-    border-radius: 50% !important;
-    width: 92px !important;
-    height: 92px !important;
-    aspect-ratio: 1 !important;
-  }
-  .auth-google-orb--round::after { border-radius: 50% !important; }
-
-  /* Device badge - intelligent detection */
-  .device-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 12px;
-    border-radius: 999px;
-    border: 1px solid color-mix(in srgb, var(--primary) 24%, var(--line));
-    background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 9%, transparent), rgba(255,255,255,.03));
-    color: var(--muted);
-    font: 700 .68rem/1 ui-monospace, monospace;
-    backdrop-filter: blur(12px);
-    animation: device-badge-in .5s var(--ease);
-  }
-  .device-badge i { font-style: normal; font-size: 1rem; }
-  .device-badge[data-device="windows"] { border-color: color-mix(in srgb, #4aa0ff 35%, transparent); color: #8ec4ff; }
-  .device-badge[data-device="android"] { border-color: color-mix(in srgb, #3ddc84 35%, transparent); color: #7af0a8; }
-  .device-badge[data-device="ios"] { border-color: color-mix(in srgb, #ccc 30%, transparent); color: #e0e0e0; }
-
-  /* Beautiful Google login - keep original but enhanced */
-  .google-login-beautiful {
-    display: grid;
-    gap: 16px;
-    padding: 14px;
-    border-radius: 20px;
-    border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--line));
-    background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 6%, transparent), rgba(255,255,255,.02));
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
-  }
-  .google-button-shell--beautiful {
-    min-height: 52px;
-    border-radius: 999px;
-    background: linear-gradient(145deg, #ffffff, #f2f4f8) !important;
-    box-shadow: 0 8px 24px rgba(0,0,0,.18), inset 0 1px 0 rgba(255,255,255,.9), 0 0 18px color-mix(in srgb, var(--primary) 12%, transparent) !important;
-    transition: transform .22s var(--ease), box-shadow .22s ease;
-    position: relative;
-    overflow: hidden;
-  }
-  .google-button-shell--beautiful::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    background: linear-gradient(100deg, transparent 25%, rgba(255,255,255,.7) 50%, transparent 75%);
-    background-size: 250% 100%;
-    animation: shimmer 3s ease-in-out infinite;
-    pointer-events: none;
-    mix-blend-mode: overlay;
-  }
-  .google-button-shell--beautiful:hover {
-    transform: translateY(-2px) scale(1.01);
-    box-shadow: 0 12px 32px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.9), 0 0 24px var(--glow-primary) !important;
-  }
-  .google-auth-fallback {
-    display: grid;
-    gap: 8px;
-  }
-  .google-fallback-btn {
-    font-size: .72rem;
-    min-height: 42px;
-    justify-content: flex-start;
-    border-style: dashed;
-    opacity: .85;
-  }
-  .google-fallback-btn:hover { opacity: 1; }
-
-  /* Windows improved design - reduce empty space */
-  .android-section.windows-layout {
-    gap: clamp(28px, 4vw, 56px);
-  }
-  .is-windows .android-visual {
-    min-height: 580px;
-  }
-  .is-windows .android-section {
-    align-items: center;
-  }
-  .is-windows .android-copy h2 {
-    font-size: clamp(2rem, 3.8vw, 3.6rem);
-  }
-  /* Compact system strip on windows */
-  .is-windows .system-strip {
-    padding: 32px;
-    gap: 28px;
-    margin-bottom: 50px;
-    grid-template-columns: .6fr 1.2fr .6fr;
-  }
-
-  /* Responsive intelligent layout */
-  .android-section {
-    container-type: inline-size;
-    container-name: android;
-  }
-  /* Smart device background glow */
-  body[data-device-os="android"] .ambient--one { background: #3ddc84; opacity: .12; }
-  body[data-device-os="windows"] .ambient--one { background: #4aa0ff; opacity: .14; }
-  body[data-device-os="ios"] .ambient--one { background: #a0a0a0; opacity: .10; }
-
-  /* Rotate prompt - minimal, no annoying */
-  .rotate-prompt {
-    position: fixed;
-    z-index: 2147483645;
-    inset: 0;
-    display: none;
-    place-items: center;
-    background: rgba(4,8,20,.82);
-    backdrop-filter: blur(16px);
-    padding: 20px;
-  }
-  .rotate-prompt.is-visible { display: grid; }
-  .rotate-prompt__card {
-    width: min(360px, 92%);
-    padding: 22px;
-    border-radius: 20px;
-    display: grid;
-    gap: 12px;
-    justify-items: center;
-    text-align: center;
-    border: 1px solid var(--line);
-    background: var(--surface-strong);
-    box-shadow: var(--shadow);
-  }
-
-  /* Secure mode minimal - no overlay */
-  .secure-mode-minimal {
-    /* No annoying user-select block */
-  }
-  body.is-android .phone-frame {
-    /* Keep original android design intact */
-  }
-
-  /* Windows taskbar style improvement */
-  .platform-panel {
-    border-radius: 16px;
-    background: linear-gradient(145deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
-    border: 1px solid var(--line);
-    padding: 14px;
-    margin-top: 12px;
-  }
-
-  @keyframes device-badge-in { from { opacity: 0; transform: translateY(8px) scale(.96); } }
-  @keyframes shimmer { 0% { background-position: -250% 0; } 100% { background-position: 250% 0; } }
-}
-
-@layer responsive {
-  @media (max-width: 900px) {
-    .android-section {
-      gap: 32px;
-    }
-    .android-visual {
-      min-height: 520px;
-    }
-  }
-  @media (min-width: 1100px) and (max-width: 1400px) {
-    .android-section {
-      grid-template-columns: minmax(340px, .9fr) minmax(0, 1.1fr);
-    }
-  }
-  /* Intelligent responsive: on very wide screens, avoid huge empty space */
-  @media (min-width: 1600px) {
-    .hero { min-height: 78vh; }
-    .section { padding: 80px 0; }
-    .android-section { gap: 64px; }
-  }
-  /* On Windows with mouse, enhance hover */
-  @media (hover: hover) and (pointer: fine) {
-    body.is-windows .feature-card:hover { transform: translateY(-6px) scale(1.01); }
-    body.is-windows .phone-frame { cursor: grab; }
-  }
-}
-
-/* ================= MAMALI 3.4.0 - NEW FEATURES ================= */
-@layer components {
-  /* Mouse trail - Windows light orb following cursor */
-  .mouse-trail {
-    position: fixed;
-    top: 0; left: 0;
-    width: 300px; height: 300px;
-    border-radius: 50%;
-    background: radial-gradient(circle, color-mix(in srgb, var(--primary) 18%, transparent), transparent 70%);
-    pointer-events: none;
-    z-index: 9998;
-    mix-blend-mode: screen;
-    opacity: 0.6;
-    transform: translate(-50%, -50%);
-    transition: opacity 0.3s ease;
-  }
-  body:not(.has-mouse-trail) .mouse-trail { display: none; }
-  body.is-android .mouse-trail,
-  body.is-ios .mouse-trail { display: none !important; }
-
-  /* Touch ripple - Android/iOS finger */
-  .touch-ripple-container {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    z-index: 9999;
-    overflow: hidden;
-  }
-  .touch-ripple {
-    position: absolute;
-    width: 12px; height: 12px;
-    border-radius: 50%;
-    background: radial-gradient(circle, color-mix(in srgb, var(--primary) 60%, transparent), transparent 70%);
-    border: 2px solid color-mix(in srgb, var(--primary) 40%, transparent);
-    transform: translate(-50%, -50%) scale(0);
-    animation: touch-ripple 0.7s var(--ease) forwards;
-    pointer-events: none;
-  }
-  @keyframes touch-ripple {
-    0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
-    100% { transform: translate(-50%, -50%) scale(8); opacity: 0; }
-  }
-
-  /* Live Google test panel - beautiful in login only */
-  .google-live-test {
-    display: grid;
-    gap: 6px;
-    padding: 10px 12px;
-    border-radius: 12px;
-    border: 1px solid color-mix(in srgb, var(--primary) 15%, var(--line));
-    background: rgba(0,0,0,.18);
-    font: 600 .66rem/1.4 ui-monospace, monospace;
-  }
-  .live-test-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 3px 0;
-    border-bottom: 1px dashed color-mix(in srgb, var(--line) 50%, transparent);
-  }
-  .live-test-row:last-child { border: none; }
-  .live-test-row.ok { color: var(--success); }
-  .live-test-row.fail { color: var(--danger); }
-  .live-test-row span:last-child { direction: ltr; }
-
-  /* Device badge beautiful - only in login */
-  .google-login-beautiful .device-badge {
-    background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 12%, transparent), color-mix(in srgb, var(--secondary) 8%, transparent));
-    border: 1px solid color-mix(in srgb, var(--primary) 22%, var(--line));
-    box-shadow: 0 0 16px color-mix(in srgb, var(--primary) 8%, transparent), inset 0 1px 0 rgba(255,255,255,.08);
-    animation: device-badge-float 3s ease-in-out infinite;
-  }
-  @keyframes device-badge-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
-
-  /* Windows landscape enforced - hide portrait prompt style */
-  .landscape-enforced .phone-frame {
-    /* On Windows, show phone horizontal? Actually Windows should be landscape */
-    transform: translate3d(var(--phone-x), var(--phone-y), var(--phone-z)) rotateY(var(--phone-ry)) rotateX(var(--phone-rx)) !important;
-  }
-
-  /* iOS same as Android */
-  body[data-device-os="ios"] .android-visual {
-    /* iOS same as Android portrait */
-  }
-
-  /* Scroll cinematic progress */
-  #scrollProgressBar {
-    position: fixed;
-    top: 0; left: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--primary), var(--accent));
-    z-index: 99999;
-    width: 0%;
-    transition: width 0.08s linear;
-    box-shadow: 0 0 8px var(--primary);
-  }
-
-  /* Windows hover light following mouse */
-  :root { --mouse-x: 50%; --mouse-y: 50%; }
-  body.is-windows .android-visual::before {
-    background:
-      radial-gradient(circle at var(--mouse-x) var(--mouse-y), color-mix(in srgb, var(--primary) 18%, transparent), transparent 38%),
-      radial-gradient(circle at calc(50% + var(--light-x)) calc(42% + var(--light-y)), color-mix(in srgb, var(--primary) 18%, transparent), transparent 35%),
-      radial-gradient(circle at 15% 85%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 32%),
-      linear-gradient(145deg, color-mix(in srgb, var(--secondary) 11%, transparent), transparent 60%);
-  }
-
-  /* Fix empty ugly space on Windows */
-  body.is-windows .hero {
-    min-height: 88vh;
-    padding: 56px 0 64px;
-  }
-  body.is-windows .section {
-    padding: 72px 0;
-  }
-  body.is-windows .android-section {
-    gap: 48px;
-  }
-  body.is-windows .system-strip {
-    margin-bottom: 48px;
-    padding: 28px 32px;
-  }
-
-  /* Ensure Android design intact - original sizes */
-  .phone-frame { width: min(278px, 74%) !important; }
-  @media (max-width: 430px) { .phone-frame { width: 220px !important; } }
-  @media (max-width: 360px) { .phone-frame { width: 205px !important; } }
-}
-
-/* ================= MAMALI 3.6.2 ================= */
-  /* 3.6.2: the quick command launcher must stay visible on phones/PWA. */
-  .command-launch {
-    display: inline-flex !important;
-    align-items: center;
-    justify-content: center;
-  }
-  .version-card__actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-  .version-card__play { display: inline-flex; align-items: center; gap: 7px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 999px; color: var(--text); background: rgba(255,255,255,.045); text-decoration: none; font-size: .72rem; }
-  .version-card__play:hover { border-color: var(--line-strong); background: rgba(255,255,255,.08); }
-
-@layer components {
-  .google-login-beautiful__header {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-  }
-  .google-primary-btn {
-    position: relative;
-    display: flex;
-    width: 100%;
-    min-height: 62px;
-    overflow: hidden;
-    align-items: center;
-    gap: 14px;
-    padding: 10px 16px;
-    border: 0;
-    border-radius: 999px;
-    background: linear-gradient(180deg, #ffffff, #eef2f8);
-    box-shadow: 0 14px 34px rgba(0,0,0,.22), inset 0 1px 0 #fff, 0 0 0 1px rgba(66,133,244,.18);
-    color: #1f2937;
-    cursor: pointer;
-    text-align: right;
-    transition: transform .22s var(--ease), box-shadow .22s ease;
-  }
-  .google-primary-btn::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(110deg, transparent 20%, rgba(255,255,255,.7) 48%, transparent 72%);
-    background-size: 220% 100%;
-    animation: shimmer 3.4s ease-in-out infinite;
-    pointer-events: none;
-  }
-  .google-primary-btn:hover { transform: translateY(-3px) scale(1.01); box-shadow: 0 18px 40px rgba(0,0,0,.28), 0 0 24px rgba(66,133,244,.22); }
-  .google-primary-btn__orb {
-    display: grid;
-    width: 42px;
-    aspect-ratio: 1;
-    flex: 0 0 auto;
-    place-items: center;
-    border-radius: 50%;
-    background: #fff;
-    box-shadow: 0 6px 16px rgba(0,0,0,.12);
-  }
-  .google-primary-btn__orb .google-g { width: 26px !important; height: 26px; }
-  .google-primary-btn__copy { display: grid; flex: 1; z-index: 1; }
-  .google-primary-btn__copy small { color: #5b6478; font: 750 .48rem/1.2 ui-monospace, monospace; letter-spacing: .12em; }
-  .google-primary-btn__copy strong { margin-top: 3px; font-size: 1.02rem; }
-  .google-primary-btn__arrow { z-index: 1; color: #4285f4; font-size: 1.2rem; }
-  .google-primary-hint { margin: 0; color: var(--soft); font-size: .68rem; line-height: 1.7; }
-
-  .permission-dialog { width: min(calc(100% - 28px), 480px); }
-  .permission-dialog__body { display: grid; gap: 14px; padding: 18px 22px; color: var(--muted); font-size: .82rem; }
-  .permission-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
-  .permission-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.03); }
-  .permission-list b { color: var(--primary); font-size: .68rem; }
-  .permission-list b[data-state="granted"] { color: var(--success); }
-  .permission-list b[data-state="denied"] { color: var(--danger); }
-
-  .secure-guard {
-    position: fixed;
-    z-index: 2147483000;
-    inset: 0;
-    display: none;
-    place-items: center;
-    background: #050712;
-    color: #d7def7;
-    text-align: center;
-  }
-  .secure-guard.is-visible, .secure-guard:not([hidden]) { display: grid; }
-  .secure-guard span { font-size: 2.4rem; }
-  body.secure-mode-max { -webkit-touch-callout: none; }
-  body.secure-mode-max img { -webkit-user-drag: none; }
-  @media print {
-    body.secure-mode-max * { display: none !important; }
-  }
-
-  .versions-archive { padding-top: 40px; }
-  .version-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
-  .version-card {
-    --era: var(--primary);
-    position: relative;
-    display: grid;
-    overflow: hidden;
-    gap: 6px;
-    min-height: 196px;
-    padding: 18px 16px 16px;
-    border: 1px solid color-mix(in srgb, var(--era) 28%, var(--line));
-    border-radius: 20px;
-    background:
-      radial-gradient(circle at 88% -10%, color-mix(in srgb, var(--era) 22%, transparent), transparent 42%),
-      linear-gradient(160deg, rgba(255,255,255,.07), rgba(255,255,255,.015));
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
-    transition: transform .28s var(--ease), border-color .28s ease, box-shadow .28s ease;
-  }
-  .version-card__era {
-    position: absolute;
-    inset: auto -18% -48% auto;
-    width: 140px;
-    aspect-ratio: 1;
-    border: 1px solid color-mix(in srgb, var(--era) 28%, transparent);
-    border-radius: 50%;
-    pointer-events: none;
-  }
-  .version-card:hover { transform: translateY(-6px); border-color: color-mix(in srgb, var(--era) 55%, transparent); box-shadow: 0 18px 40px rgba(0,0,0,.28), 0 0 28px color-mix(in srgb, var(--era) 14%, transparent); }
-  .version-card.is-current { border-color: color-mix(in srgb, var(--primary) 55%, transparent); box-shadow: 0 0 28px color-mix(in srgb, var(--primary) 14%, transparent); }
-  .version-card small { color: var(--era); font: 800 .78rem/1 ui-monospace, monospace; direction: ltr; }
-  .version-card strong { font-size: .92rem; }
-  .version-card span { color: var(--soft); font-size: .68rem; }
-  .version-card ul { margin: 6px 0 0; padding-inline-start: 18px; color: var(--muted); font-size: .72rem; }
-  .version-card__play {
-    background: linear-gradient(135deg, color-mix(in srgb, var(--era) 18%, transparent), rgba(255,255,255,.04));
-    border-color: color-mix(in srgb, var(--era) 34%, var(--line));
-  }
-  .version-card[data-version="3.7.0"] { --era: #72f6ff; }
-  .version-card[data-version="3.6.2"],
-  .version-card[data-version="3.6.1"],
-  .version-card[data-version="3.6.0"] { --era: #8b5cff; }
-  .version-card[data-version="3.5.0"] { --era: #55f3b3; }
-  .version-card[data-version="3.4.0"] { --era: #ff6fcf; }
-  .version-card[data-version="3.3.1"],
-  .version-card[data-version="3.3.0"] { --era: #ffca70; }
-  .version-card[data-version="3.2.0"] { --era: #56d4ff; }
-  .version-card[data-version="3.1.0"] { --era: #b96dff; }
-  .version-card[data-version="3.0.0"] { --era: #6cf5ff; }
-}
-
-/* ================= MAMALI 3.7.0 cinematic polish ================= */
-@layer base {
-  body {
-    background:
-      radial-gradient(circle at 12% -8%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 28rem),
-      radial-gradient(circle at 88% 0%, color-mix(in srgb, var(--primary) 18%, transparent), transparent 32rem),
-      radial-gradient(circle at 50% 110%, color-mix(in srgb, var(--secondary) 12%, transparent), transparent 28rem),
-      linear-gradient(180deg, var(--bg), var(--bg-deep) 82%);
-  }
-}
-@layer components {
-  .hero h1 { text-shadow: 0 18px 60px color-mix(in srgb, var(--primary) 18%, transparent); }
-  .scene-shell {
-    box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,.1), 0 0 80px color-mix(in srgb, var(--primary) 8%, transparent);
-  }
-  .auth-card {
-    box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 30px 90px rgba(0,0,0,.38), 0 0 50px color-mix(in srgb, var(--primary) 8%, transparent);
-  }
-  .feature-card {
-    background:
-      radial-gradient(circle at 86% 0%, color-mix(in srgb, var(--primary) 14%, transparent), transparent 36%),
-      linear-gradient(145deg, rgba(255,255,255,.07), rgba(255,255,255,.014)), var(--surface);
   }
 }

@@ -1,7 +1,7 @@
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
-const APP_VERSION = '3.7.0';
+const APP_VERSION = '3.5.0';
 
 const SITE_CONFIG = Object.freeze({
   version: APP_VERSION,
@@ -12,10 +12,10 @@ const SITE_CONFIG = Object.freeze({
   googleIdentityScript: 'https://accounts.google.com/gsi/client?hl=fa',
   googleJwksEndpoint: 'https://www.googleapis.com/oauth2/v3/certs',
   googleOAuthEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
-  authDatabase: 'mamali-trusted-identity-v1',
+  authDatabase: 'mamali-archive-identity-350',
   authStore: 'sessions',
   eventStore: 'events',
-  sessionEndpoint: './api/session',
+  sessionEndpoint: '',
   versionsEndpoint: './history/versions.json',
   canonicalOrigin: 'https://mamali-orbit.vercel.app',
   canonicalRedirect: 'https://mamali-orbit.vercel.app/Mamali/',
@@ -1001,7 +1001,11 @@ class AuthManager {
     this.primaryButton = $('#googlePrimaryButton');
   }
 
+
   async init() {
+    if (globalThis.__MAMALI_ARCHIVE__) {
+      document.documentElement.dataset.archiveVersion = globalThis.__MAMALI_ARCHIVE__.version || '';
+    }
     document.body.dataset.authPlatform = this.getPlatform();
     document.body.dataset.isStandalone = String(isStandalonePWA());
     document.body.dataset.isAndroidWrapper = String(isAndroidWrapper());
@@ -1024,6 +1028,23 @@ class AuthManager {
       else if (stored) await this.store.clear();
     } catch { this.storageAvailable = false; }
 
+    if (!this.session && globalThis.__MAMALI_ARCHIVE__) {
+      this.session = {
+        provider: 'google',
+        clientId: SITE_CONFIG.googleClientId,
+        subject: 'archive-guest-' + String(globalThis.__MAMALI_ARCHIVE__.version || 'x').replaceAll('.', ''),
+        email: 'archive@mamali.local',
+        name: 'مهمان آرشیو ' + (globalThis.__MAMALI_ARCHIVE__.version || ''),
+        picture: '',
+        locale: 'fa',
+        verifiedAt: Date.now(),
+        lastGoogleExpiry: Date.now() + 86400000,
+        active: true,
+        archive: true,
+      };
+      await this.unlock({ source: 'archive-guest' });
+      return;
+    }
     if (this.session) {
       this.renderProfile(this.session);
       if (this.session.active) {
@@ -1076,12 +1097,7 @@ class AuthManager {
     });
   }
 
-  registerAppShell() {
-    if (!('serviceWorker' in navigator) || !window.isSecureContext) return;
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => {});
-    }, { once: true });
-  }
+  registerAppShell() { /* archive: never claim the live service worker */ }
 
   getPlatform() {
     const identity = `${navigator.userAgentData?.platform || ''} ${navigator.platform || ''} ${navigator.userAgent}`.toLowerCase();
@@ -1515,15 +1531,13 @@ class AuthManager {
 
   async lock() {
     if (!this.session) return;
-    await sessionLock.release(this.session || {});
     this.session = { ...this.session, active: false, lockedAt: Date.now() };
     try { await this.store.save(this.session); } catch { this.storageAvailable = false; }
     window.google?.accounts?.id?.disableAutoSelect?.();
     for (const dialog of $$('dialog[open]')) dialog.close();
     this.showLockedGate();
     this.updateNetworkState();
-    announce('ماملی قفل شد و این ایمیل برای دستگاه دیگر آزاد شد.');
-    toast('خروج انجام شد؛ حالا می‌توانید با همین ایمیل روی دستگاه دیگری وارد شوید.', 4200);
+    announce('ماملی قفل شد. برای بازگشت از حساب مورد اعتماد استفاده کنید. قفل عمودی فعال است.');
   }
 
   async removeAccount(button) {
@@ -2357,7 +2371,7 @@ function setupCommandPalette() {
     { icon: 'YT', title: 'بازکردن اپ یوتیوب', hint: 'Deep Link مستقیم', keywords: 'youtube یوتیوب ویدیو app اپ', run: () => openNativeApp('youtube') },
     { icon: 'TG', title: 'بازکردن اپ تلگرام', hint: 'Deep Link مستقیم', keywords: 'telegram تلگرام app اپ', run: () => openNativeApp('telegram') },
     { icon: 'APP', title: 'نصب اپ عمودی و امن', hint: 'Android portrait + secure', keywords: 'android windows اندروید ویندوز install نصب pwa portrait secure عمودی امن', run: () => $('#installDialog').showModal() },
-    { icon: 'UP', title: 'بررسی بروزرسانی ۳.۷.۰', hint: `نسخه ${toPersianDigits(APP_VERSION)} · کانال پایدار`, keywords: 'update بروزرسانی آپدیت version نسخه 3.7.0 3.7 3.6' , run: () => { $('#updateCenter').scrollIntoView({ behavior: settings.reducedMotion ? 'auto' : 'smooth', block: 'center' }); updateManager?.check(); } },
+    { icon: 'UP', title: 'بررسی بروزرسانی ۳.۳', hint: `نسخه ${toPersianDigits(APP_VERSION)} · کانال پایدار`, keywords: 'update بروزرسانی آپدیت version نسخه 3.3', run: () => { $('#updateCenter').scrollIntoView({ behavior: settings.reducedMotion ? 'auto' : 'smooth', block: 'center' }); updateManager?.check(); } },
     { icon: '◐', title: 'تغییر تم رنگی',  hint: 'نئون، شفق، خورشیدی', keywords: 'theme تم رنگ ظاهر', run: cycleTheme },
     { icon: '⚙', title: 'تنظیمات امن و عمودی', hint: 'کنترل جلوه‌ها + portrait + secure', keywords: 'settings تنظیمات کنترل secure portrait عمودی امن', run: () => $('#settingsDialog').showModal() },
     { icon: '⌁', title: 'حساب و امنیت دستگاه', hint: 'قفل، خروج یا حذف حساب محلی', keywords: 'google account حساب امنیت قفل خروج', run: () => $('#accountDialog').showModal() },
@@ -2482,7 +2496,7 @@ function setupControls() {
     void core.offsetWidth;
     core.classList.add('is-pulsing');
     sound.play('energy');
-    toast('موج انرژی مدار امن ۳.۷.۰ فعال شد.');
+    toast('موج انرژی مدار امن ۳.۳ فعال شد.');
     window.setTimeout(() => core.classList.remove('is-pulsing'), 1000);
   });
 
@@ -2572,7 +2586,7 @@ class UpdateManager {
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (!this.applying || this.reloading) return;
         this.reloading = true;
-        toast('نسخه امن ۳.۷.۰ فعال شد؛ در حال راه‌اندازی دوباره ماملی…', 3000);
+        toast('نسخه امن ۳.۳ فعال شد؛ در حال راه‌اندازی دوباره ماملی…', 3000);
         window.setTimeout(() => window.location.reload(), 350);
       });
     }
@@ -2590,7 +2604,7 @@ class UpdateManager {
       return;
     }
     try {
-      this.registration = await navigator.serviceWorker.register('./sw.js', { scope: './', updateViaCache: 'none' });
+      this.registration = null; await this.check({ silent: true }); return;
       this.watchRegistration(this.registration);
       if (this.registration.waiting && navigator.serviceWorker.controller) {
         this.setAvailable(this.latestVersion, [], { workerReady: true });
@@ -2606,7 +2620,7 @@ class UpdateManager {
   watchRegistration(registration) {
     const watchWorker = worker => {
       if (!worker) return;
-      this.setMagnet('pulling', 'نسخه امن ۳.۷.۰ پیدا شد؛ در حال آماده‌سازی بسته…');
+      this.setMagnet('pulling', 'نسخه امن ۳.۳ پیدا شد؛ در حال آماده‌سازی بسته…');
       const inspect = () => {
         if (worker.state === 'installed' && navigator.serviceWorker.controller) {
           this.setAvailable(this.latestVersion, [], { workerReady: true });
@@ -2658,7 +2672,7 @@ class UpdateManager {
     this.latestVersion = compareVersions(version, APP_VERSION) >= 0 ? version : APP_VERSION;
     this.latest.textContent = toPersianDigits(this.latestVersion);
     this.setState('available', { workerReady });
-    const note = Array.isArray(notes) && notes.length ? notes[0] : 'نسخه امن ۳.۷.۰ با آرشیو واقعی نسخه‌ها و خروج آزادکننده.';
+    const note = Array.isArray(notes) && notes.length ? notes[0] : 'نسخه امن ۳.۳ با تعمیر ورود گوگل در اپ.';
     this.bannerCopy.textContent = `نسخه ${toPersianDigits(this.latestVersion)} — ${note}`;
     if (workerReady && !this.dismissed) this.banner.hidden = false;
     if (workerReady) {
@@ -2879,7 +2893,7 @@ function setupInstall() {
     installed = true;
     installPrompt = null;
     updateInstallState();
-    toast('ماملی امن ۳.۷.۰ با موفقیت نصب شد و اکنون عمودی و محافظت‌شده اجرا می‌شود.', 4500);
+    toast('ماملی امن ۳.۳ با موفقیت نصب شد و اکنون عمودی و محافظت‌شده اجرا می‌شود.', 4500);
   });
 
   updateInstallState();
@@ -2889,23 +2903,12 @@ function setupVersionArchive() {
   const root = $('#versionArchive');
   if (!root || root.dataset.ready === '1') return;
   root.dataset.ready = '1';
-  const safeText = value => String(value ?? '').replace(/[&<>"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[char]));
-  const playUrlFor = item => {
-    if (item.version === APP_VERSION || item.status === 'current') return './';
-    if (typeof item.play === 'string' && item.play.trim()) return item.play;
-    const version = String(item.version || '').trim();
-    if (/^\d+\.\d+\.\d+$/.test(version)) return `./history/play/${encodeURIComponent(version)}/`;
-    return `./history/play/era.html?v=${encodeURIComponent(version)}`;
-  };
   const render = items => {
     root.replaceChildren();
     for (const item of items) {
       const article = document.createElement('article');
-      const play = playUrlFor(item);
-      const current = item.status === 'current' || item.version === APP_VERSION;
-      article.className = `version-card${current ? ' is-current' : ''}`;
-      article.dataset.version = item.version || '';
-      article.innerHTML = `<div class="version-card__era" aria-hidden="true"></div><small>${safeText(item.version)}</small><strong>${safeText(item.title || '')}</strong><span>${safeText(item.date || '')}</span><ul>${(item.highlights || []).map(h => `<li>${safeText(h)}</li>`).join('')}</ul><div class="version-card__actions"><a class="version-card__play" href="${safeText(play)}">${current ? 'بازکردن نسخه زنده' : 'ورود به خود این نسخه'}</a></div>`;
+      article.className = `version-card${item.status === 'current' ? ' is-current' : ''}`;
+      article.innerHTML = `<small>${item.version}</small><strong>${item.title || ''}</strong><span>${item.date || ''}</span><ul>${(item.highlights || []).map(h => `<li>${h}</li>`).join('')}</ul>`;
       root.append(article);
     }
   };
@@ -2913,7 +2916,7 @@ function setupVersionArchive() {
     .then(res => res.ok ? res.json() : Promise.reject())
     .then(data => render(Array.isArray(data.archive) ? data.archive : []))
     .catch(() => render([
-      { version: APP_VERSION, title: 'نسخه فعلی', date: '2026', status: 'current', play: './', highlights: ['ورود گوگل در PWA', 'قفل یک‌دستگاهی', 'آرشیو قابل‌بازی'] },
+      { version: APP_VERSION, title: 'نسخه فعلی', date: '2026', status: 'current', highlights: ['ورود گوگل در PWA', 'قفل یک‌دستگاهی'] },
     ]));
 }
 

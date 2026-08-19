@@ -1,14 +1,28 @@
 {
-  "current": "3.6.2",
+  "current": "3.7.0",
   "channel": "stable",
   "canonical": "https://mamali-orbit.vercel.app/Mamali/",
   "archive": [
     {
-      "version": "3.6.2",
-      "title": "آرشیو قابل‌بازی + فرمان سریع موبایل",
+      "version": "3.7.0",
+      "title": "آرشیو واقعی + خروج آزادکننده + طراحی سینمایی",
       "date": "2026-08-19",
       "status": "current",
       "play": "/Mamali/",
+      "highlights": [
+        "کلیک هر نسخه وارد خود همان نسخه واقعی می‌شود، نه یک صفحه ثابت",
+        "قفل و خروج ایمیل را برای دستگاه دیگر آزاد می‌کند",
+        "قفل نشست تا خروج واقعی می‌ماند",
+        "طراحی مدار و کارت نسخه‌ها قوی‌تر شد بدون شکستن قواعد اصلی"
+      ]
+    },
+    {
+      "version": "3.6.2",
+      "title": "آرشیو قابل‌بازی + فرمان سریع موبایل",
+      "date": "2026-08-19",
+      "status": "previous",
+      "play": "/Mamali/history/play/3.6.2/",
+      "database": "mamali-archive-identity-362",
       "highlights": [
         "کارت‌های نسخه‌ها واقعاً باز می‌شوند و play:null حذف شد",
         "فرمان سریع روی گوشی و PWA همیشه قابل دسترس است",
@@ -21,7 +35,8 @@
       "title": "تعمیر کلیک نسخه‌های قبلی",
       "date": "2026-08-19",
       "status": "previous",
-      "play": "/Mamali/history/play/era.html?v=3.6.1",
+      "play": "/Mamali/history/play/3.6.1/",
+      "database": "mamali-archive-identity-361",
       "highlights": [
         "رفع eraStage دوبل در پلیر تاریخچه",
         "بهبود مسیرهای /Mamali/ در Vercel",
@@ -33,7 +48,8 @@
       "title": "فرمان‌ها و مجوزها روی موبایل",
       "date": "2026-08-19",
       "status": "previous",
-      "play": "/Mamali/history/play/era.html?v=3.6.0",
+      "play": "/Mamali/history/play/3.6.0/",
+      "database": "mamali-archive-identity-360",
       "highlights": [
         "دکمه‌های فرمان سریع روی گوشی مخفی نمی‌شوند",
         "دیالوگ مجوزهای Notification، Storage و Orientation پایدارتر شد",
@@ -45,7 +61,8 @@
       "title": "ورود گوگل در PWA + قفل یک‌دستگاهی",
       "date": "2026-08-19",
       "status": "archive",
-      "play": "/Mamali/history/play/era.html?v=3.5.0",
+      "play": "/Mamali/history/play/3.5.0/",
+      "database": "mamali-archive-identity-350",
       "highlights": [
         "ورود گوگل در اپ Chrome اندروید با ریدایرکت امن",
         "یک ایمیل فقط روی یک دستگاه تا خروج",
@@ -70,7 +87,8 @@
       "title": "گوگل گرد و ویندوز جمع‌تر",
       "date": "2026-08-19",
       "status": "archive",
-      "play": "/Mamali/history/play/era.html?v=3.3.1",
+      "play": "/Mamali/history/play/3.3.1/",
+      "database": "mamali-archive-identity-331",
       "highlights": ["نشان گوگل کاملاً گرد", "تشخیص هوشمند دستگاه", "حذف overlay اذیت‌کن اسکرین‌شات"]
     },
     {
@@ -78,7 +96,8 @@
       "title": "تعمیر ورود گوگل در اپ",
       "date": "2026-08-19",
       "status": "archive",
-      "play": "/Mamali/history/play/era.html?v=3.3.0",
+      "play": "/Mamali/history/play/3.3.0/",
+      "database": "mamali-archive-identity-330",
       "highlights": ["FedCM + ریدایرکت OAuth + مرورگر خارجی", "قفل عمودی و دیالوگ مجوز"]
     },
     {
@@ -86,7 +105,8 @@
       "title": "موتور مدار و مکش بروزرسانی",
       "date": "2026-08-18",
       "status": "archive",
-      "play": "/Mamali/history/play/era.html?v=3.2.0",
+      "play": "/Mamali/history/play/3.2.0/",
+      "database": "mamali-archive-identity-320",
       "highlights": ["گوشی سه‌بعدی آزاد", "ساعت محلی واقعی", "Update Magnet هر ۳۰ ثانیه"]
     },
     {
@@ -94,7 +114,8 @@
       "title": "ورود گوگل و دستگاه مورد اعتماد",
       "date": "2026-08-18",
       "status": "archive",
-      "play": "/Mamali/history/play/era.html?v=3.1.0",
+      "play": "/Mamali/history/play/3.1.0/",
+      "database": "mamali-archive-identity-310",
       "highlights": ["Google Identity Services", "اعتبارسنجی JWT در مرورگر", "IndexedDB بدون ذخیره توکن"]
     },
     {
@@ -102,7 +123,8 @@
       "title": "نسخه اولیه مدار سه‌بعدی",
       "date": "2026-08-18",
       "status": "archive",
-      "play": "/Mamali/history/play/era.html?v=3.0.0",
+      "play": "/Mamali/history/play/3.0.0/",
+      "database": "mamali-archive-identity-300",
       "highlights": ["PWA قابل نصب Android و Windows", "سه پورتال اینستا / یوتیوب / تلگرام", "RTL و مسیر پایدار /Mamali/"]
     }
   ]
