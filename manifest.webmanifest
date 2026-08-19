@@ -2,10 +2,11 @@
   "id": "/Mamali/",
   "name": "ماملی — منظومه اجتماعی سه‌بعدی",
   "short_name": "ماملی",
-  "description": "لانچر اجتماعی سه‌بعدی قابل نصب روی Android و Windows با ورود Google، دستگاه مورد اعتماد، انتخاب مستقل پلتفرم، بروزرسانی خودکار و پشتیبانی آفلاین.",
+  "description": "لانچر اجتماعی سه‌بعدی قابل نصب روی Android و Windows با ورود Google، دستگاه مورد اعتماد، انتخاب مستقل پلتفرم، بروزرسانی خودکار، قفل عمودی و محافظت از محتوا.",
   "lang": "fa",
   "dir": "rtl",
   "start_url": "/Mamali/",
+
   "scope": "/Mamali/",
   "display": "standalone",
   "display_override": [
@@ -13,7 +14,7 @@
     "standalone",
     "minimal-ui"
   ],
-  "orientation": "any",
+  "orientation": "portrait-primary",
   "background_color": "#050712",
   "theme_color": "#080b18",
   "categories": [
@@ -29,6 +30,11 @@
       "auto"
     ]
   },
+  "handle_links": "preferred",
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "permissions": [],
   "icons": [
     {
       "src": "assets/icons/icon-192.png",
@@ -55,21 +61,21 @@
       "sizes": "1440x1000",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "ماملی ۳.۲ با نصب مستقل Android، گوشی سه‌بعدی و بروزرسانی خودکار"
+      "label": "ماملی ۳.۳ با قفل عمودی، ورود زیبای گوگل و محافظت از محتوا"
     },
     {
       "src": "assets/screenshots/windows-install-wide.png",
       "sizes": "1440x1000",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "ماملی ۳.۲ با انتخاب Windows، دستگاه مورد اعتماد و Update Center زنده"
+      "label": "ماملی ۳.۳ با انتخاب Windows، دستگاه مورد اعتماد و Update Center زنده"
     },
     {
       "src": "assets/screenshots/android-install-narrow.png",
       "sizes": "390x844",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "نسخه Android ماملی ۳.۲ با انتخاب نصب لمسی و رابط پاسخ‌گو"
+      "label": "نسخه Android ماملی ۳.۳ با قفل عمودی و رابط محافظت‌شده"
     }
   ],
   "shortcuts": [

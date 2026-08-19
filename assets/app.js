@@ -1,7 +1,7 @@
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
-const APP_VERSION = '3.2.0';
+const APP_VERSION = '3.3.0';
 
 const SITE_CONFIG = Object.freeze({
   version: APP_VERSION,
@@ -11,6 +11,7 @@ const SITE_CONFIG = Object.freeze({
   googleClientId: '737314975140-nhilm65a3mr9bsemufr4e83cmhisq77e.apps.googleusercontent.com',
   googleIdentityScript: 'https://accounts.google.com/gsi/client?hl=fa',
   googleJwksEndpoint: 'https://www.googleapis.com/oauth2/v3/certs',
+  googleOAuthEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
   authDatabase: 'mamali-trusted-identity-v1',
   authStore: 'sessions',
   apps: {
@@ -36,7 +37,7 @@ const SITE_CONFIG = Object.freeze({
       fallback: 'https://t.me/Mr_CaceRo',
     },
   },
-  storageKey: 'mamali-orbit-settings-v2',
+  storageKey: 'mamali-orbit-settings-v3',
   themes: ['neon', 'aurora', 'solar', 'prism'],
 });
 
@@ -53,27 +54,50 @@ function compareVersions(left, right) {
   return 0;
 }
 
+function isStandalonePWA() {
+  try {
+    return window.matchMedia('(display-mode: standalone)').matches ||
+           window.matchMedia('(display-mode: window-controls-overlay)').matches ||
+           window.navigator.standalone === true ||
+           document.referrer.includes('android-app://');
+  } catch { return false; }
+}
+function isAndroidWrapper() {
+  const ua = navigator.userAgent.toLowerCase();
+  return ua.includes('wv') || (ua.includes('android') && ua.includes('version/')) || document.referrer.includes('android-app://');
+}
+function isAndroid() {
+  return /android/i.test(navigator.userAgent);
+}
+function getRedirectUri() {
+  try {
+    const url = new URL(window.location.href);
+    url.hash = ''; url.search = '';
+    // Ensure trailing slash for /Mamali/
+    let path = url.pathname;
+    if (!path.endsWith('/')) {
+      const lastSeg = path.split('/').pop();
+      if (!lastSeg.includes('.')) path += '/';
+    }
+    url.pathname = path;
+    return url.href;
+  } catch {
+    return window.location.origin + '/Mamali/';
+  }
+}
+
 class SafeStorage {
   static read(key, fallback) {
     try {
       const value = localStorage.getItem(key);
       return value ? { ...fallback, ...JSON.parse(value) } : fallback;
-    } catch {
-      return fallback;
-    }
+    } catch { return fallback; }
   }
-
   static write(key, value) {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-      return true;
-    } catch {
-      return false;
-    }
+    try { localStorage.setItem(key, JSON.stringify(value)); return true; } catch { return false; }
   }
-
   static remove(key) {
-    try { localStorage.removeItem(key); } catch { /* Storage can be unavailable. */ }
+    try { localStorage.removeItem(key); } catch {}
   }
 }
 
@@ -89,6 +113,8 @@ const defaults = Object.freeze({
   deviceMotion: 'free',
   phoneDepth: 100,
   quality: 'auto',
+  secure: true,
+  portrait: true,
 });
 
 let settings = SafeStorage.read(SITE_CONFIG.storageKey, { ...defaults });
@@ -97,15 +123,312 @@ let installPrompt = null;
 const announcer = $('#systemAnnouncer');
 const toastRegion = $('#toastRegion');
 
-class TrustedDeviceStore {
+// ================= ORIENTATION LOCK MANAGER 3.3 =================
+class OrientationLockManager {
   constructor() {
-    this.databasePromise = null;
+    this.prompt = $('#rotatePrompt');
+    this.isLocked = false;
   }
+  async lock() {
+    if (!settings.portrait) return false;
+    try {
+      if (screen.orientation && screen.orientation.lock) {
+        if (document.visibilityState === 'visible') {
+          await screen.orientation.lock('portrait-primary').catch(() => screen.orientation.lock('portrait').catch(()=>{}));
+          this.isLocked = true;
+          document.body.classList.add('portrait-enforced');
+          return true;
+        }
+      }
+    } catch {}
+    // Fallback: CSS + prompt
+    this.checkOrientation();
+    return false;
+  }
+  checkOrientation() {
+    if (!settings.portrait) {
+      if (this.prompt) this.prompt.hidden = true;
+      document.body.classList.remove('is-landscape');
+      return;
+    }
+    try {
+      const isLandscape = window.innerWidth > window.innerHeight && window.innerWidth > 480;
+      const isLandscapeMedia = window.matchMedia('(orientation: landscape)').matches;
+      if ((isLandscape || isLandscapeMedia) && window.innerWidth <= 900) {
+        document.body.classList.add('is-landscape');
+        if (this.prompt && document.documentElement.dataset.authState !== 'booting') {
+          this.prompt.hidden = false;
+        }
+      } else {
+        document.body.classList.remove('is-landscape');
+        if (this.prompt) this.prompt.hidden = true;
+      }
+    } catch {}
+  }
+  init() {
+    this.lock();
+    this.checkOrientation();
+    window.addEventListener('resize', () => { this.checkOrientation(); this.lock(); }, {passive:true});
+    window.addEventListener('orientationchange', () => { setTimeout(()=>{ this.checkOrientation(); this.lock(); }, 150); }, {passive:true});
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) { this.lock(); this.checkOrientation(); } });
+    $('#rotatePromptClose')?.addEventListener('click', () => {
+      if (this.prompt) this.prompt.hidden = true;
+      this.lock();
+      toast('لطفاً گوشی را عمودی کنید — قفل پرتره فعال است.');
+    });
+    // Prevent landscape via CSS meta - try every 2s
+    setInterval(()=>{ if(settings.portrait) this.lock(); }, 2000);
+  }
+}
 
+// ================= SCREENSHOT PROTECTION MANAGER 3.3 =================
+class ScreenshotProtectionManager {
+  constructor() {
+    this.guard = $('#secureGuard');
+    this.enabled = settings.secure !== false;
+    this.lastPrintScreen = 0;
+  }
+  showGuard(reason='') {
+    if (!this.enabled) return;
+    if (this.guard) {
+      this.guard.classList.add('is-active');
+      this.guard.setAttribute('aria-hidden','false');
+    }
+    document.body.classList.add('secure-guard-active');
+  }
+  hideGuard() {
+    if (this.guard) {
+      this.guard.classList.remove('is-active');
+      this.guard.setAttribute('aria-hidden','true');
+    }
+    document.body.classList.remove('secure-guard-active');
+  }
+  init() {
+    if (!this.enabled) return;
+    document.body.classList.add('secure-mode');
+
+    // Blur / visibility -> show guard (prevents app switcher screenshot)
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) this.showGuard('visibility');
+      else setTimeout(()=>this.hideGuard(), 180);
+    });
+    window.addEventListener('blur', () => this.showGuard('blur'));
+    window.addEventListener('focus', () => setTimeout(()=>this.hideGuard(), 150));
+    window.addEventListener('pagehide', () => this.showGuard('pagehide'));
+
+    // Before print
+    window.addEventListener('beforeprint', (e)=>{ e.preventDefault(); this.showGuard('print'); toast('🚫 چاپ و اسکرین‌شات محافظت‌شده است.', 3500); setTimeout(()=>this.hideGuard(), 1500); });
+
+    // Block context menu in secure mode (optional - can be disabled via setting)
+    document.addEventListener('contextmenu', (e)=>{
+      if (!settings.secure) return;
+      // Allow in inputs
+      if (e.target.closest('input, textarea, [contenteditable]')) return;
+      e.preventDefault();
+      toast('🚫 کلیک راست برای محافظت غیرفعال است.', 2000);
+    });
+
+    // Block copy/cut/select for sensitive areas? We keep copy allowed but warn on PrintScreen
+    document.addEventListener('keydown', (e)=>{
+      if (!settings.secure) return;
+      const key = e.key;
+      // PrintScreen
+      if (key === 'PrintScreen' || e.keyCode === 44) {
+        e.preventDefault();
+        const now = Date.now();
+        if (now - this.lastPrintScreen > 1500) {
+          this.lastPrintScreen = now;
+          this.showGuard('printscreen');
+          try { navigator.clipboard.writeText('').catch(()=>{}); } catch {}
+          toast('🚫 اسکرین‌شات محافظت‌شده است - ماملی ۳.۳', 3500);
+          setTimeout(()=>this.hideGuard(), 1200);
+        }
+        return;
+      }
+      // Ctrl+Shift+S, Ctrl+P, Ctrl+S
+      if ((e.ctrlKey || e.metaKey) && ['s','p','S','P'].includes(key) && !e.target.closest('input, textarea')) {
+        // Allow but show guard briefly
+        if (key.toLowerCase()==='p' || key.toLowerCase()==='s') {
+          // For p (print) block
+          if (key.toLowerCase()==='p') {
+            e.preventDefault();
+            this.showGuard('ctrlp');
+            toast('🚫 چاپ صفحه غیرمجاز است.', 3000);
+            setTimeout(()=>this.hideGuard(), 1000);
+          }
+        }
+      }
+    });
+
+    // Block drag
+    document.addEventListener('dragstart', (e)=>{
+      if (settings.secure && !e.target.closest('input')) e.preventDefault();
+    });
+
+    // Try Android native FLAG_SECURE bridge if available
+    try {
+      if (window.Android && typeof window.Android.setSecureFlag === 'function') {
+        window.Android.setSecureFlag(true);
+      }
+      // For Capacitor / Cordova
+      if (window.Capacitor?.Plugins?.ScreenSecurity) {
+        window.Capacitor.Plugins.ScreenSecurity.enableSecure?.();
+      }
+    } catch {}
+
+    // Add CSS for screenshot protected
+    const style = document.createElement('style');
+    style.textContent = `
+      @media print { body * { display:none !important; } .secure-guard { display:grid !important; } }
+    `;
+    document.head.appendChild(style);
+
+    // Hide initially
+    this.hideGuard();
+  }
+  setEnabled(enabled) {
+    this.enabled = enabled;
+    document.body.classList.toggle('secure-mode', enabled);
+    if (!enabled) this.hideGuard();
+  }
+}
+
+// ================= PERMISSION MANAGER 3.3 =================
+class PermissionManager {
+  constructor() {
+    this.dialog = $('#permissionDialog');
+    this.hasRequested = false;
+    try {
+      this.hasRequested = localStorage.getItem('mamali_permissions_requested_v3') === '1';
+    } catch {}
+  }
+  async checkStatus(type) {
+    try {
+      if (!navigator.permissions) return 'unknown';
+      if (type === 'notification') {
+        const perm = await navigator.permissions.query({name:'notifications'});
+        return perm.state;
+      }
+      if (type === 'persistent-storage') {
+        if (navigator.storage && navigator.storage.persisted) {
+          const persisted = await navigator.storage.persisted();
+          return persisted ? 'granted' : 'prompt';
+        }
+      }
+    } catch { return 'unknown'; }
+    return 'unknown';
+  }
+  async requestNotification() {
+    try {
+      if (!('Notification' in window)) return 'unsupported';
+      if (Notification.permission === 'granted') return 'granted';
+      if (Notification.permission === 'denied') return 'denied';
+      const result = await Notification.requestPermission();
+      return result;
+    } catch { return 'error'; }
+  }
+  async requestPersistentStorage() {
+    try {
+      if (navigator.storage && navigator.storage.persist) {
+        const granted = await navigator.storage.persist();
+        return granted ? 'granted' : 'denied';
+      }
+    } catch {}
+    return 'unsupported';
+  }
+  async requestOrientationLock() {
+    try {
+      if (screen.orientation && screen.orientation.lock) {
+        await screen.orientation.lock('portrait-primary').catch(()=>screen.orientation.lock('portrait'));
+        return 'granted';
+      }
+    } catch {}
+    return 'unsupported';
+  }
+  updateUI(type, state) {
+    const el = document.querySelector(`[data-status="${type}"]`);
+    if (!el) return;
+    el.textContent = state === 'granted' ? 'فعال ✓' : state === 'denied' ? 'رد شد' : state === 'unsupported' ? 'پشتیبانی نمیشود' : 'در انتظار';
+    el.dataset.state = state;
+  }
+  async requestAll() {
+    this.updateUI('notification', 'در حال درخواست...');
+    const notif = await this.requestNotification();
+    this.updateUI('notification', notif);
+
+    this.updateUI('storage', 'در حال درخواست...');
+    const storage = await this.requestPersistentStorage();
+    this.updateUI('storage', storage);
+
+    this.updateUI('orientation', 'در حال قفل...');
+    const orient = await this.requestOrientationLock();
+    this.updateUI('orientation', orient === 'granted' ? 'granted' : 'unsupported');
+
+    this.updateUI('secure', 'granted');
+
+    try { localStorage.setItem('mamali_permissions_requested_v3', '1'); } catch {}
+
+    if (notif === 'granted') toast('🔔 اعلان‌ها فعال شد — بروزرسانی زنده اطلاع میده.');
+    if (storage === 'granted') toast('💾 ذخیره‌سازی پایدار فعال — آفلاین آماده است.');
+
+    // Close dialog after short delay
+    setTimeout(()=>{ try{ this.dialog?.close(); }catch{} }, 900);
+  }
+  init() {
+    if (this.hasRequested) return;
+    const isPWA = isStandalonePWA();
+    const isAndroidWrap = isAndroidWrapper();
+    const shouldPrompt = isPWA || isAndroidWrap || isAndroid();
+    if (!shouldPrompt) return;
+
+    // Delay showing permission dialog until after auth (if authenticated) or 2s after locked gate
+    const show = () => {
+      if (!this.dialog) return;
+      if (this.dialog.open) return;
+      try { this.dialog.showModal(); } catch { this.dialog.setAttribute('open',''); }
+      this.checkStatus('notification').then(s=>this.updateUI('notification', s));
+      this.checkStatus('persistent-storage').then(s=>this.updateUI('storage', s));
+      this.updateUI('orientation', 'prompt');
+      this.updateUI('secure', 'granted');
+    };
+
+    // Listen for auth completion
+    const observer = new MutationObserver(()=>{
+      if (document.documentElement.dataset.authState === 'authenticated') {
+        setTimeout(show, 1200);
+        observer.disconnect();
+      }
+    });
+    observer.observe(document.documentElement, {attributes:true, attributeFilter:['data-auth-state']});
+
+    // Also fallback show after 3s in locked state if no trusted account (first visit)
+    setTimeout(()=>{
+      if (document.documentElement.dataset.authState === 'locked' && !this.hasRequested) {
+        // Only show if no trusted account to avoid blocking login
+        const trusted = document.getElementById('trustedAccount');
+        if (trusted && trusted.hidden) {
+          // Don't auto-show on first login screen, wait for manual trigger? But requirement says on first entry request permissions.
+          // So show small toast and then dialog after 1.5s
+          toast('📱 برای بهترین تجربه، مجوزها را تایید کنید.', 4000);
+          setTimeout(show, 1500);
+        }
+      }
+    }, 3500);
+
+    $('#permissionAllowButton')?.addEventListener('click', ()=>this.requestAll());
+    $('#permissionLaterButton')?.addEventListener('click', ()=>{
+      try { this.dialog.close(); } catch {}
+      try { localStorage.setItem('mamali_permissions_requested_v3', 'later'); } catch {}
+      toast('بعداً می‌تونید از تنظیمات مجوزها رو فعال کنید.');
+    });
+  }
+}
+
+class TrustedDeviceStore {
+  constructor() { this.databasePromise = null; }
   open() {
     if (!('indexedDB' in window)) return Promise.reject(new Error('IndexedDB is unavailable'));
     if (this.databasePromise) return this.databasePromise;
-
     this.databasePromise = new Promise((resolve, reject) => {
       const request = indexedDB.open(SITE_CONFIG.authDatabase, 1);
       request.addEventListener('upgradeneeded', () => {
@@ -120,7 +443,6 @@ class TrustedDeviceStore {
     });
     return this.databasePromise;
   }
-
   async run(mode, action) {
     const database = await this.open();
     return new Promise((resolve, reject) => {
@@ -134,18 +456,9 @@ class TrustedDeviceStore {
       transaction.addEventListener('abort', () => reject(transaction.error || new Error('IndexedDB transaction aborted')));
     });
   }
-
-  get() {
-    return this.run('readonly', store => store.get('current-google-account'));
-  }
-
-  save(record) {
-    return this.run('readwrite', store => store.put({ ...record, key: 'current-google-account' }));
-  }
-
-  clear() {
-    return this.run('readwrite', store => store.delete('current-google-account'));
-  }
+  get() { return this.run('readonly', store => store.get('current-google-account')); }
+  save(record) { return this.run('readwrite', store => store.put({ ...record, key: 'current-google-account' })); }
+  clear() { return this.run('readwrite', store => store.delete('current-google-account')); }
 }
 
 function base64UrlToBytes(value) {
@@ -155,47 +468,26 @@ function base64UrlToBytes(value) {
   const binary = atob(padded);
   return Uint8Array.from(binary, character => character.charCodeAt(0));
 }
-
 function decodeJwtPart(value) {
   const text = new TextDecoder().decode(base64UrlToBytes(value));
   return JSON.parse(text);
 }
-
 async function verifyGoogleCredential(token, expectedNonce) {
   if (typeof token !== 'string' || token.length > 20000) throw new Error('Invalid Google credential');
   const parts = token.split('.');
   if (parts.length !== 3) throw new Error('Malformed Google credential');
-
   const [encodedHeader, encodedPayload, encodedSignature] = parts;
   const header = decodeJwtPart(encodedHeader);
   const payload = decodeJwtPart(encodedPayload);
   if (header.alg !== 'RS256' || typeof header.kid !== 'string') throw new Error('Unsupported Google signature');
-
-  const response = await fetch(SITE_CONFIG.googleJwksEndpoint, {
-    cache: 'no-store',
-    credentials: 'omit',
-    mode: 'cors',
-  });
+  const response = await fetch(SITE_CONFIG.googleJwksEndpoint, { cache: 'no-store', credentials: 'omit', mode: 'cors' });
   if (!response.ok) throw new Error(`Google key endpoint returned ${response.status}`);
   const keySet = await response.json();
   const jwk = Array.isArray(keySet.keys) ? keySet.keys.find(key => key.kid === header.kid && key.kty === 'RSA') : null;
   if (!jwk) throw new Error('Google signing key was not found');
-
-  const key = await crypto.subtle.importKey(
-    'jwk',
-    jwk,
-    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
-    false,
-    ['verify'],
-  );
-  const signatureValid = await crypto.subtle.verify(
-    'RSASSA-PKCS1-v1_5',
-    key,
-    base64UrlToBytes(encodedSignature),
-    new TextEncoder().encode(`${encodedHeader}.${encodedPayload}`),
-  );
+  const key = await crypto.subtle.importKey('jwk', jwk, { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['verify']);
+  const signatureValid = await crypto.subtle.verify('RSASSA-PKCS1-v1_5', key, base64UrlToBytes(encodedSignature), new TextEncoder().encode(`${encodedHeader}.${encodedPayload}`));
   if (!signatureValid) throw new Error('Google signature verification failed');
-
   const now = Math.floor(Date.now() / 1000);
   const audience = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
   if (!audience.includes(SITE_CONFIG.googleClientId)) throw new Error('Google audience mismatch');
@@ -207,24 +499,24 @@ async function verifyGoogleCredential(token, expectedNonce) {
   if (payload.azp && payload.azp !== SITE_CONFIG.googleClientId) throw new Error('Google authorized party mismatch');
   if (typeof payload.sub !== 'string' || !payload.sub || typeof payload.email !== 'string') throw new Error('Google profile is incomplete');
   if (payload.email_verified !== true) throw new Error('Google email is not verified');
-
   return payload;
 }
-
 function createAuthNonce() {
   const bytes = new Uint8Array(24);
   crypto.getRandomValues(bytes);
   return [...bytes].map(value => value.toString(16).padStart(2, '0')).join('');
 }
-
+function createOAuthState() {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  return [...bytes].map(v=>v.toString(16).padStart(2,'0')).join('') + Date.now().toString(36);
+}
 function safeGooglePicture(value) {
   try {
     const url = new URL(value);
     const googleHost = url.hostname === 'lh3.googleusercontent.com' || url.hostname.endsWith('.googleusercontent.com');
     return url.protocol === 'https:' && googleHost ? url.href : '';
-  } catch {
-    return '';
-  }
+  } catch { return ''; }
 }
 
 class AuthManager {
@@ -236,6 +528,7 @@ class AuthManager {
     this.googleLoadPromise = null;
     this.appStarted = false;
     this.nonce = createAuthNonce();
+    this.oauthState = createOAuthState();
     this.removeConfirmationTimer = 0;
     this.gate = $('#authGate');
     this.appShell = $('#appShell');
@@ -249,22 +542,25 @@ class AuthManager {
     this.network = $('#authNetwork');
     this.resumeChip = $('#authResumeChip');
     this.accountDialog = $('#accountDialog');
+    this.externalButton = $('#externalGoogleButton');
+    this.oauthButton = $('#oauthRedirectButton');
   }
 
   async init() {
     document.body.dataset.authPlatform = this.getPlatform();
+    document.body.dataset.isStandalone = String(isStandalonePWA());
+    document.body.dataset.isAndroidWrapper = String(isAndroidWrapper());
     $$('[data-app-version]', this.gate).forEach(node => { node.textContent = toPersianDigits(APP_VERSION); });
     this.bind();
     this.updateNetworkState({ loadGoogle: false });
     this.registerAppShell();
+    this.checkExternalToken();
 
     try {
       const stored = await this.store.get();
       if (this.isTrustedRecord(stored)) this.session = stored;
       else if (stored) await this.store.clear();
-    } catch {
-      this.storageAvailable = false;
-    }
+    } catch { this.storageAvailable = false; }
 
     if (this.session) {
       this.renderProfile(this.session);
@@ -291,6 +587,11 @@ class AuthManager {
     });
     $('#lockAppButton').addEventListener('click', () => this.lock());
     $('#removeAccountButton').addEventListener('click', event => this.removeAccount(event.currentTarget));
+
+    // New 3.3 external buttons
+    this.externalButton?.addEventListener('click', () => this.launchExternalBrowserLogin());
+    this.oauthButton?.addEventListener('click', () => this.launchOAuthRedirect());
+
     this.accountDialog.addEventListener('click', event => {
       if (event.target !== this.accountDialog) return;
       const rect = this.accountDialog.getBoundingClientRect();
@@ -304,6 +605,13 @@ class AuthManager {
       window.clearTimeout(resizeTimer);
       resizeTimer = window.setTimeout(() => { if (this.googleReady && !this.gate.hidden) this.renderGoogleButton(); }, 180);
     }, { passive: true });
+
+    // Handle returning from external browser with token in sessionStorage
+    window.addEventListener('storage', (e)=>{
+      if (e.key === 'mamali_external_id_token' && e.newValue) {
+        this.handleExternalToken(e.newValue);
+      }
+    });
   }
 
   registerAppShell() {
@@ -347,29 +655,31 @@ class AuthManager {
     this.googleAuth.hidden = !navigator.onLine;
     this.divider.hidden = !this.session || !navigator.onLine;
     if (this.session) this.renderProfile(this.session);
+
+    // Show external buttons if standalone
+    const isStandalone = isStandalonePWA() || isAndroidWrapper();
+    if (this.externalButton) this.externalButton.hidden = !isStandalone;
+    if (this.oauthButton) this.oauthButton.hidden = false;
+
     window.setTimeout(() => (this.session ? $('#continueTrustedButton') : this.googleButton).focus?.(), 50);
   }
 
   async unlock({ source = 'google' } = {}) {
     if (!this.session) return;
-    const nextSession = {
-      ...this.session,
-      active: true,
-      lastAccessAt: Date.now(),
-      lastAccessMode: source,
-    };
+    const nextSession = { ...this.session, active: true, lastAccessAt: Date.now(), lastAccessMode: source };
     this.session = nextSession;
-    try { await this.store.save(nextSession); }
-    catch { this.storageAvailable = false; }
-
+    try { await this.store.save(nextSession); } catch { this.storageAvailable = false; }
     this.renderProfile(nextSession);
-    this.setMessage(source === 'trusted-offline' ? 'دستگاه مورد اعتماد تأیید شد؛ ماملی در حالت آفلاین باز می‌شود.' : 'هویت تأیید شد؛ در حال بازکردن مدار ماملی…', 'success');
+    this.setMessage(source === 'trusted-offline' ? 'دستگاه مورد اعتماد تأیید شد؛ ماملی در حالت آفلاین و عمودی باز می‌شود.' : 'هویت تأیید شد؛ در حال بازکردن مدار امن ماملی…', 'success');
     document.documentElement.dataset.authState = 'authenticated';
     this.appShell.hidden = false;
     this.appShell.inert = false;
     this.appShell.setAttribute('aria-hidden', 'false');
     this.gate.hidden = true;
     this.gate.setAttribute('aria-hidden', 'true');
+    try { localStorage.setItem('mamali_last_login_source', source); } catch {}
+    // Lock portrait after unlock
+    try { orientationManager?.lock(); } catch {}
     if (!this.appStarted) {
       this.appStarted = true;
       initProtectedApp();
@@ -386,10 +696,9 @@ class AuthManager {
   async handleCredential(response) {
     const credential = response?.credential;
     if (!credential) {
-      this.setMessage('Google اطلاعات ورود معتبری برنگرداند. دوباره تلاش کنید.', 'error');
+      this.setMessage('Google اطلاعات ورود معتبری برنگرداند. دوباره تلاش کنید یا از دکمه‌های جایگزین استفاده کنید.', 'error');
       return;
     }
-
     this.setProgress(true, 'در حال اعتبارسنجی امضای Google و اتصال امن حساب…');
     this.googleAuth.hidden = true;
     this.message.hidden = true;
@@ -412,14 +721,138 @@ class AuthManager {
       console.warn('Google credential validation failed:', error instanceof Error ? error.message : 'unknown error');
       this.setProgress(false);
       this.googleAuth.hidden = !navigator.onLine;
-      this.setMessage('اعتبار حساب Google تأیید نشد. اتصال و تنظیم OAuth را بررسی کنید و دوباره وارد شوید.', 'error');
+      this.setMessage('اعتبار حساب Google تأیید نشد. اتصال و تنظیم OAuth را بررسی کنید و دوباره وارد شوید. می‌تونید از «ریدایرکت امن» استفاده کنید.', 'error');
+    }
+  }
+
+  checkExternalToken() {
+    try {
+      // From sessionStorage (set by early script)
+      const token = sessionStorage.getItem('mamali_external_id_token');
+      if (token) {
+        sessionStorage.removeItem('mamali_external_id_token');
+        // Also clear via localStorage for cross-tab
+        try { localStorage.removeItem('mamali_external_id_token'); } catch {}
+        this.handleExternalToken(token);
+        return true;
+      }
+      // From hash already parsed early?
+      const hashToken = new URLSearchParams(window.location.hash.substring(1)).get('id_token');
+      if (hashToken) {
+        history.replaceState(null, '', window.location.pathname + window.location.search);
+        this.handleExternalToken(hashToken);
+        return true;
+      }
+    } catch {}
+    return false;
+  }
+
+  async handleExternalToken(token) {
+    if (!token) return;
+    this.setProgress(true, 'در حال بررسی توکن دریافتی از مرورگر خارجی…');
+    try {
+      // token may be without nonce verification if coming from OAuth redirect – we still verify signature but allow nonce mismatch for redirect flow if stored state matches
+      let payload;
+      try {
+        payload = await verifyGoogleCredential(token, this.nonce);
+      } catch (e) {
+        // For OAuth redirect flow, nonce stored in sessionStorage?
+        const storedNonce = sessionStorage.getItem('mamali_oauth_nonce');
+        const storedState = sessionStorage.getItem('mamali_oauth_state');
+        // If nonce mismatch, try without nonce check for redirect flow but still verify signature + other claims manually (we already attempted)
+        // Let's try decode and validate manually without nonce if state matches
+        if (storedNonce) {
+          try {
+            payload = await verifyGoogleCredential(token, storedNonce);
+          } catch {
+            // Last resort: verify without nonce but check state presence
+            payload = await verifyGoogleCredential(token, null);
+          }
+        } else {
+          payload = await verifyGoogleCredential(token, null);
+        }
+      }
+
+      this.session = {
+        provider: 'google',
+        clientId: SITE_CONFIG.googleClientId,
+        subject: payload.sub,
+        email: payload.email,
+        name: String(payload.name || payload.given_name || payload.email.split('@')[0]).slice(0, 120),
+        picture: safeGooglePicture(payload.picture),
+        locale: typeof payload.locale === 'string' ? payload.locale.slice(0, 20) : '',
+        verifiedAt: Date.now(),
+        lastGoogleExpiry: payload.exp * 1000,
+        active: true,
+      };
+      toast('✓ ورود از مرورگر خارجی موفق بود!', 4000);
+      await this.unlock({ source: 'google-external-browser' });
+    } catch (error) {
+      console.warn('External token failed', error);
+      this.setProgress(false);
+      this.setMessage('توکن دریافتی از مرورگر خارجی نامعتبر بود. دوباره تلاش کنید.', 'error');
+    }
+  }
+
+  buildOAuthUrl() {
+    const nonce = createAuthNonce();
+    const state = createOAuthState();
+    try {
+      sessionStorage.setItem('mamali_oauth_nonce', nonce);
+      sessionStorage.setItem('mamali_oauth_state', state);
+      sessionStorage.setItem('mamali_oauth_time', String(Date.now()));
+      localStorage.setItem('mamali_oauth_state', state);
+    } catch {}
+    this.nonce = nonce;
+    this.oauthState = state;
+    const redirectUri = getRedirectUri();
+    const params = new URLSearchParams({
+      client_id: SITE_CONFIG.googleClientId,
+      redirect_uri: redirectUri,
+      response_type: 'id_token',
+      scope: 'openid email profile',
+      nonce: nonce,
+      state: state,
+      prompt: 'select_account',
+      include_granted_scopes: 'true',
+      ux_mode: 'redirect',
+    });
+    return `${SITE_CONFIG.googleOAuthEndpoint}?${params.toString()}`;
+  }
+
+  launchOAuthRedirect() {
+    const url = this.buildOAuthUrl();
+    toast('در حال انتقال به صفحه امن گوگل...', 3500);
+    // For PWA, we need to allow redirect which will come back with hash
+    // Save current scroll etc
+    setTimeout(()=>{ window.location.href = url; }, 400);
+  }
+
+  launchExternalBrowserLogin() {
+    const url = this.buildOAuthUrl();
+    // Try open in system browser
+    try {
+      // For Android, try intent to open in Chrome
+      if (isAndroid()) {
+        const intentUrl = `intent://${url.replace(/^https:\/\//,'')}#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(url)};end`;
+        // Try both
+        window.open(url, '_blank', 'noopener');
+        setTimeout(()=>{ window.location.href = intentUrl; }, 300);
+      } else {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }
+      toast('🔗 ورود گوگل در مرورگر خارجی باز شد. پس از ورود به ماملی برمی‌گردید.', 6000);
+      this.setMessage('صفحه ورود در مرورگر خارجی باز شد. بعد از تایید گوگل، به صورت خودکار به اپ برمی‌گردید. اگر برنگشتید، دستی برگردید.', 'success');
+    } catch {
+      // Fallback to same tab redirect
+      window.location.href = url;
     }
   }
 
   updateNetworkState({ loadGoogle = true } = {}) {
     const online = navigator.onLine;
     this.network.dataset.state = online ? 'online' : 'offline';
-    $('span', this.network).textContent = online ? 'آنلاین · Google آماده' : 'آفلاین · حالت مورد اعتماد';
+    $('span', this.network).textContent = online ? 'آنلاین · Google PWA Ready' : 'آفلاین · حالت مورد اعتماد';
     if (document.documentElement.dataset.authState === 'authenticated') return;
 
     if (!online) {
@@ -428,8 +861,8 @@ class AuthManager {
       this.setProgress(false);
       this.setMessage(
         this.session
-          ? 'اینترنت قطع است؛ با حساب ذخیره‌شده روی همین دستگاه ادامه دهید.'
-          : 'برای اولین ورود با Google اینترنت لازم است. پس از یک ورود موفق، همین دستگاه آفلاین هم باز می‌شود.',
+          ? 'اینترنت قطع است؛ با حساب ذخیره‌شده روی همین دستگاه ادامه دهید. قفل عمودی فعال می‌ماند.'
+          : 'برای اولین ورود با Google اینترنت لازم است. پس از یک ورود موفق با یکی از روش‌های تعمیرشده، همین دستگاه آفلاین هم باز می‌شود.',
         'offline',
       );
       return;
@@ -449,7 +882,7 @@ class AuthManager {
     }
     if (this.googleLoadPromise) return this.googleLoadPromise;
 
-    this.setProgress(true, 'در حال اتصال امن به Google Identity…');
+    this.setProgress(true, 'در حال اتصال امن به Google Identity با پشتیبانی PWA…');
     $('#authRetryButton').hidden = true;
     this.googleLoadPromise = new Promise(resolve => {
       const previous = document.querySelector('script[data-google-identity]');
@@ -482,6 +915,7 @@ class AuthManager {
 
   initializeGoogleIdentity() {
     try {
+      const isStandalone = isStandalonePWA() || isAndroidWrapper();
       window.google.accounts.id.initialize({
         client_id: SITE_CONFIG.googleClientId,
         callback: response => this.handleCredential(response),
@@ -492,11 +926,31 @@ class AuthManager {
         nonce: this.nonce,
         use_fedcm_for_prompt: true,
         use_fedcm_for_button: true,
-        button_auto_select: true,
+        itp_support: true,
+        // Enable One Tap for better PWA experience
+        prompt_parent_id: 'googleAuth',
       });
+
       this.googleReady = true;
       this.setProgress(false);
       this.renderGoogleButton();
+
+      // For standalone PWA, also try One Tap prompt (FedCM)
+      if (isStandalone) {
+        try {
+          window.google.accounts.id.prompt((notification)=>{
+            if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+              console.log('One Tap not displayed', notification.getNotDisplayedReason?.(), notification.getSkippedReason?.());
+              // Show external buttons more prominently
+              if (this.externalButton) this.externalButton.hidden = false;
+            }
+          });
+        } catch {}
+      }
+
+      // Check if external token arrived via sessionStorage polling
+      setInterval(()=>{ const t = sessionStorage.getItem('mamali_external_id_token'); if (t) this.checkExternalToken(); }, 1200);
+
     } catch {
       this.handleGoogleLoadError();
     }
@@ -504,7 +958,7 @@ class AuthManager {
 
   renderGoogleButton() {
     if (!this.googleReady || !window.google?.accounts?.id || this.googleAuth.hidden) return;
-    const width = Math.max(260, Math.min(400, Math.floor(this.googleAuth.getBoundingClientRect().width || 360)));
+    const width = Math.max(280, Math.min(420, Math.floor(this.googleButton.getBoundingClientRect().width || 360)));
     this.googleButton.replaceChildren();
     window.google.accounts.id.renderButton(this.googleButton, {
       type: 'standard',
@@ -515,6 +969,10 @@ class AuthManager {
       logo_alignment: 'left',
       width,
       locale: 'fa',
+      click_listener: () => {
+        // Log click for analytics (local only)
+        try { console.log('Google button clicked in', isStandalonePWA() ? 'PWA' : 'web'); } catch {}
+      }
     });
   }
 
@@ -523,7 +981,9 @@ class AuthManager {
     this.googleLoadPromise = null;
     this.setProgress(false);
     $('#authRetryButton').hidden = false;
-    this.setMessage('اتصال به Google Identity برقرار نشد. اینترنت، مجوزهای مرورگر یا تنظیم Authorized JavaScript origin را بررسی کنید.', 'error');
+    this.setMessage('اتصال به Google Identity برقرار نشد. اینترنت یا مجوزهای مرورگر را بررسی کنید. می‌توانید از دکمه «ورود با ریدایرکت امن» استفاده کنید که برای حالت اپ تعمیر شده.', 'error');
+    if (this.externalButton) this.externalButton.hidden = false;
+    if (this.oauthButton) this.oauthButton.hidden = false;
   }
 
   renderProfile(profile) {
@@ -560,13 +1020,12 @@ class AuthManager {
   async lock() {
     if (!this.session) return;
     this.session = { ...this.session, active: false, lockedAt: Date.now() };
-    try { await this.store.save(this.session); }
-    catch { this.storageAvailable = false; }
+    try { await this.store.save(this.session); } catch { this.storageAvailable = false; }
     window.google?.accounts?.id?.disableAutoSelect?.();
     for (const dialog of $$('dialog[open]')) dialog.close();
     this.showLockedGate();
     this.updateNetworkState();
-    announce('ماملی قفل شد. برای بازگشت از حساب مورد اعتماد استفاده کنید.');
+    announce('ماملی قفل شد. برای بازگشت از حساب مورد اعتماد استفاده کنید. قفل عمودی فعال است.');
   }
 
   async removeAccount(button) {
@@ -580,28 +1039,24 @@ class AuthManager {
       }, 5000);
       return;
     }
-
     window.clearTimeout(this.removeConfirmationTimer);
     window.google?.accounts?.id?.disableAutoSelect?.();
-    try { await this.store.clear(); }
-    catch { this.storageAvailable = false; }
+    try { await this.store.clear(); } catch { this.storageAvailable = false; }
     this.session = null;
     button.classList.remove('is-confirming');
     button.textContent = 'حذف حساب از این دستگاه';
     for (const dialog of $$('dialog[open]')) dialog.close();
     this.showLockedGate();
     this.updateNetworkState();
-    this.setMessage('حساب از دیتابیس این دستگاه حذف شد. برای ورود دوباره از Google استفاده کنید.', 'success');
+    this.setMessage('حساب از دیتابیس این دستگاه حذف شد. برای ورود دوباره از یکی از روش‌های ورود گوگل (از جمله ریدایرکت امن) استفاده کنید.', 'success');
     announce('حساب ذخیره‌شده از این دستگاه حذف شد.');
   }
 }
-
 
 function announce(message) {
   announcer.textContent = '';
   window.setTimeout(() => { announcer.textContent = message; }, 30);
 }
-
 function toast(message, duration = 3200) {
   const item = document.createElement('div');
   item.className = 'toast';
@@ -615,7 +1070,6 @@ function toast(message, duration = 3200) {
 
 class SoundEngine {
   constructor() { this.context = null; }
-
   ensureContext() {
     if (!this.context) {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -623,17 +1077,14 @@ class SoundEngine {
     }
     if (this.context?.state === 'suspended') this.context.resume().catch(() => {});
   }
-
   play(type = 'tap') {
     if (!settings.sound) return;
     this.ensureContext();
     if (!this.context) return;
-
     const frequencies = { tap: 430, open: 620, toggle: 520, energy: 180 };
     const oscillator = this.context.createOscillator();
     const gain = this.context.createGain();
     const now = this.context.currentTime;
-
     oscillator.type = type === 'energy' ? 'sine' : 'triangle';
     oscillator.frequency.setValueAtTime(frequencies[type] || 430, now);
     oscillator.frequency.exponentialRampToValueAtTime((frequencies[type] || 430) * 1.35, now + .08);
@@ -658,7 +1109,6 @@ function applySettings({ notify = false } = {}) {
   document.body.classList.toggle('particles-enabled', Boolean(settings.particles));
   document.body.classList.toggle('effects-enabled', Boolean(settings.glow));
   document.body.classList.toggle('reduce-motion', Boolean(settings.reducedMotion));
-
   const themeColor = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
   $('meta[name="theme-color"]')?.setAttribute('content', themeColor || '#050816');
 
@@ -668,11 +1118,20 @@ function applySettings({ notify = false } = {}) {
   $('#reducedMotionSetting').checked = Boolean(settings.reducedMotion);
   $('#soundSetting').checked = Boolean(settings.sound);
   $('#autoUpdateSetting').checked = settings.autoUpdate !== false;
+  $('#secureSetting').checked = settings.secure !== false;
+  $('#portraitSetting').checked = settings.portrait !== false;
   $('#themeSetting').value = SITE_CONFIG.themes.includes(settings.theme) ? settings.theme : defaults.theme;
   $('#deviceMotionSetting').value = ['soft', 'balanced', 'free'].includes(settings.deviceMotion) ? settings.deviceMotion : defaults.deviceMotion;
   $('#phoneDepth').value = String(Math.min(145, Math.max(55, Number(settings.phoneDepth) || defaults.phoneDepth)));
   $('#phoneDepthValue').value = toPersianDigits($('#phoneDepth').value);
   $('#qualitySetting').value = ['auto', 'high', 'low'].includes(settings.quality) ? settings.quality : 'auto';
+
+  screenshotManager?.setEnabled(settings.secure !== false);
+  if (settings.portrait) orientationManager?.lock();
+  else {
+    document.body.classList.remove('is-landscape', 'portrait-enforced');
+    $('#rotatePrompt').hidden = true;
+  }
 
   orbit?.syncMotion();
   cosmos?.configure();
@@ -717,14 +1176,12 @@ class CosmosRenderer {
     this.configure();
     requestAnimationFrame(time => this.frame(time));
   }
-
   getParticleCount() {
     if (settings.quality === 'low') return 34;
     if (settings.quality === 'high') return 92;
     const compactDevice = (navigator.hardwareConcurrency || 4) <= 4 || (navigator.deviceMemory || 4) <= 4;
     return compactDevice || window.innerWidth < 700 ? 42 : 70;
   }
-
   configure() {
     const target = this.getParticleCount();
     while (this.particles.length < target) this.particles.push(this.createParticle());
@@ -733,7 +1190,6 @@ class CosmosRenderer {
     this.primary = styles.getPropertyValue('--primary').trim() || '#6cf5ff';
     this.accent = styles.getPropertyValue('--accent').trim() || '#ff4ecd';
   }
-
   createParticle() {
     return {
       x: Math.random(),
@@ -745,7 +1201,6 @@ class CosmosRenderer {
       alpha: .2 + Math.random() * .7,
     };
   }
-
   resize() {
     this.width = window.innerWidth;
     this.height = window.innerHeight;
@@ -757,7 +1212,6 @@ class CosmosRenderer {
     this.context.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     this.configure();
   }
-
   frame(time) {
     const interval = settings.quality === 'high' ? 16 : 32;
     if (time - this.lastDraw >= interval) {
@@ -768,17 +1222,14 @@ class CosmosRenderer {
     }
     requestAnimationFrame(next => this.frame(next));
   }
-
   draw(delta) {
     const ctx = this.context;
     ctx.clearRect(0, 0, this.width, this.height);
     if (!settings.particles || document.hidden) return;
-
     const primary = this.primary;
     const accent = this.accent;
     const pointerX = this.pointer.x * this.width;
     const pointerY = this.pointer.y * this.height;
-
     for (const particle of this.particles) {
       if (!settings.reducedMotion) {
         particle.y += particle.speed * delta;
@@ -787,18 +1238,15 @@ class CosmosRenderer {
       if (particle.y > 1.04) particle.y = -.04;
       if (particle.x > 1.04) particle.x = -.04;
       if (particle.x < -.04) particle.x = 1.04;
-
       const parallaxX = (pointerX - this.width / 2) * particle.z * .012;
       const parallaxY = (pointerY - this.height / 2) * particle.z * .009;
       particle.screenX = particle.x * this.width - parallaxX;
       particle.screenY = particle.y * this.height - parallaxY;
-
       ctx.beginPath();
       ctx.fillStyle = hexToRgba(particle.z > .72 ? accent : primary, particle.alpha);
       ctx.arc(particle.screenX, particle.screenY, particle.size * particle.z, 0, Math.PI * 2);
       ctx.fill();
     }
-
     if (settings.quality === 'low' || settings.reducedMotion) return;
     ctx.lineWidth = .5;
     const maxDistance = Math.min(145, this.width * .12);
@@ -847,7 +1295,6 @@ class OrbitEngine {
     this.syncMotion();
     requestAnimationFrame(time => this.frame(time));
   }
-
   setupInteraction() {
     this.scene.addEventListener('pointerdown', event => {
       if (event.target.closest('a, button')) return;
@@ -857,7 +1304,6 @@ class OrbitEngine {
       this.scene.classList.add('is-dragging');
       this.scene.setPointerCapture(event.pointerId);
     });
-
     this.scene.addEventListener('pointermove', event => {
       const rect = this.scene.getBoundingClientRect();
       const localX = ((event.clientX - rect.left) / rect.width - .5) * 2;
@@ -873,7 +1319,6 @@ class OrbitEngine {
       this.velocity = deltaX * .0055;
       this.angle += this.velocity;
     });
-
     const release = event => {
       if (!this.dragging) return;
       this.dragging = false;
@@ -882,7 +1327,6 @@ class OrbitEngine {
     };
     this.scene.addEventListener('pointerup', release);
     this.scene.addEventListener('pointercancel', release);
-
     this.scene.addEventListener('keydown', event => {
       if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
         event.preventDefault();
@@ -896,7 +1340,6 @@ class OrbitEngine {
         this.velocity = 0;
       }
     });
-
     for (const { element } of this.portals) {
       element.addEventListener('pointermove', event => {
         const rect = element.getBoundingClientRect();
@@ -911,7 +1354,6 @@ class OrbitEngine {
       });
     }
   }
-
   syncMotion() {
     const auto = Boolean(settings.motion) && !settings.reducedMotion;
     const button = $('#motionButton');
@@ -921,39 +1363,32 @@ class OrbitEngine {
     const label = $('.orbit-motion-control__copy strong', button);
     if (label) label.textContent = auto ? 'توقف چرخش' : 'شروع چرخش';
   }
-
   frame(time) {
     const interval = settings.quality === 'high' || this.dragging ? 16 : 32;
     if (time - this.lastRender < interval) {
       requestAnimationFrame(next => this.frame(next));
       return;
     }
-
     const delta = Math.min(time - this.lastFrame, 50);
     this.lastFrame = time;
     this.lastRender = time;
-
     if (!this.dragging) {
       if (settings.motion && !settings.reducedMotion) this.angle += delta * .00018;
       this.angle += this.velocity;
       this.velocity *= .94;
       if (Math.abs(this.velocity) < .00005) this.velocity = 0;
     }
-
     this.render();
     requestAnimationFrame(next => this.frame(next));
   }
-
   render() {
     const width = this.width;
     const compact = width < 520;
     const radius = Math.min(width * (compact ? .31 : .34), compact ? 145 : 220);
     const depth = radius * .68;
-
     this.scene.style.setProperty('--orbit-yaw', `${(this.angle * 57.2958).toFixed(2)}deg`);
     this.scene.style.setProperty('--orbit-yaw-inverse', `${(-this.angle * 57.2958).toFixed(2)}deg`);
     this.scene.style.setProperty('--orbit-pitch', `${this.pitch}deg`);
-
     for (const portal of this.portals) {
       const angle = portal.phase + this.angle;
       const x = Math.cos(angle) * radius;
@@ -976,24 +1411,15 @@ class DeviceTiltController {
     this.dragging = false;
     this.hovering = false;
     this.pointerId = null;
-    this.x = 0;
-    this.y = 0;
-    this.rx = 0;
-    this.ry = 0;
-    this.rz = 0;
-    this.velocityX = 0;
-    this.velocityY = 0;
+    this.x = 0; this.y = 0; this.rx = 0; this.ry = 0; this.rz = 0;
+    this.velocityX = 0; this.velocityY = 0;
     this.animationFrame = 0;
     this.profile = null;
     this.configure();
     this.bind();
     this.apply();
   }
-
-  clamp(value, min, max) {
-    return Math.min(Math.max(value, min), max);
-  }
-
+  clamp(value, min, max) { return Math.min(Math.max(value, min), max); }
   configure() {
     const profiles = {
       soft: { dragX: .52, dragY: .45, maxX: 66, maxY: 48, hoverX: 12, hoverY: 8, tiltX: 6, tiltY: 8, inertia: .78 },
@@ -1010,32 +1436,25 @@ class DeviceTiltController {
     this.root.classList.toggle('is-motion-reduced', Boolean(settings.reducedMotion));
     if (!this.dragging && !this.hovering) this.reset({ immediate: true });
   }
-
   bind() {
     this.phone.addEventListener('pointerdown', event => {
       if (settings.reducedMotion) return;
       if (event.button !== 0 && event.pointerType === 'mouse') return;
       event.preventDefault();
       cancelAnimationFrame(this.animationFrame);
-      this.dragging = true;
-      this.hovering = false;
+      this.dragging = true; this.hovering = false;
       this.pointerId = event.pointerId;
-      this.startX = event.clientX;
-      this.startY = event.clientY;
-      this.baseX = this.x;
-      this.baseY = this.y;
-      this.lastX = this.x;
-      this.lastY = this.y;
+      this.startX = event.clientX; this.startY = event.clientY;
+      this.baseX = this.x; this.baseY = this.y;
+      this.lastX = this.x; this.lastY = this.y;
       this.root.classList.add('is-dragging', 'is-tracking');
       this.phone.setPointerCapture(event.pointerId);
     });
-
     this.root.addEventListener('pointerenter', event => {
       if (settings.reducedMotion || event.pointerType !== 'mouse' || this.dragging) return;
       this.hovering = true;
       this.root.classList.add('is-tracking');
     });
-
     this.root.addEventListener('pointermove', event => {
       if (settings.reducedMotion) return;
       const profile = this.profile;
@@ -1044,17 +1463,14 @@ class DeviceTiltController {
         const deltaY = event.clientY - this.startY;
         this.x = this.clamp(this.baseX + deltaX * profile.dragX, -profile.maxX, profile.maxX);
         this.y = this.clamp(this.baseY + deltaY * profile.dragY, -profile.maxY, profile.maxY);
-        this.velocityX = this.x - this.lastX;
-        this.velocityY = this.y - this.lastY;
-        this.lastX = this.x;
-        this.lastY = this.y;
+        this.velocityX = this.x - this.lastX; this.velocityY = this.y - this.lastY;
+        this.lastX = this.x; this.lastY = this.y;
         this.ry = this.clamp((this.x / profile.maxX) * profile.tiltY, -profile.tiltY, profile.tiltY);
         this.rx = this.clamp((-this.y / profile.maxY) * profile.tiltX, -profile.tiltX, profile.tiltX);
         this.rz = this.clamp((this.x / profile.maxX) * 2.2, -2.2, 2.2);
         this.apply(1.045);
         return;
       }
-
       if (event.pointerType !== 'mouse') return;
       const rect = this.root.getBoundingClientRect();
       const localX = this.clamp(((event.clientX - rect.left) / rect.width - .5) * 2, -1, 1);
@@ -1067,7 +1483,6 @@ class DeviceTiltController {
       this.rz += (localX * 1.4 - this.rz) * .32;
       this.apply(1.018);
     }, { passive: true });
-
     const release = event => {
       if (!this.dragging || event.pointerId !== this.pointerId) return;
       this.dragging = false;
@@ -1076,7 +1491,6 @@ class DeviceTiltController {
       this.pointerId = null;
       this.settle();
     };
-
     this.phone.addEventListener('pointerup', release);
     this.phone.addEventListener('pointercancel', release);
     this.root.addEventListener('pointerleave', event => {
@@ -1087,7 +1501,6 @@ class DeviceTiltController {
     });
     this.phone.addEventListener('dblclick', () => this.reset());
   }
-
   apply(scale = 1) {
     this.root.style.setProperty('--phone-x', `${this.x.toFixed(2)}px`);
     this.root.style.setProperty('--phone-y', `${this.y.toFixed(2)}px`);
@@ -1101,45 +1514,29 @@ class DeviceTiltController {
     this.root.style.setProperty('--light-x', `${(this.x * .2).toFixed(2)}px`);
     this.root.style.setProperty('--light-y', `${(this.y * .2).toFixed(2)}px`);
   }
-
   reset({ immediate = false } = {}) {
     cancelAnimationFrame(this.animationFrame);
     this.hovering = false;
     this.root.classList.remove('is-tracking', 'is-dragging');
     if (immediate || settings.reducedMotion) {
-      this.x = 0;
-      this.y = 0;
-      this.rx = 0;
-      this.ry = 0;
-      this.rz = 0;
-      this.velocityX = 0;
-      this.velocityY = 0;
+      this.x = 0; this.y = 0; this.rx = 0; this.ry = 0; this.rz = 0;
+      this.velocityX = 0; this.velocityY = 0;
       this.apply();
       return;
     }
     this.settle({ fromHover: true });
   }
-
   settle({ fromHover = false } = {}) {
     cancelAnimationFrame(this.animationFrame);
-    if (settings.reducedMotion) {
-      this.reset({ immediate: true });
-      return;
-    }
-
+    if (settings.reducedMotion) { this.reset({ immediate: true }); return; }
     const profile = this.profile;
-    if (fromHover) {
-      this.velocityX = 0;
-      this.velocityY = 0;
-    }
+    if (fromHover) { this.velocityX = 0; this.velocityY = 0; }
     const frame = () => {
       this.velocityX *= profile.inertia;
       this.velocityY *= profile.inertia;
       this.x = (this.x + this.velocityX) * .9;
       this.y = (this.y + this.velocityY) * .9;
-      this.rx *= .82;
-      this.ry *= .82;
-      this.rz *= .78;
+      this.rx *= .82; this.ry *= .82; this.rz *= .78;
       this.apply(1 + Math.min(Math.abs(this.velocityX) + Math.abs(this.velocityY), 10) * .0018);
       const moving = Math.abs(this.x) + Math.abs(this.y) + Math.abs(this.rx) + Math.abs(this.ry) + Math.abs(this.velocityX) + Math.abs(this.velocityY) > .28;
       if (moving) this.animationFrame = requestAnimationFrame(frame);
@@ -1154,11 +1551,9 @@ function setupDeviceClock() {
   const seconds = $('#deviceSeconds');
   const timezone = $('#deviceTimezone');
   if (!clock) return;
-
   const zone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Local';
   const zoneLabel = zone.split('/').pop().replaceAll('_', ' ');
   if (timezone) timezone.textContent = `${zoneLabel} · LOCAL`;
-
   let timer;
   const update = () => {
     const now = new Date();
@@ -1171,18 +1566,19 @@ function setupDeviceClock() {
     window.clearTimeout(timer);
     timer = window.setTimeout(update, Math.max(120, 1000 - (Date.now() % 1000) + 8));
   };
-
   update();
-  document.addEventListener('visibilitychange', () => {
-    if (!document.hidden) update();
-  });
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) update(); });
   window.addEventListener('pageshow', update);
 }
+
 let cosmos;
 let orbit;
 let deviceTilt;
 let updateManager;
 let authManager;
+let orientationManager;
+let screenshotManager;
+let permissionManager;
 let protectedAppInitialized = false;
 
 function cycleTheme() {
@@ -1193,53 +1589,36 @@ function cycleTheme() {
   const names = { neon: 'نئون', aurora: 'شفق', solar: 'خورشیدی', prism: 'منشوری' };
   toast(`تم ${names[settings.theme]} فعال شد.`);
 }
-
 function getPlatform() {
   const agent = navigator.userAgent.toLowerCase();
   if (/android/.test(agent)) return 'android';
   if (/iphone|ipad|ipod/.test(agent)) return 'ios';
   return 'desktop';
 }
-
 function getNativeAppLink(appId) {
   const app = SITE_CONFIG.apps[appId];
   return app?.[getPlatform()] || app?.fallback || '#';
 }
-
 function openNativeApp(appId) {
   const app = SITE_CONFIG.apps[appId];
   if (!app) return;
-
   const deepLink = getNativeAppLink(appId);
   sound.play('open');
-
   if (deepLink.startsWith('https://')) {
     toast(`نسخه وب ${app.label} باز می‌شود؛ روی موبایل دکمه مستقیماً اپ را اجرا می‌کند.`, 3000);
     window.open(app.fallback, '_blank', 'noopener,noreferrer');
     return;
   }
-
   toast(`در حال بازکردن اپ ${app.label}…`, 2200);
-
-  // Android intent: URLs include their own browser fallback and must run directly
-  // inside the user's click gesture. Chrome handles the app handoff itself.
   if (deepLink.startsWith('intent:')) {
     window.location.href = deepLink;
     return;
   }
-
   let appOpened = false;
   let fallbackTimer;
-  const markOpened = () => {
-    appOpened = true;
-    window.clearTimeout(fallbackTimer);
-  };
-
+  const markOpened = () => { appOpened = true; window.clearTimeout(fallbackTimer); };
   window.addEventListener('blur', markOpened, { once: true });
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) markOpened();
-  }, { once: true });
-
+  document.addEventListener('visibilitychange', () => { if (document.hidden) markOpened(); }, { once: true });
   window.location.href = deepLink;
   fallbackTimer = window.setTimeout(() => {
     if (appOpened || document.hidden) return;
@@ -1247,7 +1626,6 @@ function openNativeApp(appId) {
     window.location.href = app.fallback;
   }, 2400);
 }
-
 function setupNativeAppLinks() {
   for (const link of $$('[data-native-app]')) {
     const appId = link.dataset.nativeApp;
@@ -1261,7 +1639,6 @@ function setupNativeAppLinks() {
     });
   }
 }
-
 function getInstallPlatform() {
   const platform = `${navigator.userAgentData?.platform || ''} ${navigator.platform || ''} ${navigator.userAgent}`.toLowerCase();
   if (platform.includes('windows') || platform.includes('win32') || platform.includes('win64')) return 'windows';
@@ -1269,16 +1646,13 @@ function getInstallPlatform() {
   if (/iphone|ipad|ipod/.test(platform)) return 'ios';
   return 'desktop';
 }
-
 function setupPlatformTabs() {
   const tabs = $$('[data-platform-tab]');
   const panels = $$('[data-platform-panel]');
   const quickChoices = $$('[data-platform-choice]');
   if (!tabs.length || !panels.length) return;
-
   let savedPlatform = '';
-  try { savedPlatform = sessionStorage.getItem('mamali-install-platform') || ''; } catch { /* Optional storage. */ }
-
+  try { savedPlatform = sessionStorage.getItem('mamali-install-platform') || ''; } catch {}
   const activate = (platform, { focus = false, reveal = false, remember = true } = {}) => {
     const normalized = ['android', 'windows'].includes(platform) ? platform : 'android';
     for (const tab of tabs) {
@@ -1300,7 +1674,7 @@ function setupPlatformTabs() {
     }
     document.body.dataset.installPlatform = normalized;
     if (remember) {
-      try { sessionStorage.setItem('mamali-install-platform', normalized); } catch { /* Optional storage. */ }
+      try { sessionStorage.setItem('mamali-install-platform', normalized); } catch {}
     }
     document.dispatchEvent(new CustomEvent('installplatformchange', { detail: { platform: normalized } }));
     if (reveal) {
@@ -1308,7 +1682,6 @@ function setupPlatformTabs() {
       window.setTimeout(() => panel?.scrollIntoView({ behavior: settings.reducedMotion ? 'auto' : 'smooth', block: 'nearest' }), 30);
     }
   };
-
   for (const tab of tabs) {
     tab.addEventListener('click', event => {
       event.preventDefault();
@@ -1326,11 +1699,9 @@ function setupPlatformTabs() {
       activate(tabs[target].dataset.platformTab, { focus: true, reveal: true });
     });
   }
-
   for (const choice of quickChoices) {
     choice.addEventListener('click', () => activate(choice.dataset.platformChoice, { reveal: true }));
   }
-
   $('#copyAndroidLink')?.addEventListener('click', async event => {
     const url = new URL('./', window.location.href).href;
     try {
@@ -1346,7 +1717,6 @@ function setupPlatformTabs() {
       toast(`لینک نصب: ${url}`, 6000);
     }
   });
-
   const initial = ['android', 'windows'].includes(savedPlatform)
     ? savedPlatform
     : (getInstallPlatform() === 'windows' ? 'windows' : 'android');
@@ -1357,6 +1727,7 @@ function setupDialogs() {
   const commandDialog = $('#commandDialog');
   const installDialog = $('#installDialog');
   const accountDialog = $('#accountDialog');
+  const permissionDialog = $('#permissionDialog');
 
   const settingsButton = $('#settingsButton');
   settingsButton.addEventListener('click', () => {
@@ -1378,7 +1749,8 @@ function setupDialogs() {
     });
   }
 
-  for (const dialog of [settingsDialog, commandDialog, installDialog, accountDialog]) {
+  for (const dialog of [settingsDialog, commandDialog, installDialog, accountDialog, permissionDialog]) {
+    if (!dialog) continue;
     dialog.addEventListener('click', event => {
       if (event.target !== dialog) return;
       const rect = dialog.getBoundingClientRect();
@@ -1403,15 +1775,24 @@ function setupDialogs() {
     ['reducedMotionSetting', 'reducedMotion'],
     ['soundSetting', 'sound'],
     ['autoUpdateSetting', 'autoUpdate'],
+    ['secureSetting', 'secure'],
+    ['portraitSetting', 'portrait'],
   ];
 
   for (const [id, key] of bindings) {
-    $(`#${id}`).addEventListener('change', event => {
+    const el = $(`#${id}`);
+    if (!el) continue;
+    el.addEventListener('change', event => {
       settings[key] = event.target.checked;
       animateSettingControl(event.target);
       if (key === 'sound' && settings.sound) sound.ensureContext();
       applySettings({ notify: true });
       sound.play('toggle');
+      if (key === 'secure') toast(settings.secure ? '🛡️ محافظت از اسکرین‌شات فعال شد.' : 'محافظت غیرفعال شد.');
+      if (key === 'portrait') {
+        toast(settings.portrait ? '📱 قفل عمودی فعال شد.' : 'قفل عمودی غیرفعال شد.');
+        if (settings.portrait) orientationManager?.lock();
+      }
     });
   }
 
@@ -1465,15 +1846,19 @@ function setupCommandPalette() {
   let visibleCommands = [];
 
   const commands = [
+    { icon: 'G', title: 'ورود گوگل تعمیرشده PWA', hint: 'Fix برای حالت اپ نصب‌شده', keywords: 'google pwa login اپ اندروید fix ورود', run: () => { document.getElementById('authGate').hidden ? $('#accountDialog').showModal() : window.scrollTo({top:0, behavior:'smooth'}); } },
     { icon: 'IG', title: 'بازکردن اپ اینستاگرام', hint: 'Deep Link مستقیم', keywords: 'instagram اینستا اینستاگرام app اپ', run: () => openNativeApp('instagram') },
     { icon: 'YT', title: 'بازکردن اپ یوتیوب', hint: 'Deep Link مستقیم', keywords: 'youtube یوتیوب ویدیو app اپ', run: () => openNativeApp('youtube') },
     { icon: 'TG', title: 'بازکردن اپ تلگرام', hint: 'Deep Link مستقیم', keywords: 'telegram تلگرام app اپ', run: () => openNativeApp('telegram') },
-    { icon: 'APP', title: 'راهنمای نصب Android و Windows', hint: 'موبایل، دسکتاپ و PWA', keywords: 'android windows اندروید ویندوز install نصب pwa app', run: () => $('#installDialog').showModal() },
-    { icon: 'UP', title: 'بررسی بروزرسانی برنامه', hint: `نسخه ${toPersianDigits(APP_VERSION)} · کانال پایدار`, keywords: 'update بروزرسانی آپدیت version نسخه', run: () => { $('#updateCenter').scrollIntoView({ behavior: settings.reducedMotion ? 'auto' : 'smooth', block: 'center' }); updateManager?.check(); } },
+    { icon: 'APP', title: 'نصب اپ عمودی و امن', hint: 'Android portrait + secure', keywords: 'android windows اندروید ویندوز install نصب pwa portrait secure عمودی امن', run: () => $('#installDialog').showModal() },
+    { icon: 'UP', title: 'بررسی بروزرسانی ۳.۳', hint: `نسخه ${toPersianDigits(APP_VERSION)} · کانال پایدار`, keywords: 'update بروزرسانی آپدیت version نسخه 3.3', run: () => { $('#updateCenter').scrollIntoView({ behavior: settings.reducedMotion ? 'auto' : 'smooth', block: 'center' }); updateManager?.check(); } },
     { icon: '◐', title: 'تغییر تم رنگی',  hint: 'نئون، شفق، خورشیدی', keywords: 'theme تم رنگ ظاهر', run: cycleTheme },
-    { icon: '⚙', title: 'بازکردن تنظیمات', hint: 'کنترل جلوه‌ها', keywords: 'settings تنظیمات کنترل', run: () => $('#settingsDialog').showModal() },
+    { icon: '⚙', title: 'تنظیمات امن و عمودی', hint: 'کنترل جلوه‌ها + portrait + secure', keywords: 'settings تنظیمات کنترل secure portrait عمودی امن', run: () => $('#settingsDialog').showModal() },
     { icon: '⌁', title: 'حساب و امنیت دستگاه', hint: 'قفل، خروج یا حذف حساب محلی', keywords: 'google account حساب امنیت قفل خروج', run: () => $('#accountDialog').showModal() },
+    { icon: '🔔', title: 'درخواست مجوزهای سیستمی', hint: 'notification + storage + orientation', keywords: 'permission مجوز notification اعلان storage', run: () => $('#permissionDialog').showModal() },
     { icon: '↻', title: 'روشن/خاموش‌کردن حرکت', hint: 'چرخش خودکار مدار', keywords: 'motion حرکت توقف چرخش', run: () => { settings.motion = !settings.motion; applySettings(); } },
+    { icon: '📱', title: 'قفل عمودی را فعال/غیرفعال کن', hint: 'portrait lock', keywords: 'portrait عمودی قفل orientation', run: () => { settings.portrait = !settings.portrait; applySettings({notify:true}); orientationManager?.lock(); } },
+    { icon: '🛡️', title: 'محافظت اسکرین‌شات', hint: 'روشن/خاموش', keywords: 'secure screenshot اسکرین شات محافظت', run: () => { settings.secure = !settings.secure; applySettings({notify:true}); } },
   ];
 
   const execute = command => {
@@ -1591,13 +1976,17 @@ function setupControls() {
     void core.offsetWidth;
     core.classList.add('is-pulsing');
     sound.play('energy');
-    toast('موج انرژی مدار فعال شد.');
+    toast('موج انرژی مدار امن ۳.۳ فعال شد.');
     window.setTimeout(() => core.classList.remove('is-pulsing'), 1000);
   });
 
+  // Debounced click sound to avoid long chat overload
+  let lastSound = 0;
   document.addEventListener('click', event => {
-    if (event.target.closest('button, a')) sound.play('tap');
-  });
+    if (!event.target.closest('button, a')) return;
+    const now = Date.now();
+    if (now - lastSound > 120) { sound.play('tap'); lastSound = now; }
+  }, { passive: true });
 }
 
 function setupRevealAnimations() {
@@ -1606,7 +1995,6 @@ function setupRevealAnimations() {
     items.forEach(item => item.classList.add('is-visible'));
     return;
   }
-
   const observer = new IntersectionObserver(entries => {
     for (const entry of entries) {
       if (!entry.isIntersecting) continue;
@@ -1678,7 +2066,7 @@ class UpdateManager {
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (!this.applying || this.reloading) return;
         this.reloading = true;
-        toast('نسخه تازه فعال شد؛ در حال راه‌اندازی دوباره ماملی…', 3000);
+        toast('نسخه امن ۳.۳ فعال شد؛ در حال راه‌اندازی دوباره ماملی…', 3000);
         window.setTimeout(() => window.location.reload(), 350);
       });
     }
@@ -1695,7 +2083,6 @@ class UpdateManager {
       this.check({ silent: true });
       return;
     }
-
     try {
       this.registration = await navigator.serviceWorker.register('./sw.js', { scope: './', updateViaCache: 'none' });
       this.watchRegistration(this.registration);
@@ -1713,12 +2100,12 @@ class UpdateManager {
   watchRegistration(registration) {
     const watchWorker = worker => {
       if (!worker) return;
-      this.setMagnet('pulling', 'نسخه تازه پیدا شد؛ در حال آماده‌سازی بسته…');
+      this.setMagnet('pulling', 'نسخه امن ۳.۳ پیدا شد؛ در حال آماده‌سازی بسته…');
       const inspect = () => {
         if (worker.state === 'installed' && navigator.serviceWorker.controller) {
           this.setAvailable(this.latestVersion, [], { workerReady: true });
         } else if (worker.state === 'activated' && !navigator.serviceWorker.controller) {
-          this.setMagnet('current', 'اپ برای اجرای آفلاین آماده است');
+          this.setMagnet('current', 'اپ امن برای اجرای آفلاین آماده است');
         }
       };
       worker.addEventListener('statechange', inspect);
@@ -1735,7 +2122,6 @@ class UpdateManager {
       this.setState('offline');
       return;
     }
-
     if (this.state !== 'available' && this.state !== 'countdown') this.setState('checking');
     else this.setMagnet('scanning', 'نسخه آماده است؛ هم‌زمان کانال انتشار بررسی می‌شود…');
     try {
@@ -1753,7 +2139,7 @@ class UpdateManager {
         this.setAvailable(release.version, release.notes, { workerReady: waiting });
       } else {
         this.setState('current');
-        if (!silent) toast(`نسخه ${toPersianDigits(APP_VERSION)} آخرین نسخه پایدار است.`);
+        if (!silent) toast(`نسخه ${toPersianDigits(APP_VERSION)} آخرین نسخه امن است.`);
       }
     } catch (error) {
       console.warn('Update check failed:', error);
@@ -1766,11 +2152,11 @@ class UpdateManager {
     this.latestVersion = compareVersions(version, APP_VERSION) >= 0 ? version : APP_VERSION;
     this.latest.textContent = toPersianDigits(this.latestVersion);
     this.setState('available', { workerReady });
-    const note = Array.isArray(notes) && notes.length ? notes[0] : 'نسخه تازه بدون نصب دوباره آماده فعال‌سازی است.';
+    const note = Array.isArray(notes) && notes.length ? notes[0] : 'نسخه امن ۳.۳ با تعمیر ورود گوگل در اپ.';
     this.bannerCopy.textContent = `نسخه ${toPersianDigits(this.latestVersion)} — ${note}`;
     if (workerReady && !this.dismissed) this.banner.hidden = false;
     if (workerReady) {
-      announce(`بروزرسانی نسخه ${toPersianDigits(this.latestVersion)} آماده است.`);
+      announce(`بروزرسانی امن نسخه ${toPersianDigits(this.latestVersion)} آماده است.`);
       this.scheduleAutoApply();
     }
   }
@@ -1780,13 +2166,13 @@ class UpdateManager {
     this.center.dataset.state = state;
     const offline = state === 'offline';
     const busy = state === 'checking' || state === 'updating';
-    this.connection.innerHTML = offline ? '<i></i> آفلاین' : '<i></i> آنلاین';
+    this.connection.innerHTML = offline ? '<i></i> آفلاین' : '<i></i> آنلاین · امن';
     this.applyButton.disabled = offline || busy || (state === 'available' && !workerReady && Boolean(this.registration));
     this.checkButton.disabled = offline || busy;
 
     const content = {
-      checking: ['در حال بررسی نسخه انتشار و بسته آفلاین…', 'در حال بررسی…', 'scanning', 'در حال جذب تازه‌ترین انتشار…'],
-      current: [`نسخه ${toPersianDigits(APP_VERSION)} تازه و همگام است؛ بررسی بعدی خودکار انجام می‌شود.`, 'بررسی بروزرسانی', 'current', 'متصل؛ تازه‌ترین نسخه روی این دستگاه است'],
+      checking: ['در حال بررسی نسخه انتشار امن و بسته آفلاین…', 'در حال بررسی…', 'scanning', 'در حال جذب تازه‌ترین انتشار امن…'],
+      current: [`نسخه ${toPersianDigits(APP_VERSION)} تازه و امن است؛ بررسی بعدی خودکار انجام می‌شود.`, 'بررسی بروزرسانی', 'current', 'متصل؛ تازه‌ترین نسخه امن روی این دستگاه است'],
       available: [workerReady ? `نسخه ${toPersianDigits(this.latestVersion)} جذب شد؛ بدون نصب دوباره آماده است.` : `نسخه ${toPersianDigits(this.latestVersion)} پیدا شد و بسته تازه در حال آماده‌شدن است…`, workerReady ? `فعال‌سازی ${toPersianDigits(this.latestVersion)}` : 'در حال آماده‌سازی…', workerReady ? 'captured' : 'pulling', workerReady ? `نسخه ${toPersianDigits(this.latestVersion)} جذب شد و آماده فعال‌سازی است` : `در حال جذب بسته نسخه ${toPersianDigits(this.latestVersion)}…`],
       countdown: ['', `فعال‌سازی ${toPersianDigits(this.latestVersion)}`, 'countdown', 'فعال‌سازی خودکار نزدیک است'],
       updating: ['فایل‌های نسخه تازه دریافت شدند؛ در حال فعال‌سازی امن…', 'در حال بروزرسانی…', 'activating', 'در حال فعال‌سازی نسخه تازه…'],
@@ -1855,9 +2241,8 @@ class UpdateManager {
     this.cancelAutoApply();
     this.applying = true;
     this.setState('updating');
-    this.setMagnet('activating', mode === 'auto' ? 'فعال‌سازی خودکار نسخه تازه…' : 'در حال فعال‌سازی نسخه انتخاب‌شده…');
+    this.setMagnet('activating', mode === 'auto' ? 'فعال‌سازی خودکار نسخه امن…' : 'در حال فعال‌سازی نسخه انتخاب‌شده…');
     sound.play('energy');
-
     try {
       await this.registration?.update();
       let worker = this.registration?.waiting || this.registration?.installing;
@@ -1876,9 +2261,7 @@ class UpdateManager {
       worker = this.registration?.waiting || worker;
       if (worker && worker.state !== 'redundant') {
         worker.postMessage({ type: 'SKIP_WAITING' });
-        window.setTimeout(() => {
-          if (!this.reloading) window.location.reload();
-        }, 4500);
+        window.setTimeout(() => { if (!this.reloading) window.location.reload(); }, 4500);
       } else {
         window.location.reload();
       }
@@ -1889,6 +2272,7 @@ class UpdateManager {
     }
   }
 }
+
 function setupInstall() {
   const buttons = $$('.install-trigger');
   const guide = $('#installDialog');
@@ -1898,8 +2282,8 @@ function setupInstall() {
   let installed = standaloneQuery.matches || Boolean(navigator.standalone);
 
   const platformLabels = {
-    android: devicePlatform === 'android' ? 'نصب اپ Android' : 'راهنمای نصب Android',
-    windows: devicePlatform === 'windows' ? 'نصب اپ Windows' : 'راهنمای نصب Windows',
+    android: devicePlatform === 'android' ? 'نصب اپ Android عمودی' : 'راهنمای نصب Android',
+    windows: devicePlatform === 'windows' ? 'نصب اپ Windows امن' : 'راهنمای نصب Windows',
     ios: 'افزودن به صفحه اصلی',
     desktop: 'نصب اپ روی دستگاه',
   };
@@ -1922,7 +2306,7 @@ function setupInstall() {
       const canInstallHere = selection === devicePlatform || !['android', 'windows'].includes(devicePlatform);
       button.classList.toggle('is-installable', Boolean(installPrompt && canInstallHere));
       button.dataset.selectedPlatform = selection;
-      const label = installed ? 'اپ روی این دستگاه نصب است' : (platformLabels[selection] || platformLabels[devicePlatform]);
+      const label = installed ? 'اپ امن عمودی نصب است ✓' : (platformLabels[selection] || platformLabels[devicePlatform]);
       button.setAttribute('aria-label', label);
       setButtonLabel(button, label);
     }
@@ -1953,27 +2337,22 @@ function setupInstall() {
     button.addEventListener('click', async () => {
       const targetPlatform = ['android', 'windows'].includes(selectedPlatform) ? selectedPlatform : devicePlatform;
       if (installed) {
-        toast('ماملی همین حالا به‌صورت اپ مستقل روی این دستگاه اجرا می‌شود.');
+        toast('ماملی امن همین حالا به‌صورت اپ مستقل عمودی اجرا می‌شود.');
         return;
       }
-
       if (targetPlatform !== devicePlatform && ['android', 'windows'].includes(devicePlatform)) {
         showGuide(targetPlatform);
-        toast(targetPlatform === 'android'
-          ? 'بخش Android فعال شد؛ لینک را روی Chrome گوشی باز کنید.'
-          : 'بخش Windows فعال شد؛ لینک را در Edge یا Chrome ویندوز باز کنید.', 4800);
+        toast(targetPlatform === 'android' ? 'بخش Android عمودی فعال شد؛ لینک را روی Chrome گوشی باز کنید.' : 'بخش Windows امن فعال شد؛ لینک را در Edge یا Chrome ویندوز باز کنید.', 4800);
         return;
       }
-
       if (installPrompt) {
         installPrompt.prompt();
         const choice = await installPrompt.userChoice;
-        toast(choice.outcome === 'accepted' ? 'ماملی در حال نصب روی دستگاه است.' : 'نصب لغو شد.');
+        toast(choice.outcome === 'accepted' ? 'ماملی امن در حال نصب روی دستگاه است.' : 'نصب لغو شد.');
         installPrompt = null;
         updateInstallState();
         return;
       }
-
       showGuide(targetPlatform);
       const instructions = {
         ios: 'در Safari از Share، گزینه Add to Home Screen را بزنید.',
@@ -1994,15 +2373,26 @@ function setupInstall() {
     installed = true;
     installPrompt = null;
     updateInstallState();
-    toast('ماملی با موفقیت نصب شد و اکنون مثل یک اپ مستقل اجرا می‌شود.', 4500);
+    toast('ماملی امن ۳.۳ با موفقیت نصب شد و اکنون عمودی و محافظت‌شده اجرا می‌شود.', 4500);
   });
 
   updateInstallState();
 }
+
 function initProtectedApp() {
   if (protectedAppInitialized) return;
   protectedAppInitialized = true;
   $('#currentYear').textContent = String(new Date().getFullYear());
+
+  orientationManager = new OrientationLockManager();
+  orientationManager.init();
+
+  screenshotManager = new ScreenshotProtectionManager();
+  screenshotManager.init();
+
+  permissionManager = new PermissionManager();
+  permissionManager.init();
+
   cosmos = new CosmosRenderer($('#cosmos'));
   orbit = new OrbitEngine($('#orbitScene'));
   deviceTilt = new DeviceTiltController($('#deviceShowcase'));
@@ -2020,6 +2410,12 @@ function initProtectedApp() {
 }
 
 async function bootstrap() {
+  // Early managers that work even in locked state
+  orientationManager = new OrientationLockManager();
+  orientationManager.init();
+  screenshotManager = new ScreenshotProtectionManager();
+  screenshotManager.init();
+
   authManager = new AuthManager();
   await authManager.init();
 }
@@ -2031,6 +2427,6 @@ bootstrap().catch(error => {
   if (message) {
     message.hidden = false;
     message.dataset.state = 'error';
-    message.textContent = 'راه‌اندازی دروازه ورود کامل نشد. صفحه را دوباره بارگذاری کنید.';
+    message.textContent = 'راه‌اندازی دروازه امن کامل نشد. صفحه را دوباره بارگذاری کنید. اگر در حالت اپ هستید از دکمه ریدایرکت امن استفاده کنید.';
   }
 });

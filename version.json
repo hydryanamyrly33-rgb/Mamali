@@ -1,19 +1,16 @@
 {
-  "version": "3.2.0",
-  "previous_version": "3.1.1",
+  "version": "3.3.0",
+  "previous_version": "3.2.0",
   "channel": "stable",
-  "released_at": "2026-08-18T23:16:44.000Z",
+  "released_at": "2026-08-19T09:00:00.000Z",
   "minimum_supported_version": "3.0.0",
-  "platforms": [
-    "android",
-    "windows",
-    "web"
-  ],
+  "platforms": ["android", "windows", "web"],
   "notes": [
-    "انتخاب مستقل و پایدار Android و Windows با تمرکز قطعی پنل و کپی لینک گوشی",
-    "گوشی سه‌بعدی روبه‌رو با حرکت آزاد، اینرسی طبیعی، عمق قابل تنظیم و ساعت محلی دقیق",
-    "کنترل حرکت مدار زیر پورتال‌ها، تم منشوری و رابط بصری غنی‌تر و پاسخ‌گو",
-    "موتور مکش بروزرسانی با بررسی سریع، شمارش معکوس، فعال‌سازی آنلاین و توقف امن آفلاین",
-    "نشان رسمی‌رنگ Google و تجربه ورود سه‌بعدی بهبودیافته بدون ذخیره توکن"
+    "تعمیر کامل ورود گوگل در حالت اپ نصب‌شده Android (PWA Standalone, TWA, APK) با FedCM + OAuth id_token redirect + باز کردن در مرورگر خارجی",
+    "قفل اجباری عمودی (Portrait) برای سایت و اپ: manifest portrait-primary + Screen Orientation API + هشدار لنداسکیپ",
+    "محافظت از اسکرین‌شات: overlay هنگام blur/visibilitychange، بلوکه PrintScreen، no-contextmenu، print hide، و FLAG_SECURE برای APK",
+    "درخواست سیستمی مجوزها در اولین ورود اپ: notification، persistent storage، orientation lock و secure mode",
+    "بازطراحی کامل کارت ورود گوگل با glow متحرک، shimmer، badge جدید، چیپ‌ها و fallbackهای تضمینی",
+    "آنتی کرش برای چت طولانی با بهینه‌سازی حافظه و کاهش payload"
   ]
 }
