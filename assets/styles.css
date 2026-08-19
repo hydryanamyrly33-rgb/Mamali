@@ -2232,3 +2232,101 @@
   @media (max-width: 430px) { .phone-frame { width: 220px !important; } }
   @media (max-width: 360px) { .phone-frame { width: 205px !important; } }
 }
+
+/* ================= MAMALI 3.5.0 ================= */
+@layer components {
+  .google-login-beautiful__header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .google-primary-btn {
+    position: relative;
+    display: flex;
+    width: 100%;
+    min-height: 62px;
+    overflow: hidden;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 16px;
+    border: 0;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #ffffff, #eef2f8);
+    box-shadow: 0 14px 34px rgba(0,0,0,.22), inset 0 1px 0 #fff, 0 0 0 1px rgba(66,133,244,.18);
+    color: #1f2937;
+    cursor: pointer;
+    text-align: right;
+    transition: transform .22s var(--ease), box-shadow .22s ease;
+  }
+  .google-primary-btn::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 20%, rgba(255,255,255,.7) 48%, transparent 72%);
+    background-size: 220% 100%;
+    animation: shimmer 3.4s ease-in-out infinite;
+    pointer-events: none;
+  }
+  .google-primary-btn:hover { transform: translateY(-3px) scale(1.01); box-shadow: 0 18px 40px rgba(0,0,0,.28), 0 0 24px rgba(66,133,244,.22); }
+  .google-primary-btn__orb {
+    display: grid;
+    width: 42px;
+    aspect-ratio: 1;
+    flex: 0 0 auto;
+    place-items: center;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 6px 16px rgba(0,0,0,.12);
+  }
+  .google-primary-btn__orb .google-g { width: 26px !important; height: 26px; }
+  .google-primary-btn__copy { display: grid; flex: 1; z-index: 1; }
+  .google-primary-btn__copy small { color: #5b6478; font: 750 .48rem/1.2 ui-monospace, monospace; letter-spacing: .12em; }
+  .google-primary-btn__copy strong { margin-top: 3px; font-size: 1.02rem; }
+  .google-primary-btn__arrow { z-index: 1; color: #4285f4; font-size: 1.2rem; }
+  .google-primary-hint { margin: 0; color: var(--soft); font-size: .68rem; line-height: 1.7; }
+
+  .permission-dialog { width: min(calc(100% - 28px), 480px); }
+  .permission-dialog__body { display: grid; gap: 14px; padding: 18px 22px; color: var(--muted); font-size: .82rem; }
+  .permission-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+  .permission-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.03); }
+  .permission-list b { color: var(--primary); font-size: .68rem; }
+  .permission-list b[data-state="granted"] { color: var(--success); }
+  .permission-list b[data-state="denied"] { color: var(--danger); }
+
+  .secure-guard {
+    position: fixed;
+    z-index: 2147483000;
+    inset: 0;
+    display: none;
+    place-items: center;
+    background: #050712;
+    color: #d7def7;
+    text-align: center;
+  }
+  .secure-guard.is-visible, .secure-guard:not([hidden]) { display: grid; }
+  .secure-guard span { font-size: 2.4rem; }
+  body.secure-mode-max { -webkit-touch-callout: none; }
+  body.secure-mode-max img { -webkit-user-drag: none; }
+  @media print {
+    body.secure-mode-max * { display: none !important; }
+  }
+
+  .versions-archive { padding-top: 40px; }
+  .version-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .version-card {
+    display: grid;
+    gap: 6px;
+    min-height: 180px;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: linear-gradient(160deg, rgba(255,255,255,.05), rgba(255,255,255,.015));
+  }
+  .version-card.is-current { border-color: color-mix(in srgb, var(--primary) 45%, transparent); box-shadow: 0 0 24px color-mix(in srgb, var(--primary) 10%, transparent); }
+  .version-card small { color: var(--primary); font: 800 .78rem/1 ui-monospace, monospace; direction: ltr; }
+  .version-card strong { font-size: .92rem; }
+  .version-card span { color: var(--soft); font-size: .68rem; }
+  .version-card ul { margin: 6px 0 0; padding-inline-start: 18px; color: var(--muted); font-size: .72rem; }
+}
