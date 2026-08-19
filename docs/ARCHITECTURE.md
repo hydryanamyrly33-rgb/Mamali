@@ -1,4 +1,4 @@
-# Mamali Orbit Architecture 3.5.0 - For Next AI
+# Mamali Orbit Architecture 3.8.0 - For Next AI
 
 This file explains zero to hundred for next AI.
 
@@ -19,10 +19,10 @@ Single-page PWA with auth gate. No backend. All in browser.
 
 ## Files
 index.html: authGate + appShell, deviceBadge, rotatePrompt, mouse-trail div
-styles.css: original 1911 + 3.3.1 fixes + 3.4.0 new (mouse trail, ripple, device badge, windows compact, live test)
+styles.css: original 1911 + 3.3.1 fixes + 3.4.0 new (mouse trail, ripple, device badge, windows compact, live test) + 3.8.0 polish
 app.js: all managers
 manifest: orientation any (so JS can decide per device)
-sw.js: online-first, cache app-shell v3.4.0
+sw.js: online-first, cache app-shell v3.8.0
 
 ## Responsive Smart
 - Mobile (Android/iOS): 1 column, phone visual 220px
@@ -49,3 +49,9 @@ No token stored. Only sub/email/name/picture in IndexedDB.
 FLAG_SECURE for APK screenshot block.
 
 For next AI: read this file + PROJECT_GUIDE_FOR_NEXT_AI.md + code.
+
+## Version Archive (slim since 3.8.0)
+Since 3.8.0 the archive keeps only two real snapshots:
+- **3.0.0** — the very first release at `history/play/3.0.0/` (own `index.html` + `app.js` + `styles.css`, separate IndexedDB `mamali-archive-identity-300`, no SW registration so the live PWA stays in control, 3D back-to-new button that returns to `/Mamali/`).
+- **3.8.0** — the live app at `/Mamali/`.
+Intermediate versions 3.1.0–3.6.2 were removed. To restore one, drop its real folder into `history/play/` and add an entry in `history/versions.json`.

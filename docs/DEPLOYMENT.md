@@ -33,3 +33,9 @@ Authorized redirect URIs:
 ## Session lock API
 `GET/POST /api/session` and `/Mamali/api/session`
 Optional durable store: set `KV_REST_API_URL` + `KV_REST_API_TOKEN` on Vercel.
+
+## Version Archive (slim since 3.8.0)
+Only two versions ship in the archive: the first release **3.0.0** (`history/play/3.0.0/`) and the current **3.8.0** (the live app at `/Mamali/`).
+- The archive folder registers its own Service Worker **never** — we must not steal the live PWA scope.
+- `history/versions.json` lists exactly two entries; adding intermediate versions requires restoring their real folders under `history/play/`.
+- The 3.0.0 archive exposes a 3D back-to-new button pointing to `/Mamali/` so users always have a clear way home.
