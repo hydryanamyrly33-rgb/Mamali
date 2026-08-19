@@ -1,7 +1,7 @@
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
-const APP_VERSION = '3.7.0';
+const APP_VERSION = '3.3.0';
 
 const SITE_CONFIG = Object.freeze({
   version: APP_VERSION,
@@ -12,13 +12,8 @@ const SITE_CONFIG = Object.freeze({
   googleIdentityScript: 'https://accounts.google.com/gsi/client?hl=fa',
   googleJwksEndpoint: 'https://www.googleapis.com/oauth2/v3/certs',
   googleOAuthEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth',
-  authDatabase: 'mamali-trusted-identity-v1',
+  authDatabase: 'mamali-archive-identity-330',
   authStore: 'sessions',
-  eventStore: 'events',
-  sessionEndpoint: './api/session',
-  versionsEndpoint: './history/versions.json',
-  canonicalOrigin: 'https://mamali-orbit.vercel.app',
-  canonicalRedirect: 'https://mamali-orbit.vercel.app/Mamali/',
   apps: {
     instagram: {
       label: 'اینستاگرام',
@@ -76,58 +71,19 @@ function isAndroid() {
 }
 function getRedirectUri() {
   try {
-    const origin = window.location.origin;
-    if (origin === SITE_CONFIG.canonicalOrigin || origin.endsWith('.vercel.app')) {
-      return SITE_CONFIG.canonicalRedirect;
-    }
     const url = new URL(window.location.href);
-    url.hash = '';
-    url.search = '';
-    let path = url.pathname.replace(/index\.html$/i, '');
-    if (path.endsWith('/Mamali')) path += '/';
+    url.hash = ''; url.search = '';
+    // Ensure trailing slash for /Mamali/
+    let path = url.pathname;
     if (!path.endsWith('/')) {
       const lastSeg = path.split('/').pop();
-      if (lastSeg && !lastSeg.includes('.')) path += '/';
+      if (!lastSeg.includes('.')) path += '/';
     }
     url.pathname = path;
     return url.href;
   } catch {
-    return SITE_CONFIG.canonicalRedirect;
+    return window.location.origin + '/Mamali/';
   }
-}
-
-function getOrCreateDeviceId() {
-  try {
-    const key = 'mamali_device_id_v1';
-    let id = localStorage.getItem(key);
-    if (!id) {
-      id = (crypto.randomUUID && crypto.randomUUID()) || `d-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
-      localStorage.setItem(key, id);
-    }
-    return id;
-  } catch {
-    return `tmp-${Date.now().toString(36)}`;
-  }
-}
-
-function getDeviceLabel() {
-  const ua = navigator.userAgent;
-  const platform = detectSimpleDevice();
-  const mode = isStandalonePWA() ? 'PWA' : 'Browser';
-  return `${platform} · ${mode} · ${ua.slice(0, 80)}`;
-}
-
-function detectSimpleDevice() {
-  const ua = navigator.userAgent.toLowerCase();
-  if (/android/.test(ua)) return 'android';
-  if (/iphone|ipad|ipod/.test(ua)) return 'ios';
-  if (ua.includes('windows')) return 'windows';
-  if (ua.includes('mac')) return 'macos';
-  return 'desktop';
-}
-
-function prefersOAuthRedirect() {
-  return isStandalonePWA() || isAndroidWrapper() || isAndroid();
 }
 
 class SafeStorage {
@@ -167,85 +123,45 @@ let installPrompt = null;
 const announcer = $('#systemAnnouncer');
 const toastRegion = $('#toastRegion');
 
-// ================= ORIENTATION SMART MANAGER 3.4.0 - Android portrait, Windows landscape, iOS portrait =================
-// Requirement: Android vertical, Windows horizontal, iOS like Android
+// ================= ORIENTATION LOCK MANAGER 3.3 =================
 class OrientationLockManager {
   constructor() {
     this.prompt = $('#rotatePrompt');
     this.isLocked = false;
-    this.device = this.detectDevice();
-  }
-  detectDevice() {
-    const ua = navigator.userAgent.toLowerCase();
-    if (/android/.test(ua)) return 'android';
-    if (/iphone|ipad|ipod/.test(ua)) return 'ios';
-    if (ua.includes('windows')) return 'windows';
-    return 'desktop';
-  }
-  getDesiredOrientation() {
-    // User requirement: Windows landscape, Android portrait, iOS = Android
-    const d = this.detectDevice();
-    if (d === 'windows') return 'landscape-primary';
-    if (d === 'android' || d === 'ios') return 'portrait-primary';
-    // Desktop other: allow any but prefer landscape for windows-like
-    return null; // no lock
   }
   async lock() {
-    if (!settings.portrait && this.device !== 'windows') return false;
-    // For windows, even if portrait setting off, we still lock landscape if setting portrait true? Requirement says Windows horizontal lock
-    const desired = this.getDesiredOrientation();
-    if (!desired) {
-      document.body.classList.remove('is-landscape', 'is-portrait');
-      if (this.prompt) {
-        this.prompt.hidden = true;
-        this.prompt.classList.remove('is-visible');
-      }
-      return false;
-    }
+    if (!settings.portrait) return false;
     try {
-      if (screen.orientation && screen.orientation.lock && document.visibilityState === 'visible') {
-        await screen.orientation.lock(desired).catch(async ()=>{
-          // fallback
-          if (desired.includes('portrait')) await screen.orientation.lock('portrait').catch(()=>{});
-          else await screen.orientation.lock('landscape').catch(()=>{});
-        });
-        this.isLocked = true;
-        document.body.classList.add(desired.includes('portrait') ? 'portrait-enforced' : 'landscape-enforced');
-        document.body.classList.remove(desired.includes('portrait') ? 'landscape-enforced' : 'portrait-enforced');
-        return true;
+      if (screen.orientation && screen.orientation.lock) {
+        if (document.visibilityState === 'visible') {
+          await screen.orientation.lock('portrait-primary').catch(() => screen.orientation.lock('portrait').catch(()=>{}));
+          this.isLocked = true;
+          document.body.classList.add('portrait-enforced');
+          return true;
+        }
       }
     } catch {}
+    // Fallback: CSS + prompt
     this.checkOrientation();
     return false;
   }
   checkOrientation() {
-    const desired = this.getDesiredOrientation();
-    if (!desired) {
+    if (!settings.portrait) {
       if (this.prompt) this.prompt.hidden = true;
-      document.body.classList.remove('is-landscape', 'is-portrait');
+      document.body.classList.remove('is-landscape');
       return;
     }
     try {
-      const isLandscapeNow = window.innerWidth > window.innerHeight;
-      const shouldBePortrait = desired.includes('portrait');
-      const isWrong = (shouldBePortrait && isLandscapeNow && window.innerWidth <= 900) || (!shouldBePortrait && !isLandscapeNow && this.device === 'windows' && window.innerWidth <= 1200);
-      if (isWrong) {
-        document.body.classList.add('is-wrong-orientation');
+      const isLandscape = window.innerWidth > window.innerHeight && window.innerWidth > 480;
+      const isLandscapeMedia = window.matchMedia('(orientation: landscape)').matches;
+      if ((isLandscape || isLandscapeMedia) && window.innerWidth <= 900) {
+        document.body.classList.add('is-landscape');
         if (this.prompt && document.documentElement.dataset.authState !== 'booting') {
           this.prompt.hidden = false;
-          this.prompt.classList.add('is-visible');
-          const strong = this.prompt.querySelector('strong');
-          if (strong) {
-            if (shouldBePortrait) strong.textContent = 'لطفاً گوشی را عمودی نگه دارید';
-            else strong.textContent = 'لطفاً دستگاه ویندوز را افقی نگه دارید';
-          }
         }
       } else {
-        document.body.classList.remove('is-wrong-orientation');
-        if (this.prompt) {
-          this.prompt.hidden = true;
-          this.prompt.classList.remove('is-visible');
-        }
+        document.body.classList.remove('is-landscape');
+        if (this.prompt) this.prompt.hidden = true;
       }
     } catch {}
   }
@@ -253,427 +169,127 @@ class OrientationLockManager {
     this.lock();
     this.checkOrientation();
     window.addEventListener('resize', () => { this.checkOrientation(); this.lock(); }, {passive:true});
-    window.addEventListener('orientationchange', () => { setTimeout(()=>{ this.checkOrientation(); this.lock(); }, 200); }, {passive:true});
+    window.addEventListener('orientationchange', () => { setTimeout(()=>{ this.checkOrientation(); this.lock(); }, 150); }, {passive:true});
     document.addEventListener('visibilitychange', () => { if (!document.hidden) { this.lock(); this.checkOrientation(); } });
     $('#rotatePromptClose')?.addEventListener('click', () => {
-      if (this.prompt) {
-        this.prompt.hidden = true;
-        this.prompt.classList.remove('is-visible');
-      }
+      if (this.prompt) this.prompt.hidden = true;
       this.lock();
-      if (this.getDesiredOrientation().includes('portrait')) toast('📱 قفل عمودی برای اندروید/iOS فعال است.');
-      else toast('🪟 قفل افقی برای ویندوز فعال است.');
+      toast('لطفاً گوشی را عمودی کنید — قفل پرتره فعال است.');
     });
-    setInterval(()=>{ this.lock(); }, 3000);
+    // Prevent landscape via CSS meta - try every 2s
+    setInterval(()=>{ if(settings.portrait) this.lock(); }, 2000);
   }
 }
 
-// ================= SCREENSHOT PROTECTION MANAGER 3.3.1 - MINIMAL, NO ANNOYING OVERLAY =================
-// User said: don't show error after screenshot, don't allow screenshot permission systemically
-// For web, true prevention is impossible. For APK, FLAG_SECURE does real prevention.
-// So we only try native bridge, no guard toast spam.
+// ================= SCREENSHOT PROTECTION MANAGER 3.3 =================
 class ScreenshotProtectionManager {
   constructor() {
-    this.enabled = settings.secure !== false;
     this.guard = $('#secureGuard');
-    this.lastToast = 0;
+    this.enabled = settings.secure !== false;
+    this.lastPrintScreen = 0;
   }
-  applyNative(enabled) {
-    try {
-      if (window.Android && typeof window.Android.setSecureFlag === 'function') window.Android.setSecureFlag(Boolean(enabled));
-      if (enabled && window.Capacitor?.Plugins?.ScreenSecurity?.enableSecure) window.Capacitor.Plugins.ScreenSecurity.enableSecure();
-      if (!enabled && window.Capacitor?.Plugins?.ScreenSecurity?.disableSecure) window.Capacitor.Plugins.ScreenSecurity.disableSecure();
-    } catch {}
+  showGuard(reason='') {
+    if (!this.enabled) return;
+    if (this.guard) {
+      this.guard.classList.add('is-active');
+      this.guard.setAttribute('aria-hidden','false');
+    }
+    document.body.classList.add('secure-guard-active');
   }
-  showGuard(show) {
-    if (!this.guard) return;
-    this.guard.hidden = !show;
-    this.guard.classList.toggle('is-visible', show);
-  }
-  warnOnce(message) {
-    const now = Date.now();
-    if (now - this.lastToast < 8000) return;
-    this.lastToast = now;
-    toast(message, 2400);
+  hideGuard() {
+    if (this.guard) {
+      this.guard.classList.remove('is-active');
+      this.guard.setAttribute('aria-hidden','true');
+    }
+    document.body.classList.remove('secure-guard-active');
   }
   init() {
-    this.setEnabled(this.enabled);
+    if (!this.enabled) return;
+    document.body.classList.add('secure-mode');
+
+    // Blur / visibility -> show guard (prevents app switcher screenshot)
     document.addEventListener('visibilitychange', () => {
-      if (!this.enabled) return;
-      this.showGuard(document.hidden);
+      if (document.hidden) this.showGuard('visibility');
+      else setTimeout(()=>this.hideGuard(), 180);
     });
-    window.addEventListener('blur', () => { if (this.enabled) this.showGuard(true); });
-    window.addEventListener('focus', () => { if (!document.hidden) this.showGuard(false); });
-    window.addEventListener('pagehide', () => { if (this.enabled) this.showGuard(true); });
-    window.addEventListener('beforeprint', event => {
-      if (!this.enabled) return;
-      event.preventDefault();
-      this.showGuard(true);
-      this.warnOnce('چاپ و عکس صفحه در ماملی محدود شده است.');
+    window.addEventListener('blur', () => this.showGuard('blur'));
+    window.addEventListener('focus', () => setTimeout(()=>this.hideGuard(), 150));
+    window.addEventListener('pagehide', () => this.showGuard('pagehide'));
+
+    // Before print
+    window.addEventListener('beforeprint', (e)=>{ e.preventDefault(); this.showGuard('print'); toast('🚫 چاپ و اسکرین‌شات محافظت‌شده است.', 3500); setTimeout(()=>this.hideGuard(), 1500); });
+
+    // Block context menu in secure mode (optional - can be disabled via setting)
+    document.addEventListener('contextmenu', (e)=>{
+      if (!settings.secure) return;
+      // Allow in inputs
+      if (e.target.closest('input, textarea, [contenteditable]')) return;
+      e.preventDefault();
+      toast('🚫 کلیک راست برای محافظت غیرفعال است.', 2000);
     });
-    document.addEventListener('contextmenu', event => {
-      if (!this.enabled) return;
-      if (event.target.closest('input, textarea, [contenteditable]')) return;
-      event.preventDefault();
-    });
-    document.addEventListener('keydown', event => {
-      if (!this.enabled) return;
-      const key = event.key?.toLowerCase();
-      if (event.key === 'PrintScreen' || ((event.metaKey || event.ctrlKey) && event.shiftKey && ['3','4','s'].includes(key))) {
-        event.preventDefault();
-        this.showGuard(true);
-        try { navigator.clipboard?.writeText(''); } catch {}
-        this.warnOnce('اسکرین‌شات در این برنامه محدود شده است.');
-        setTimeout(() => { if (!document.hidden) this.showGuard(false); }, 900);
+
+    // Block copy/cut/select for sensitive areas? We keep copy allowed but warn on PrintScreen
+    document.addEventListener('keydown', (e)=>{
+      if (!settings.secure) return;
+      const key = e.key;
+      // PrintScreen
+      if (key === 'PrintScreen' || e.keyCode === 44) {
+        e.preventDefault();
+        const now = Date.now();
+        if (now - this.lastPrintScreen > 1500) {
+          this.lastPrintScreen = now;
+          this.showGuard('printscreen');
+          try { navigator.clipboard.writeText('').catch(()=>{}); } catch {}
+          toast('🚫 اسکرین‌شات محافظت‌شده است - ماملی ۳.۳', 3500);
+          setTimeout(()=>this.hideGuard(), 1200);
+        }
+        return;
       }
-      if ((event.ctrlKey || event.metaKey) && key === 'p') {
-        event.preventDefault();
-        this.warnOnce('چاپ صفحه غیرفعال است.');
+      // Ctrl+Shift+S, Ctrl+P, Ctrl+S
+      if ((e.ctrlKey || e.metaKey) && ['s','p','S','P'].includes(key) && !e.target.closest('input, textarea')) {
+        // Allow but show guard briefly
+        if (key.toLowerCase()==='p' || key.toLowerCase()==='s') {
+          // For p (print) block
+          if (key.toLowerCase()==='p') {
+            e.preventDefault();
+            this.showGuard('ctrlp');
+            toast('🚫 چاپ صفحه غیرمجاز است.', 3000);
+            setTimeout(()=>this.hideGuard(), 1000);
+          }
+        }
       }
-    }, true);
-    document.addEventListener('dragstart', event => {
-      if (this.enabled && event.target.tagName === 'IMG') event.preventDefault();
     });
+
+    // Block drag
+    document.addEventListener('dragstart', (e)=>{
+      if (settings.secure && !e.target.closest('input')) e.preventDefault();
+    });
+
+    // Try Android native FLAG_SECURE bridge if available
+    try {
+      if (window.Android && typeof window.Android.setSecureFlag === 'function') {
+        window.Android.setSecureFlag(true);
+      }
+      // For Capacitor / Cordova
+      if (window.Capacitor?.Plugins?.ScreenSecurity) {
+        window.Capacitor.Plugins.ScreenSecurity.enableSecure?.();
+      }
+    } catch {}
+
+    // Add CSS for screenshot protected
+    const style = document.createElement('style');
+    style.textContent = `
+      @media print { body * { display:none !important; } .secure-guard { display:grid !important; } }
+    `;
+    document.head.appendChild(style);
+
+    // Hide initially
+    this.hideGuard();
   }
   setEnabled(enabled) {
     this.enabled = enabled;
-    document.body.classList.toggle('secure-mode-minimal', enabled);
-    document.body.classList.toggle('secure-mode-max', enabled);
-    this.applyNative(enabled);
-    if (!enabled) this.showGuard(false);
-  }
-}
-
-// ================= DEVICE DETECTION MANAGER 3.3.1 =================
-class DeviceDetectionManager {
-  constructor() {
-    this.badge = $('#deviceBadge');
-    this.device = this.detect();
-  }
-  detect() {
-    const ua = navigator.userAgent.toLowerCase();
-    const platform = (navigator.userAgentData?.platform || navigator.platform || '').toLowerCase();
-    let type = 'desktop';
-    let os = 'unknown';
-    let browser = 'unknown';
-
-    if (/android/.test(ua)) { type = 'mobile'; os = 'android'; }
-    else if (/iphone|ipad|ipod/.test(ua)) { type = 'mobile'; os = 'ios'; }
-    else if (platform.includes('win') || ua.includes('windows')) { os = 'windows'; type = ua.includes('mobile') ? 'mobile' : 'desktop'; }
-    else if (platform.includes('mac') || ua.includes('mac')) { os = 'macos'; }
-    else if (platform.includes('linux') || ua.includes('linux')) { os = 'linux'; }
-
-    if (ua.includes('chrome') && !ua.includes('edg') && !ua.includes('opr')) browser = 'chrome';
-    else if (ua.includes('edg')) browser = 'edge';
-    else if (ua.includes('firefox')) browser = 'firefox';
-    else if (ua.includes('safari') && !ua.includes('chrome')) browser = 'safari';
-
-    const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-    const pwa = standalone ? 'PWA' : 'Browser';
-
-    return { type, os, browser, pwa, standalone };
-  }
-  getLabel() {
-    const d = this.device;
-    const osLabels = { android: 'Android', ios: 'iOS', windows: 'Windows', macos: 'macOS', linux: 'Linux', unknown: 'دستگاه' };
-    const typeLabels = { mobile: 'موبایل', desktop: 'دسکتاپ' };
-    return `${osLabels[d.os] || d.os} · ${typeLabels[d.type] || d.type} · ${d.browser} · ${d.pwa}`;
-  }
-  getIcon() {
-    const os = this.device.os;
-    if (os === 'android') return '🤖';
-    if (os === 'ios') return '🍎';
-    if (os === 'windows') return '🪟';
-    if (os === 'macos') return '💻';
-    return '📱';
-  }
-  init() {
-    // Update badge in login
-    if (this.badge) {
-      const icon = this.getIcon();
-      const label = this.getLabel();
-      this.badge.innerHTML = `<i aria-hidden="true">${icon}</i><span>${label}</span>`;
-      this.badge.dataset.device = this.device.os;
-      this.badge.dataset.type = this.device.type;
-    }
-
-    // Add global body dataset for CSS responsive
-    document.body.dataset.deviceOs = this.device.os;
-    document.body.dataset.deviceType = this.device.type;
-    document.body.dataset.deviceBrowser = this.device.browser;
-    document.body.dataset.isStandalone = String(this.device.standalone);
-    document.documentElement.dataset.device = this.device.os;
-
-    // Smart toast for first visit
-    try {
-      const key = 'mamali_device_welcomed_v331';
-      if (!localStorage.getItem(key)) {
-        setTimeout(()=>{
-          toast(`${this.getIcon()} شما با ${this.getLabel()} وارد شدید`, 4000);
-          localStorage.setItem(key, '1');
-        }, 1500);
-      }
-    } catch {}
-
-    // Update all data-app-version etc? No.
-
-    // For Windows design improvement: add class for windows specific layout
-    if (this.device.os === 'windows') {
-      document.body.classList.add('is-windows');
-      // Reduce empty space: make android-section more compact on windows
-      const androidSection = $('#android-app');
-      if (androidSection) androidSection.classList.add('windows-layout');
-    }
-    if (this.device.os === 'android') {
-      document.body.classList.add('is-android');
-    }
-    if (this.device.os === 'ios') {
-      document.body.classList.add('is-ios', 'is-android');
-    }
-  }
-}
-
-
-// ================= MOUSE TRAIL MANAGER 3.4.0 - Windows light orb =================
-// Windows mouse has light effect following cursor, different from Android touch ripple
-class MouseTrailManager {
-  constructor() {
-    this.trail = null;
-    this.x = 0; this.y = 0;
-    this.targetX = 0; this.targetY = 0;
-    this.raf = 0;
-    this.enabled = false;
-  }
-  init() {
-    // Only for Windows desktop with mouse
-    const isWindows = /windows/i.test(navigator.userAgent);
-    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    const hasFinePointer = window.matchMedia('(pointer: fine)').matches;
-    this.enabled = isWindows && hasFinePointer;
-
-    if (!this.enabled) return;
-
-    // Create trail element
-    this.trail = document.createElement('div');
-    this.trail.className = 'mouse-trail';
-    this.trail.setAttribute('aria-hidden','true');
-    document.body.appendChild(this.trail);
-
-    document.addEventListener('mousemove', (e)=>{
-      this.targetX = e.clientX;
-      this.targetY = e.clientY;
-      document.documentElement.style.setProperty('--mouse-x', e.clientX + 'px');
-      document.documentElement.style.setProperty('--mouse-y', e.clientY + 'px');
-    }, {passive:true});
-
-    const animate = () => {
-      this.x += (this.targetX - this.x) * 0.12;
-      this.y += (this.targetY - this.y) * 0.12;
-      if (this.trail) {
-        this.trail.style.transform = `translate3d(${this.x}px, ${this.y}px, 0) translate(-50%, -50%)`;
-      }
-      this.raf = requestAnimationFrame(animate);
-    };
-    animate();
-
-    document.body.classList.add('has-mouse-trail');
-  }
-  destroy() {
-    if (this.raf) cancelAnimationFrame(this.raf);
-    this.trail?.remove();
-  }
-}
-
-// ================= TOUCH RIPPLE MANAGER 3.4.0 - Android/iOS finger different from mouse =================
-class TouchRippleManager {
-  constructor() {
-    this.container = null;
-    this.enabled = false;
-  }
-  init() {
-    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    const isAndroid = /android/i.test(navigator.userAgent);
-    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent.toLowerCase());
-    this.enabled = isTouch && (isAndroid || isIOS);
-
-    if (!this.enabled) return;
-
-    this.container = document.createElement('div');
-    this.container.className = 'touch-ripple-container';
-    this.container.setAttribute('aria-hidden','true');
-    document.body.appendChild(this.container);
-
-    document.addEventListener('touchstart', (e)=>{
-      if (!e.touches[0]) return;
-      const touch = e.touches[0];
-      this.createRipple(touch.clientX, touch.clientY);
-    }, {passive:true});
-
-    document.addEventListener('click', (e)=>{
-      // For Android, also show ripple on click if not from touch
-      if (this.enabled && e.clientX) {
-        // Avoid double ripple if touch already
-        if (e.detail === 0) return; // touch triggered
-        this.createRipple(e.clientX, e.clientY);
-      }
-    }, {passive:true});
-  }
-  createRipple(x, y) {
-    if (!this.container) return;
-    const ripple = document.createElement('span');
-    ripple.className = 'touch-ripple';
-    ripple.style.left = x + 'px';
-    ripple.style.top = y + 'px';
-    this.container.appendChild(ripple);
-    // Remove after animation
-    setTimeout(()=>ripple.remove(), 700);
-  }
-}
-
-// ================= LIVE GOOGLE CLIENT TEST MANAGER 3.4.0 =================
-// Real-time test of Google Client, shows connection status live
-class LiveGoogleTestManager {
-  constructor() {
-    this.networkEl = $('#authNetwork');
-    this.results = {
-      internet: false,
-      gsiScript: false,
-      jwks: false,
-      clientId: false,
-      origin: false,
-      sessionApi: false,
-    };
-    this.latencies = {};
-  }
-  async test() {
-    const startAll = performance.now();
-    // Test 1: Internet
-    this.results.internet = navigator.onLine;
-    
-    // Test 2: GSI Script reachable
-    try {
-      const t0 = performance.now();
-      const res = await fetch('https://accounts.google.com/gsi/client?hl=fa', {method:'HEAD', mode:'no-cors', cache:'no-store'});
-      // no-cors will be opaque, but if no error, consider reachable
-      this.results.gsiScript = true;
-      this.latencies.gsiScript = Math.round(performance.now() - t0);
-    } catch {
-      this.results.gsiScript = false;
-    }
-
-    // Test 3: JWKs
-    try {
-      const t0 = performance.now();
-      const res = await fetch('https://www.googleapis.com/oauth2/v3/certs', {cache:'no-store'});
-      this.results.jwks = res.ok;
-      this.latencies.jwks = Math.round(performance.now() - t0);
-    } catch {
-      this.results.jwks = false;
-    }
-
-    // Test 4: Client ID format
-    const clientId = '737314975140-nhilm65a3mr9bsemufr4e83cmhisq77e.apps.googleusercontent.com';
-    this.results.clientId = /^[0-9]+-[a-z0-9]+\.apps\.googleusercontent\.com$/.test(clientId);
-
-    // Test 5: Authorized origin
-    const origin = window.location.origin;
-    this.results.origin = origin === 'https://mamali-orbit.vercel.app' || origin.includes('vercel.app') || origin.includes('github.io') || origin.includes('localhost');
-
-    try {
-      const t0 = performance.now();
-      const res = await fetch('./api/session', { cache: 'no-store' });
-      this.results.sessionApi = res.ok;
-      this.latencies.sessionApi = Math.round(performance.now() - t0);
-    } catch {
-      this.results.sessionApi = false;
-    }
-
-    this.updateUI();
-
-    // Return summary
-    return { results: this.results, latencies: this.latencies, total: Math.round(performance.now() - startAll) };
-  }
-  updateUI() {
-    if (!this.networkEl) return;
-    const allGood = ['internet','gsiScript','jwks','clientId','origin'].every(key => this.results[key] === true);
-    this.networkEl.dataset.state = allGood ? 'online' : (this.results.internet ? 'warning' : 'offline');
-    const span = this.networkEl.querySelector('span');
-    if (span) {
-      if (allGood) span.textContent = `آنلاین · Google ${this.latencies.gsiScript || 0}ms · ${this.latencies.jwks || 0}ms`;
-      else if (!this.results.internet) span.textContent = 'آفلاین';
-      else span.textContent = `اتصال Google: GSI:${this.results.gsiScript?'✓':'✗'} JWKs:${this.results.jwks?'✓':'✗'}`;
-    }
-
-    // Also create detailed live test panel if exists
-    const detailEl = $('#googleLiveTest');
-    if (detailEl) {
-      detailEl.innerHTML = `
-        <div class="live-test-row ${this.results.internet?'ok':'fail'}"><span>اینترنت</span><span>${this.results.internet?'✓ متصل':'✗ قطع'}</span></div>
-        <div class="live-test-row ${this.results.gsiScript?'ok':'fail'}"><span>GSI Script</span><span>${this.results.gsiScript?`✓ ${this.latencies.gsiScript}ms`:'✗'}</span></div>
-        <div class="live-test-row ${this.results.jwks?'ok':'fail'}"><span>JWKs Certs</span><span>${this.results.jwks?`✓ ${this.latencies.jwks}ms`:'✗'}</span></div>
-        <div class="live-test-row ${this.results.clientId?'ok':'fail'}"><span>Client ID</span><span>${this.results.clientId?'✓ معتبر':'✗ نامعتبر'}</span></div>
-        <div class="live-test-row ${this.results.origin?'ok':'fail'}"><span>Origin</span><span>${this.results.origin?'✓ '+window.location.origin:'✗ '+window.location.origin}</span></div>
-        <div class="live-test-row ${this.results.sessionApi?'ok':'fail'}"><span>قفل نشست</span><span>${this.results.sessionApi?`✓ ${this.latencies.sessionApi}ms`:'✗'}</span></div>
-      `;
-    }
-  }
-  init() {
-    this.test();
-    // Retest every 15s and on online/offline
-    setInterval(()=>this.test(), 15000);
-    window.addEventListener('online', ()=>this.test());
-    window.addEventListener('offline', ()=>this.test());
-  }
-}
-
-// ================= SCROLL CINEMATIC MANAGER 3.4.0 - Animations and scroll =================
-class ScrollCinematicManager {
-  constructor() {
-    this.progress = 0;
-  }
-  init() {
-    // Scroll progress bar (if element exists)
-    const createProgress = () => {
-      let bar = document.getElementById('scrollProgressBar');
-      if (!bar) {
-        bar = document.createElement('div');
-        bar.id = 'scrollProgressBar';
-        bar.style.cssText = 'position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--primary),var(--accent));z-index:9999;width:0%;transition:width 0.1s linear;';
-        document.body.appendChild(bar);
-      }
-      const update = () => {
-        const max = document.documentElement.scrollHeight - window.innerHeight;
-        const p = max > 0 ? (window.scrollY / max) * 100 : 0;
-        bar.style.width = p + '%';
-        this.progress = p;
-        // Parallax for hero
-        const hero = document.querySelector('.hero');
-        if (hero) {
-          hero.style.setProperty('--scroll-y', window.scrollY + 'px');
-          hero.style.transform = `translateY(${window.scrollY * 0.05}px)`;
-        }
-      };
-      window.addEventListener('scroll', update, {passive:true});
-      update();
-    };
-    createProgress();
-
-    // Cinematic reveal with stagger - enhance existing
-    const observer = new IntersectionObserver((entries)=>{
-      entries.forEach((entry, i)=>{
-        if (entry.isIntersecting) {
-          entry.target.style.transitionDelay = (i * 80) + 'ms';
-          entry.target.classList.add('is-visible');
-          // Add cinematic scale
-          entry.target.animate([
-            { opacity: 0, transform: 'translateY(24px) scale(0.98)' },
-            { opacity: 1, transform: 'translateY(0) scale(1)' }
-          ], { duration: 600, easing: 'cubic-bezier(.2,.8,.2,1)', delay: i*80 });
-        }
-      });
-    }, { threshold: 0.12 });
-
-    document.querySelectorAll('.feature-card, .android-visual, .android-copy, .system-strip').forEach(el=>observer.observe(el));
+    document.body.classList.toggle('secure-mode', enabled);
+    if (!enabled) this.hideGuard();
   }
 }
 
@@ -759,8 +375,6 @@ class PermissionManager {
     setTimeout(()=>{ try{ this.dialog?.close(); }catch{} }, 900);
   }
   init() {
-    if (this.bound) return;
-    this.bound = true;
     if (this.hasRequested) return;
     const isPWA = isStandalonePWA();
     const isAndroidWrap = isAndroidWrapper();
@@ -810,85 +424,17 @@ class PermissionManager {
   }
 }
 
-class SessionLockManager {
-  constructor() {
-    this.timer = 0;
-    this.deviceId = getOrCreateDeviceId();
-    this.online = true;
-  }
-  endpoint() {
-    return SITE_CONFIG.sessionEndpoint || './api/session';
-  }
-  async request(action, profile = {}) {
-    const body = {
-      action,
-      email: profile.email || '',
-      subject: profile.subject || '',
-      deviceId: this.deviceId,
-      deviceLabel: getDeviceLabel(),
-    };
-    const response = await fetch(this.endpoint(), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      cache: 'no-store',
-      body: JSON.stringify(body),
-    });
-    let data = {};
-    try { data = await response.json(); } catch { data = {}; }
-    return { status: response.status, data };
-  }
-  async claim(profile) {
-    if (!navigator.onLine || !profile?.email) return { ok: true, skipped: true };
-    try {
-      const { status, data } = await this.request('claim', profile);
-      if (status === 409) return { ok: false, blocked: true, holder: data.holder, error: data.error };
-      if (!data.ok) return { ok: true, skipped: true, warning: data.error || 'session_api_failed' };
-      this.startHeartbeat(profile);
-      return { ok: true, holder: data.holder, store: data.store };
-    } catch {
-      return { ok: true, skipped: true, warning: 'session_api_unreachable' };
-    }
-  }
-  startHeartbeat(profile) {
-    this.stopHeartbeat();
-    this.timer = window.setInterval(() => {
-      if (!navigator.onLine || document.hidden) return;
-      this.request('heartbeat', profile).catch(() => {});
-    }, 25000);
-    document.addEventListener('visibilitychange', () => {
-      if (!document.hidden && navigator.onLine) this.request('heartbeat', profile).catch(() => {});
-    });
-  }
-  stopHeartbeat() {
-    if (this.timer) window.clearInterval(this.timer);
-    this.timer = 0;
-  }
-  async release(profile) {
-    this.stopHeartbeat();
-    if (!navigator.onLine || !profile?.email) return;
-    try { await this.request('release', profile); } catch {}
-  }
-}
-
-const sessionLock = new SessionLockManager();
-
 class TrustedDeviceStore {
   constructor() { this.databasePromise = null; }
   open() {
     if (!('indexedDB' in window)) return Promise.reject(new Error('IndexedDB is unavailable'));
     if (this.databasePromise) return this.databasePromise;
     this.databasePromise = new Promise((resolve, reject) => {
-      const request = indexedDB.open(SITE_CONFIG.authDatabase, 2);
+      const request = indexedDB.open(SITE_CONFIG.authDatabase, 1);
       request.addEventListener('upgradeneeded', () => {
         const database = request.result;
         if (!database.objectStoreNames.contains(SITE_CONFIG.authStore)) {
-          const sessions = database.createObjectStore(SITE_CONFIG.authStore, { keyPath: 'key' });
-          try { sessions.createIndex('email', 'email', { unique: false }); } catch {}
-          try { sessions.createIndex('subject', 'subject', { unique: false }); } catch {}
-        }
-        if (SITE_CONFIG.eventStore && !database.objectStoreNames.contains(SITE_CONFIG.eventStore)) {
-          const events = database.createObjectStore(SITE_CONFIG.eventStore, { keyPath: 'id', autoIncrement: true });
-          try { events.createIndex('at', 'at', { unique: false }); } catch {}
+          database.createObjectStore(SITE_CONFIG.authStore, { keyPath: 'key' });
         }
       });
       request.addEventListener('success', () => resolve(request.result));
@@ -998,10 +544,13 @@ class AuthManager {
     this.accountDialog = $('#accountDialog');
     this.externalButton = $('#externalGoogleButton');
     this.oauthButton = $('#oauthRedirectButton');
-    this.primaryButton = $('#googlePrimaryButton');
   }
 
+
   async init() {
+    if (globalThis.__MAMALI_ARCHIVE__) {
+      document.documentElement.dataset.archiveVersion = globalThis.__MAMALI_ARCHIVE__.version || '';
+    }
     document.body.dataset.authPlatform = this.getPlatform();
     document.body.dataset.isStandalone = String(isStandalonePWA());
     document.body.dataset.isAndroidWrapper = String(isAndroidWrapper());
@@ -1010,13 +559,6 @@ class AuthManager {
     this.updateNetworkState({ loadGoogle: false });
     this.registerAppShell();
     this.checkExternalToken();
-    try {
-      const oauthError = sessionStorage.getItem('mamali_oauth_error');
-      if (oauthError) {
-        sessionStorage.removeItem('mamali_oauth_error');
-        this.setMessage(`ورود گوگل لغو یا رد شد: ${oauthError}. دوباره از دکمه سفید «ورود با گوگل» تلاش کنید.`, 'error');
-      }
-    } catch {}
 
     try {
       const stored = await this.store.get();
@@ -1024,6 +566,23 @@ class AuthManager {
       else if (stored) await this.store.clear();
     } catch { this.storageAvailable = false; }
 
+    if (!this.session && globalThis.__MAMALI_ARCHIVE__) {
+      this.session = {
+        provider: 'google',
+        clientId: SITE_CONFIG.googleClientId,
+        subject: 'archive-guest-' + String(globalThis.__MAMALI_ARCHIVE__.version || 'x').replaceAll('.', ''),
+        email: 'archive@mamali.local',
+        name: 'مهمان آرشیو ' + (globalThis.__MAMALI_ARCHIVE__.version || ''),
+        picture: '',
+        locale: 'fa',
+        verifiedAt: Date.now(),
+        lastGoogleExpiry: Date.now() + 86400000,
+        active: true,
+        archive: true,
+      };
+      await this.unlock({ source: 'archive-guest' });
+      return;
+    }
     if (this.session) {
       this.renderProfile(this.session);
       if (this.session.active) {
@@ -1050,9 +609,9 @@ class AuthManager {
     $('#lockAppButton').addEventListener('click', () => this.lock());
     $('#removeAccountButton').addEventListener('click', event => this.removeAccount(event.currentTarget));
 
+    // New 3.3 external buttons
     this.externalButton?.addEventListener('click', () => this.launchExternalBrowserLogin());
     this.oauthButton?.addEventListener('click', () => this.launchOAuthRedirect());
-    this.primaryButton?.addEventListener('click', () => this.startGoogleLogin());
 
     this.accountDialog.addEventListener('click', event => {
       if (event.target !== this.accountDialog) return;
@@ -1076,12 +635,7 @@ class AuthManager {
     });
   }
 
-  registerAppShell() {
-    if (!('serviceWorker' in navigator) || !window.isSecureContext) return;
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js', { scope: './' }).catch(() => {});
-    }, { once: true });
-  }
+  registerAppShell() { /* archive: never claim the live service worker */ }
 
   getPlatform() {
     const identity = `${navigator.userAgentData?.platform || ''} ${navigator.platform || ''} ${navigator.userAgent}`.toLowerCase();
@@ -1122,34 +676,13 @@ class AuthManager {
     const isStandalone = isStandalonePWA() || isAndroidWrapper();
     if (this.externalButton) this.externalButton.hidden = !isStandalone;
     if (this.oauthButton) this.oauthButton.hidden = false;
-    if (this.primaryButton) {
-      this.primaryButton.hidden = false;
-      const hint = $('#googlePrimaryHint');
-      if (hint) hint.textContent = prefersOAuthRedirect()
-        ? 'روی اپ اندروید این دکمه شما را به صفحه امن گوگل می‌برد و بعد به ماملی برمی‌گرداند.'
-        : 'با حساب گوگل وارد شوید. اگر پاپ‌آپ بسته شد، همین دکمه ریدایرکت امن را شروع می‌کند.';
-    }
 
-    window.setTimeout(() => (this.session ? $('#continueTrustedButton') : this.primaryButton || this.googleButton).focus?.(), 50);
+    window.setTimeout(() => (this.session ? $('#continueTrustedButton') : this.googleButton).focus?.(), 50);
   }
 
   async unlock({ source = 'google' } = {}) {
     if (!this.session) return;
-    if (navigator.onLine && source !== 'trusted-offline') {
-      const claim = await sessionLock.claim(this.session);
-      if (claim.blocked) {
-        this.setProgress(false);
-        this.googleAuth.hidden = !navigator.onLine;
-        const other = claim.holder?.deviceLabel || 'دستگاه دیگر';
-        this.setMessage(`این ایمیل الان روی دستگاه دیگری فعال است (${other}). اول آنجا خروج بزنید، بعد اینجا وارد شوید.`, 'error');
-        this.showLockedGate();
-        return;
-      }
-      if (claim.warning) {
-        toast('قفل چنددستگاهی الان در دسترس نبود؛ ورود محلی ادامه پیدا کرد.', 4200);
-      }
-    }
-    const nextSession = { ...this.session, active: true, lastAccessAt: Date.now(), lastAccessMode: source, deviceId: sessionLock.deviceId };
+    const nextSession = { ...this.session, active: true, lastAccessAt: Date.now(), lastAccessMode: source };
     this.session = nextSession;
     try { await this.store.save(nextSession); } catch { this.storageAvailable = false; }
     this.renderProfile(nextSession);
@@ -1298,31 +831,17 @@ class AuthManager {
       state: state,
       prompt: 'select_account',
       include_granted_scopes: 'true',
-      hl: 'fa',
+      ux_mode: 'redirect',
     });
     return `${SITE_CONFIG.googleOAuthEndpoint}?${params.toString()}`;
-  }
-
-  startGoogleLogin() {
-    if (prefersOAuthRedirect() || !this.googleReady) {
-      this.launchOAuthRedirect();
-      return;
-    }
-    const official = this.googleButton?.querySelector('div[role="button"], iframe');
-    if (official) {
-      official.click();
-      window.setTimeout(() => {
-        if (document.documentElement.dataset.authState !== 'authenticated') this.launchOAuthRedirect();
-      }, 1800);
-      return;
-    }
-    this.launchOAuthRedirect();
   }
 
   launchOAuthRedirect() {
     const url = this.buildOAuthUrl();
     toast('در حال انتقال به صفحه امن گوگل...', 3500);
-    setTimeout(()=>{ window.location.assign(url); }, 280);
+    // For PWA, we need to allow redirect which will come back with hash
+    // Save current scroll etc
+    setTimeout(()=>{ window.location.href = url; }, 400);
   }
 
   launchExternalBrowserLogin() {
@@ -1424,6 +943,7 @@ class AuthManager {
         use_fedcm_for_prompt: true,
         use_fedcm_for_button: true,
         itp_support: true,
+        // Enable One Tap for better PWA experience
         prompt_parent_id: 'googleAuth',
       });
 
@@ -1515,15 +1035,13 @@ class AuthManager {
 
   async lock() {
     if (!this.session) return;
-    await sessionLock.release(this.session || {});
     this.session = { ...this.session, active: false, lockedAt: Date.now() };
     try { await this.store.save(this.session); } catch { this.storageAvailable = false; }
     window.google?.accounts?.id?.disableAutoSelect?.();
     for (const dialog of $$('dialog[open]')) dialog.close();
     this.showLockedGate();
     this.updateNetworkState();
-    announce('ماملی قفل شد و این ایمیل برای دستگاه دیگر آزاد شد.');
-    toast('خروج انجام شد؛ حالا می‌توانید با همین ایمیل روی دستگاه دیگری وارد شوید.', 4200);
+    announce('ماملی قفل شد. برای بازگشت از حساب مورد اعتماد استفاده کنید. قفل عمودی فعال است.');
   }
 
   async removeAccount(button) {
@@ -1539,7 +1057,6 @@ class AuthManager {
     }
     window.clearTimeout(this.removeConfirmationTimer);
     window.google?.accounts?.id?.disableAutoSelect?.();
-    await sessionLock.release(this.session || {});
     try { await this.store.clear(); } catch { this.storageAvailable = false; }
     this.session = null;
     button.classList.remove('is-confirming');
@@ -1611,21 +1128,19 @@ function applySettings({ notify = false } = {}) {
   const themeColor = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim();
   $('meta[name="theme-color"]')?.setAttribute('content', themeColor || '#050816');
 
-  const setChecked = (id, value) => { const el = $(id); if (el) el.checked = value; };
-  const setValue = (id, value) => { const el = $(id); if (el) el.value = value; };
-  setChecked('#particlesSetting', Boolean(settings.particles));
-  setChecked('#glowSetting', Boolean(settings.glow));
-  setChecked('#motionSetting', Boolean(settings.motion));
-  setChecked('#reducedMotionSetting', Boolean(settings.reducedMotion));
-  setChecked('#soundSetting', Boolean(settings.sound));
-  setChecked('#autoUpdateSetting', settings.autoUpdate !== false);
-  setChecked('#secureSetting', settings.secure !== false);
-  setChecked('#portraitSetting', settings.portrait !== false);
-  setValue('#themeSetting', SITE_CONFIG.themes.includes(settings.theme) ? settings.theme : defaults.theme);
-  setValue('#deviceMotionSetting', ['soft', 'balanced', 'free'].includes(settings.deviceMotion) ? settings.deviceMotion : defaults.deviceMotion);
-  setValue('#phoneDepth', String(Math.min(145, Math.max(55, Number(settings.phoneDepth) || defaults.phoneDepth))));
-  if ($('#phoneDepthValue') && $('#phoneDepth')) $('#phoneDepthValue').value = toPersianDigits($('#phoneDepth').value);
-  setValue('#qualitySetting', ['auto', 'high', 'low'].includes(settings.quality) ? settings.quality : 'auto');
+  $('#particlesSetting').checked = Boolean(settings.particles);
+  $('#glowSetting').checked = Boolean(settings.glow);
+  $('#motionSetting').checked = Boolean(settings.motion);
+  $('#reducedMotionSetting').checked = Boolean(settings.reducedMotion);
+  $('#soundSetting').checked = Boolean(settings.sound);
+  $('#autoUpdateSetting').checked = settings.autoUpdate !== false;
+  $('#secureSetting').checked = settings.secure !== false;
+  $('#portraitSetting').checked = settings.portrait !== false;
+  $('#themeSetting').value = SITE_CONFIG.themes.includes(settings.theme) ? settings.theme : defaults.theme;
+  $('#deviceMotionSetting').value = ['soft', 'balanced', 'free'].includes(settings.deviceMotion) ? settings.deviceMotion : defaults.deviceMotion;
+  $('#phoneDepth').value = String(Math.min(145, Math.max(55, Number(settings.phoneDepth) || defaults.phoneDepth)));
+  $('#phoneDepthValue').value = toPersianDigits($('#phoneDepth').value);
+  $('#qualitySetting').value = ['auto', 'high', 'low'].includes(settings.quality) ? settings.quality : 'auto';
 
   screenshotManager?.setEnabled(settings.secure !== false);
   if (settings.portrait) orientationManager?.lock();
@@ -2080,11 +1595,6 @@ let authManager;
 let orientationManager;
 let screenshotManager;
 let permissionManager;
-let deviceDetectionManager;
-let mouseTrailManager;
-let touchRippleManager;
-let liveGoogleTestManager;
-let scrollCinematicManager;
 let protectedAppInitialized = false;
 
 function cycleTheme() {
@@ -2357,7 +1867,7 @@ function setupCommandPalette() {
     { icon: 'YT', title: 'بازکردن اپ یوتیوب', hint: 'Deep Link مستقیم', keywords: 'youtube یوتیوب ویدیو app اپ', run: () => openNativeApp('youtube') },
     { icon: 'TG', title: 'بازکردن اپ تلگرام', hint: 'Deep Link مستقیم', keywords: 'telegram تلگرام app اپ', run: () => openNativeApp('telegram') },
     { icon: 'APP', title: 'نصب اپ عمودی و امن', hint: 'Android portrait + secure', keywords: 'android windows اندروید ویندوز install نصب pwa portrait secure عمودی امن', run: () => $('#installDialog').showModal() },
-    { icon: 'UP', title: 'بررسی بروزرسانی ۳.۷.۰', hint: `نسخه ${toPersianDigits(APP_VERSION)} · کانال پایدار`, keywords: 'update بروزرسانی آپدیت version نسخه 3.7.0 3.7 3.6' , run: () => { $('#updateCenter').scrollIntoView({ behavior: settings.reducedMotion ? 'auto' : 'smooth', block: 'center' }); updateManager?.check(); } },
+    { icon: 'UP', title: 'بررسی بروزرسانی ۳.۳', hint: `نسخه ${toPersianDigits(APP_VERSION)} · کانال پایدار`, keywords: 'update بروزرسانی آپدیت version نسخه 3.3', run: () => { $('#updateCenter').scrollIntoView({ behavior: settings.reducedMotion ? 'auto' : 'smooth', block: 'center' }); updateManager?.check(); } },
     { icon: '◐', title: 'تغییر تم رنگی',  hint: 'نئون، شفق، خورشیدی', keywords: 'theme تم رنگ ظاهر', run: cycleTheme },
     { icon: '⚙', title: 'تنظیمات امن و عمودی', hint: 'کنترل جلوه‌ها + portrait + secure', keywords: 'settings تنظیمات کنترل secure portrait عمودی امن', run: () => $('#settingsDialog').showModal() },
     { icon: '⌁', title: 'حساب و امنیت دستگاه', hint: 'قفل، خروج یا حذف حساب محلی', keywords: 'google account حساب امنیت قفل خروج', run: () => $('#accountDialog').showModal() },
@@ -2482,7 +1992,7 @@ function setupControls() {
     void core.offsetWidth;
     core.classList.add('is-pulsing');
     sound.play('energy');
-    toast('موج انرژی مدار امن ۳.۷.۰ فعال شد.');
+    toast('موج انرژی مدار امن ۳.۳ فعال شد.');
     window.setTimeout(() => core.classList.remove('is-pulsing'), 1000);
   });
 
@@ -2572,7 +2082,7 @@ class UpdateManager {
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (!this.applying || this.reloading) return;
         this.reloading = true;
-        toast('نسخه امن ۳.۷.۰ فعال شد؛ در حال راه‌اندازی دوباره ماملی…', 3000);
+        toast('نسخه امن ۳.۳ فعال شد؛ در حال راه‌اندازی دوباره ماملی…', 3000);
         window.setTimeout(() => window.location.reload(), 350);
       });
     }
@@ -2590,7 +2100,7 @@ class UpdateManager {
       return;
     }
     try {
-      this.registration = await navigator.serviceWorker.register('./sw.js', { scope: './', updateViaCache: 'none' });
+      this.registration = null; await this.check({ silent: true }); return;
       this.watchRegistration(this.registration);
       if (this.registration.waiting && navigator.serviceWorker.controller) {
         this.setAvailable(this.latestVersion, [], { workerReady: true });
@@ -2606,7 +2116,7 @@ class UpdateManager {
   watchRegistration(registration) {
     const watchWorker = worker => {
       if (!worker) return;
-      this.setMagnet('pulling', 'نسخه امن ۳.۷.۰ پیدا شد؛ در حال آماده‌سازی بسته…');
+      this.setMagnet('pulling', 'نسخه امن ۳.۳ پیدا شد؛ در حال آماده‌سازی بسته…');
       const inspect = () => {
         if (worker.state === 'installed' && navigator.serviceWorker.controller) {
           this.setAvailable(this.latestVersion, [], { workerReady: true });
@@ -2658,7 +2168,7 @@ class UpdateManager {
     this.latestVersion = compareVersions(version, APP_VERSION) >= 0 ? version : APP_VERSION;
     this.latest.textContent = toPersianDigits(this.latestVersion);
     this.setState('available', { workerReady });
-    const note = Array.isArray(notes) && notes.length ? notes[0] : 'نسخه امن ۳.۷.۰ با آرشیو واقعی نسخه‌ها و خروج آزادکننده.';
+    const note = Array.isArray(notes) && notes.length ? notes[0] : 'نسخه امن ۳.۳ با تعمیر ورود گوگل در اپ.';
     this.bannerCopy.textContent = `نسخه ${toPersianDigits(this.latestVersion)} — ${note}`;
     if (workerReady && !this.dismissed) this.banner.hidden = false;
     if (workerReady) {
@@ -2879,42 +2389,10 @@ function setupInstall() {
     installed = true;
     installPrompt = null;
     updateInstallState();
-    toast('ماملی امن ۳.۷.۰ با موفقیت نصب شد و اکنون عمودی و محافظت‌شده اجرا می‌شود.', 4500);
+    toast('ماملی امن ۳.۳ با موفقیت نصب شد و اکنون عمودی و محافظت‌شده اجرا می‌شود.', 4500);
   });
 
   updateInstallState();
-}
-
-function setupVersionArchive() {
-  const root = $('#versionArchive');
-  if (!root || root.dataset.ready === '1') return;
-  root.dataset.ready = '1';
-  const safeText = value => String(value ?? '').replace(/[&<>"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[char]));
-  const playUrlFor = item => {
-    if (item.version === APP_VERSION || item.status === 'current') return './';
-    if (typeof item.play === 'string' && item.play.trim()) return item.play;
-    const version = String(item.version || '').trim();
-    if (/^\d+\.\d+\.\d+$/.test(version)) return `./history/play/${encodeURIComponent(version)}/`;
-    return `./history/play/era.html?v=${encodeURIComponent(version)}`;
-  };
-  const render = items => {
-    root.replaceChildren();
-    for (const item of items) {
-      const article = document.createElement('article');
-      const play = playUrlFor(item);
-      const current = item.status === 'current' || item.version === APP_VERSION;
-      article.className = `version-card${current ? ' is-current' : ''}`;
-      article.dataset.version = item.version || '';
-      article.innerHTML = `<div class="version-card__era" aria-hidden="true"></div><small>${safeText(item.version)}</small><strong>${safeText(item.title || '')}</strong><span>${safeText(item.date || '')}</span><ul>${(item.highlights || []).map(h => `<li>${safeText(h)}</li>`).join('')}</ul><div class="version-card__actions"><a class="version-card__play" href="${safeText(play)}">${current ? 'بازکردن نسخه زنده' : 'ورود به خود این نسخه'}</a></div>`;
-      root.append(article);
-    }
-  };
-  fetch(`${SITE_CONFIG.versionsEndpoint}?t=${Date.now()}`, { cache: 'no-store' })
-    .then(res => res.ok ? res.json() : Promise.reject())
-    .then(data => render(Array.isArray(data.archive) ? data.archive : []))
-    .catch(() => render([
-      { version: APP_VERSION, title: 'نسخه فعلی', date: '2026', status: 'current', play: './', highlights: ['ورود گوگل در PWA', 'قفل یک‌دستگاهی', 'آرشیو قابل‌بازی'] },
-    ]));
 }
 
 function initProtectedApp() {
@@ -2927,21 +2405,6 @@ function initProtectedApp() {
 
   screenshotManager = new ScreenshotProtectionManager();
   screenshotManager.init();
-
-  deviceDetectionManager = new DeviceDetectionManager();
-  deviceDetectionManager.init();
-
-  mouseTrailManager = new MouseTrailManager();
-  mouseTrailManager.init();
-
-  touchRippleManager = new TouchRippleManager();
-  touchRippleManager.init();
-
-  liveGoogleTestManager = new LiveGoogleTestManager();
-  liveGoogleTestManager.init();
-
-  scrollCinematicManager = new ScrollCinematicManager();
-  scrollCinematicManager.init();
 
   permissionManager = new PermissionManager();
   permissionManager.init();
@@ -2968,19 +2431,6 @@ async function bootstrap() {
   orientationManager.init();
   screenshotManager = new ScreenshotProtectionManager();
   screenshotManager.init();
-  deviceDetectionManager = new DeviceDetectionManager();
-  deviceDetectionManager.init();
-  mouseTrailManager = new MouseTrailManager();
-  mouseTrailManager.init();
-  touchRippleManager = new TouchRippleManager();
-  touchRippleManager.init();
-  liveGoogleTestManager = new LiveGoogleTestManager();
-  liveGoogleTestManager.init();
-  scrollCinematicManager = new ScrollCinematicManager();
-  scrollCinematicManager.init();
-  permissionManager = new PermissionManager();
-  permissionManager.init();
-  setupVersionArchive();
 
   authManager = new AuthManager();
   await authManager.init();

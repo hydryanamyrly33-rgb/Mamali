@@ -2,25 +2,21 @@
 <html lang="fa" dir="rtl" data-theme="neon" data-auth-state="booting">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <meta name="description" content="ماملی اوربیت ۳.۳؛ اپ اجتماعی سه‌بعدی قابل نصب روی Android و Windows با ورود امن گوگل در اپ، قفل عمودی و طراحی گرد گوگل.">
-  <meta name="keywords" content="Mamali, ماملی, Google Sign-In PWA Fix, portrait lock, Windows PWA, Android PWA, بروزرسانی زنده">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="ماملی اوربیت؛ اپ اجتماعی سه‌بعدی قابل نصب روی Android و Windows با ورود امن گوگل، دستگاه مورد اعتماد، بروزرسانی زنده و اجرای آفلاین.">
+  <meta name="keywords" content="Mamali, ماملی, Google Sign-In, Windows PWA, Android PWA, بروزرسانی زنده, رابط سه‌بعدی, تلگرام, اینستاگرام, یوتیوب">
   <meta name="author" content="Amirali">
   <meta name="theme-color" content="#050816">
   <meta name="color-scheme" content="dark">
   <meta name="robots" content="index, follow">
-  <meta name="screen-orientation" content="portrait">
-  <meta name="x5-orientation" content="portrait">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client https://accounts.google.com/gsi/intermediate; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: https://lh3.googleusercontent.com https://*.googleusercontent.com https://accounts.google.com; font-src 'self'; connect-src 'self' https://accounts.google.com https://www.googleapis.com; frame-src https://accounts.google.com https://accounts.google.com/gsi/; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self' https://accounts.google.com; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: https://lh3.googleusercontent.com https://*.googleusercontent.com; font-src 'self'; connect-src 'self' https://accounts.google.com https://www.googleapis.com; frame-src https://accounts.google.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; upgrade-insecure-requests">
 
-  <link rel="canonical" href="https://mamali-orbit.vercel.app/Mamali/history/play/3.4.0/">
+  <link rel="canonical" href="https://mamali-orbit.vercel.app/Mamali/history/play/3.2.0/">
   <link rel="icon" href="/Mamali/assets/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/Mamali/assets/icons/apple-touch-icon.png">
   <link rel="manifest" href="/Mamali/manifest.webmanifest">
-  <link rel="preload" href="./styles.css?v=3.4.0" as="style">
-  <link rel="stylesheet" href="./styles.css?v=3.4.0">
+  <link rel="preload" href="./styles.css?v=3.2.0" as="style">
+  <link rel="stylesheet" href="./styles.css?v=3.2.0">
 
   <meta property="og:type" content="website">
   <meta property="og:locale" content="fa_IR">
@@ -30,52 +26,17 @@
   <meta property="og:url" content="https://mamali-orbit.vercel.app/Mamali/">
   <meta property="og:image" content="https://mamali-orbit.vercel.app/Mamali/assets/social-preview.svg">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Mamali Orbit 3.4.0">
-  <meta name="twitter:description" content="اپ سه‌بعدی با گوگل گرد، قفل عمودی، تشخیص هوشمند دستگاه و طراحی ویندوز بهبود یافته.">
+  <meta name="twitter:title" content="Mamali Orbit 3.2.0">
+  <meta name="twitter:description" content="اپ سه‌بعدی قابل نصب روی Android و Windows با ورود گوگل، اجرای آفلاین مورد اعتماد و بروزرسانی زنده.">
   <meta name="twitter:image" content="https://mamali-orbit.vercel.app/Mamali/assets/social-preview.svg">
 
-  <title>Mamali Orbit 3.4.0 — گرد، عمودی، هوشمند</title>
-  <script>
-    // Early portrait lock + OAuth token capture
-    (function(){
-      try {
-        const tryLock = () => {
-          try {
-            if (screen.orientation && screen.orientation.lock && document.visibilityState === 'visible') {
-              screen.orientation.lock('portrait-primary').catch(()=>screen.orientation.lock('portrait').catch(()=>{}));
-            }
-          } catch {}
-        };
-        tryLock();
-        document.addEventListener('DOMContentLoaded', tryLock, {once:true});
-        window.addEventListener('load', tryLock, {once:true});
-        document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) tryLock(); });
-        if (location.hash && location.hash.includes('id_token=')) {
-          try {
-            const params = new URLSearchParams(location.hash.substring(1));
-            const idToken = params.get('id_token');
-            if (idToken) {
-              sessionStorage.setItem('mamali_external_id_token', idToken);
-              history.replaceState(null, '', location.pathname + location.search);
-            }
-          } catch {}
-        }
-        // Device detection early for CSS
-        const ua = navigator.userAgent.toLowerCase();
-        let device = 'desktop';
-        if (/android/.test(ua)) device = 'android';
-        else if (/iphone|ipad|ipod/.test(ua)) device = 'ios';
-        else if (ua.includes('windows')) device = 'windows';
-        document.documentElement.dataset.device = device;
-      } catch {}
-    })();
-  </script>
-  <script type="module" src="./app.js?v=3.4.0"></script>
+  <title>Mamali Orbit — مرکز فرمان اجتماعی سه‌بعدی</title>
+  <script type="module" src="./app.js?v=3.2.0"></script>
 
 <script>
 window.__MAMALI_ARCHIVE__ = {
-  version: "3.4.0",
-  database: "mamali-archive-identity-340",
+  version: "3.2.0",
+  database: "mamali-archive-identity-320",
   live: '/Mamali/'
 };
 </script>
@@ -86,17 +47,8 @@ window.__MAMALI_ARCHIVE__ = {
 </style>
 </head>
 <body>
-  <div class="mamali-archive-bar" dir="rtl"><span>آرشیو واقعی ماملی · نسخه <b>3.4.0</b></span><a href="/Mamali/">بازگشت به نسخه زنده</a></div>
+  <div class="mamali-archive-bar" dir="rtl"><span>آرشیو واقعی ماملی · نسخه <b>3.2.0</b></span><a href="/Mamali/">بازگشت به نسخه زنده</a></div>
 
-  <!-- Rotate prompt for portrait lock - minimal -->
-  <div id="rotatePrompt" class="rotate-prompt" hidden>
-    <div class="rotate-prompt__card" data-glass>
-      <span style="font-size:2.4rem">📱</span>
-      <strong>لطفاً گوشی را عمودی نگه دارید</strong>
-      <small>ماملی برای تجربه بهتر فقط در حالت عمودی اجرا می‌شود</small>
-      <button class="button button--primary" id="rotatePromptClose" type="button">فهمیدم</button>
-    </div>
-  </div>
   <canvas id="cosmos" class="cosmos" aria-hidden="true"></canvas>
   <div class="ambient ambient--one" aria-hidden="true"></div>
   <div class="ambient ambient--two" aria-hidden="true"></div>
@@ -119,8 +71,8 @@ window.__MAMALI_ARCHIVE__ = {
         <div class="auth-orbit auth-orbit--one"><span></span><span></span></div>
         <div class="auth-orbit auth-orbit--two"><span></span></div>
         <div class="auth-orbit auth-orbit--three"></div>
-        <div class="auth-core auth-core--round">
-          <span class="auth-core__shield auth-google-orb auth-google-orb--round">
+        <div class="auth-core">
+          <span class="auth-core__shield auth-google-orb">
             <span class="auth-google-orb__depth" aria-hidden="true"></span>
             <svg class="google-g" viewBox="0 0 48 48" aria-hidden="true">
               <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303C33.654 32.657 29.223 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917Z"/>
@@ -129,6 +81,8 @@ window.__MAMALI_ARCHIVE__ = {
               <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917Z"/>
             </svg>
           </span>
+          <strong>GOOGLE ID</strong>
+          <small>ONE TAP · TRUSTED DEVICE</small>
         </div>
         <span class="auth-visual__label auth-visual__label--top">IDENTITY / VERIFIED</span>
         <span class="auth-visual__label auth-visual__label--bottom">LOCAL VAULT / READY</span>
@@ -159,19 +113,7 @@ window.__MAMALI_ARCHIVE__ = {
 
         <div class="auth-divider" id="authDivider" hidden><span>یا تأیید با Google</span></div>
         <div class="google-auth" id="googleAuth" hidden>
-          <div class="google-login-beautiful" id="googleLoginBeautiful">
-            <div class="google-login-beautiful__header">
-              <span class="device-badge" id="deviceBadge"><i aria-hidden="true">📱</i><span>تشخیص دستگاه…</span></span>
-              <div class="google-live-test" id="googleLiveTest">
-                <small style="color:var(--soft);font-size:.6rem;">تست زنده اتصال گوگل...</small>
-              </div>
-            </div>
-            <div class="google-button-shell google-button-shell--beautiful" id="googleButton" role="group" aria-label="ورود با حساب گوگل"></div>
-            <div class="google-auth-fallback">
-              <button class="button button--ghost google-fallback-btn" id="externalGoogleButton" type="button" hidden>باز کردن ورود در مرورگر خارجی</button>
-              <button class="button button--ghost google-fallback-btn" id="oauthRedirectButton" type="button">ورود امن برای اپ اندروید / iOS</button>
-            </div>
-          </div>
+          <div class="google-button-shell" id="googleButton" role="group" aria-label="ورود با حساب گوگل"></div>
           <button class="button button--ghost auth-retry" id="authRetryButton" type="button" hidden>تلاش دوباره برای اتصال به Google</button>
         </div>
 
@@ -192,7 +134,7 @@ window.__MAMALI_ARCHIVE__ = {
 
     <footer class="auth-gate__footer">
       <span>GOOGLE IDENTITY SERVICES</span>
-      <span>نسخه <b data-app-version>۳.۴.۰</b></span>
+      <span>نسخه <b data-app-version>۳.۲.۰</b></span>
     </footer>
   </section>
 
@@ -238,7 +180,7 @@ window.__MAMALI_ARCHIVE__ = {
           <span class="live-dot" aria-hidden="true"></span>
           سیستم آنلاین است
           <span class="eyebrow__divider" aria-hidden="true"></span>
-          نسخه <strong data-app-version>۳.۴.۰</strong>
+          نسخه <strong data-app-version>۳.۲.۰</strong>
         </div>
 
         <h1 id="hero-title" class="reveal">
@@ -411,7 +353,7 @@ window.__MAMALI_ARCHIVE__ = {
               <img src="/Mamali/assets/icons/icon-192.png" width="96" height="96" alt="" loading="lazy" decoding="async">
               <strong>Mamali Orbit</strong>
               <small>Android · Windows · PWA</small>
-              <div class="phone-frame__install"><span>✓</span> نسخه <b data-app-version>۳.۴.۰</b> آماده اجرا</div>
+              <div class="phone-frame__install"><span>✓</span> نسخه <b data-app-version>۳.۲.۰</b> آماده اجرا</div>
             </div>
           </div>
           <div class="device-gesture"><span>↔</span> با موس یا انگشت بکشید</div>
@@ -497,7 +439,7 @@ window.__MAMALI_ARCHIVE__ = {
             <span><small>AUTO-PULL ENGINE</small><strong id="updateMagnetStatus">مکش خودکار نسخه تازه فعال است</strong></span>
           </div>
           <div class="update-center__versions">
-            <span><small>نسخه نصب‌شده</small><strong data-app-version>۳.۴.۰</strong></span>
+            <span><small>نسخه نصب‌شده</small><strong data-app-version>۳.۲.۰</strong></span>
             <span aria-hidden="true">←</span>
             <span><small>آخرین نسخه</small><strong id="latestVersion">در حال بررسی</strong></span>
           </div>
@@ -512,7 +454,7 @@ window.__MAMALI_ARCHIVE__ = {
           </div>
         </div>
 
-        <p class="android-note">نسخه ۳.۴.۰ از ورود Google، دستگاه مورد اعتماد و بروزرسانی زنده SemVer استفاده می‌کند؛ اگر نسخه جدید برسد، بدون حذف برنامه به‌صورت خودکار یا با یک لمس فعال می‌شود. در حالت آفلاین، شمارش متوقف و بخش بروزرسانی خاکستری و غیرفعال خواهد بود.</p>
+        <p class="android-note">نسخه ۳.۲.۰ از ورود Google، دستگاه مورد اعتماد و بروزرسانی زنده SemVer استفاده می‌کند؛ اگر نسخه جدید برسد، بدون حذف برنامه به‌صورت خودکار یا با یک لمس فعال می‌شود. در حالت آفلاین، شمارش متوقف و بخش بروزرسانی خاکستری و غیرفعال خواهد بود.</p>
       </div>
     </section>
 
@@ -526,7 +468,7 @@ window.__MAMALI_ARCHIVE__ = {
         <p>ماملی پس از تأیید Google، فقط نمایه و مجوز دستگاه مورد اعتماد را در دیتابیس محلی IndexedDB نگه می‌دارد؛ توکن ورود ذخیره نمی‌شود و میزبانی روی Vercel و نسخه پشتیبان GitHub Pages است.</p>
       </div>
       <dl>
-        <div><dt>نسخه پایدار</dt><dd data-app-version>۳.۴.۰</dd></div>
+        <div><dt>نسخه پایدار</dt><dd data-app-version>۳.۲.۰</dd></div>
         <div><dt>پلتفرم نصب</dt><dd>۲</dd></div>
         <div><dt>حالت رنگ</dt><dd>۴</dd></div>
       </dl>
@@ -657,7 +599,7 @@ window.__MAMALI_ARCHIVE__ = {
     <div class="install-guide__body" role="region" tabindex="0" aria-label="راهنمای نصب و بروزرسانی برنامه">
       <div class="install-guide__intro">
         <img src="/Mamali/assets/icons/icon-192.png" width="72" height="72" alt="آیکون اپ ماملی" loading="lazy" decoding="async">
-        <div><strong>Mamali Orbit 3.4.0</strong><small>Android · Windows · بروزرسانی زنده</small></div>
+        <div><strong>Mamali Orbit 3.2.0</strong><small>Android · Windows · بروزرسانی زنده</small></div>
       </div>
 
       <section aria-labelledby="androidGuideHeading">

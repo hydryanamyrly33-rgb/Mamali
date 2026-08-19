@@ -3,45 +3,52 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <meta name="description" content="ماملی اوربیت ۳.۳؛ اپ اجتماعی سه‌بعدی قابل نصب روی Android و Windows با ورود امن گوگل در اپ، قفل عمودی و طراحی گرد گوگل.">
-  <meta name="keywords" content="Mamali, ماملی, Google Sign-In PWA Fix, portrait lock, Windows PWA, Android PWA, بروزرسانی زنده">
+  <meta name="description" content="ماملی اوربیت ۳.۳؛ اپ اجتماعی سه‌بعدی قابل نصب روی Android و Windows با ورود امن گوگل در اپ، قفل اجباری عمودی، محافظت از اسکرین‌شات و مجوزهای هوشمند.">
+  <meta name="keywords" content="Mamali, ماملی, Google Sign-In PWA, Android PWA portrait lock, screenshot protection, Windows PWA, بروزرسانی زنده">
   <meta name="author" content="Amirali">
   <meta name="theme-color" content="#050816">
   <meta name="color-scheme" content="dark">
   <meta name="robots" content="index, follow">
+  <!-- Orientation lock -->
   <meta name="screen-orientation" content="portrait">
   <meta name="x5-orientation" content="portrait">
+  <meta name="x5-page-mode" content="app">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-orientation" content="portrait">
   <meta name="mobile-web-app-capable" content="yes">
+  <meta name="format-detection" content="telephone=no">
+  <!-- Security -->
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client https://accounts.google.com/gsi/intermediate; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: https://lh3.googleusercontent.com https://*.googleusercontent.com https://accounts.google.com; font-src 'self'; connect-src 'self' https://accounts.google.com https://www.googleapis.com; frame-src https://accounts.google.com https://accounts.google.com/gsi/; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self' https://accounts.google.com; upgrade-insecure-requests">
 
-  <link rel="canonical" href="https://mamali-orbit.vercel.app/Mamali/history/play/3.4.0/">
+  <link rel="canonical" href="https://mamali-orbit.vercel.app/Mamali/history/play/3.3.0/">
   <link rel="icon" href="/Mamali/assets/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/Mamali/assets/icons/apple-touch-icon.png">
   <link rel="manifest" href="/Mamali/manifest.webmanifest">
-  <link rel="preload" href="./styles.css?v=3.4.0" as="style">
-  <link rel="stylesheet" href="./styles.css?v=3.4.0">
+  <link rel="preload" href="./styles.css?v=3.3.0" as="style">
+  <link rel="stylesheet" href="./styles.css?v=3.3.0">
 
   <meta property="og:type" content="website">
   <meta property="og:locale" content="fa_IR">
   <meta property="og:site_name" content="Mamali Orbit">
-  <meta property="og:title" content="Mamali Orbit — ورود گوگل و اپ سه‌بعدی Android و Windows">
-  <meta property="og:description" content="لانچر اجتماعی سه‌بعدی با ورود گوگل، دستگاه مورد اعتماد، اجرای آفلاین و نصب مستقیم روی موبایل و ویندوز.">
+  <meta property="og:title" content="Mamali Orbit ۳.۳ — ورود گوگل در اپ + قفل عمودی + ضد اسکرین‌شات">
+  <meta property="og:description" content="لانچر اجتماعی سه‌بعدی با ورود گوگل که توی اپ اندروید هم کار میکنه، قفل اجباری پرتره، درخواست مجوز هوشمند و محافظت از محتوا.">
   <meta property="og:url" content="https://mamali-orbit.vercel.app/Mamali/">
   <meta property="og:image" content="https://mamali-orbit.vercel.app/Mamali/assets/social-preview.svg">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Mamali Orbit 3.4.0">
-  <meta name="twitter:description" content="اپ سه‌بعدی با گوگل گرد، قفل عمودی، تشخیص هوشمند دستگاه و طراحی ویندوز بهبود یافته.">
+  <meta name="twitter:title" content="Mamali Orbit 3.3.0">
+  <meta name="twitter:description" content="اپ سه‌بعدی با ورود گوگل تعمیرشده برای PWA، قفل عمودی، ضد اسکرین‌شات و مجوزهای خودکار.">
   <meta name="twitter:image" content="https://mamali-orbit.vercel.app/Mamali/assets/social-preview.svg">
 
-  <title>Mamali Orbit 3.4.0 — گرد، عمودی، هوشمند</title>
+  <title>Mamali Orbit ۳.۳ — مرکز فرمان محافظت‌شده</title>
   <script>
-    // Early portrait lock + OAuth token capture
+    // Early portrait lock + screenshot protection bootstrap (before module)
     (function(){
       try {
+        // Try lock orientation ASAP
         const tryLock = () => {
           try {
-            if (screen.orientation && screen.orientation.lock && document.visibilityState === 'visible') {
+            if (screen.orientation && screen.orientation.lock) {
               screen.orientation.lock('portrait-primary').catch(()=>screen.orientation.lock('portrait').catch(()=>{}));
             }
           } catch {}
@@ -50,32 +57,28 @@
         document.addEventListener('DOMContentLoaded', tryLock, {once:true});
         window.addEventListener('load', tryLock, {once:true});
         document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) tryLock(); });
+
+        // Detect OAuth id_token in hash from external browser fallback
         if (location.hash && location.hash.includes('id_token=')) {
           try {
             const params = new URLSearchParams(location.hash.substring(1));
             const idToken = params.get('id_token');
             if (idToken) {
               sessionStorage.setItem('mamali_external_id_token', idToken);
+              // Clean URL
               history.replaceState(null, '', location.pathname + location.search);
             }
           } catch {}
         }
-        // Device detection early for CSS
-        const ua = navigator.userAgent.toLowerCase();
-        let device = 'desktop';
-        if (/android/.test(ua)) device = 'android';
-        else if (/iphone|ipad|ipod/.test(ua)) device = 'ios';
-        else if (ua.includes('windows')) device = 'windows';
-        document.documentElement.dataset.device = device;
       } catch {}
     })();
   </script>
-  <script type="module" src="./app.js?v=3.4.0"></script>
+  <script type="module" src="./app.js?v=3.3.0"></script>
 
 <script>
 window.__MAMALI_ARCHIVE__ = {
-  version: "3.4.0",
-  database: "mamali-archive-identity-340",
+  version: "3.3.0",
+  database: "mamali-archive-identity-330",
   live: '/Mamali/'
 };
 </script>
@@ -85,18 +88,26 @@ window.__MAMALI_ARCHIVE__ = {
   .mamali-archive-bar a{border:1px solid rgba(114,246,255,.28);border-radius:999px;padding:7px 12px;color:#eef7ff;text-decoration:none;font-size:.78rem}
 </style>
 </head>
-<body>
-  <div class="mamali-archive-bar" dir="rtl"><span>آرشیو واقعی ماملی · نسخه <b>3.4.0</b></span><a href="/Mamali/">بازگشت به نسخه زنده</a></div>
-
-  <!-- Rotate prompt for portrait lock - minimal -->
-  <div id="rotatePrompt" class="rotate-prompt" hidden>
-    <div class="rotate-prompt__card" data-glass>
-      <span style="font-size:2.4rem">📱</span>
-      <strong>لطفاً گوشی را عمودی نگه دارید</strong>
-      <small>ماملی برای تجربه بهتر فقط در حالت عمودی اجرا می‌شود</small>
-      <button class="button button--primary" id="rotatePromptClose" type="button">فهمیدم</button>
+<body class="screenshot-protected orientation-locked">
+  <!-- Secure Guard Overlay for screenshot protection -->
+  <div id="secureGuard" class="secure-guard" aria-hidden="true">
+    <div class="secure-guard__content">
+      <span class="secure-guard__icon">🔒</span>
+      <strong>محتوای محافظت‌شده</strong>
+      <small>ماملی برای حفظ حریم خصوصی، از اسکرین‌شات محافظت می‌کند</small>
     </div>
   </div>
+
+  <!-- Rotate Prompt for landscape -->
+  <div id="rotatePrompt" class="rotate-prompt" hidden>
+    <div class="rotate-prompt__card" data-glass>
+      <span class="rotate-prompt__icon">📱</span>
+      <strong>لطفاً گوشی را عمودی نگه دارید</strong>
+      <small>ماملی برای تجربه سه‌بعدی بهتر، فقط در حالت عمودی (Portrait) اجرا می‌شود. چرخش به افقی غیرفعال است.</small>
+      <button type="button" class="button button--primary rotate-prompt__btn" id="rotatePromptClose">فهمیدم، عمودی میکنم</button>
+    </div>
+  </div>
+
   <canvas id="cosmos" class="cosmos" aria-hidden="true"></canvas>
   <div class="ambient ambient--one" aria-hidden="true"></div>
   <div class="ambient ambient--two" aria-hidden="true"></div>
@@ -109,7 +120,7 @@ window.__MAMALI_ARCHIVE__ = {
     <header class="auth-gate__header">
       <span class="brand">
         <span class="brand__mark" aria-hidden="true">M</span>
-        <span class="brand__copy"><strong>MAMALI</strong><small>IDENTITY GATE</small></span>
+        <span class="brand__copy"><strong>MAMALI</strong><small>IDENTITY GATE · 3.3</small></span>
       </span>
       <span class="auth-network" id="authNetwork"><i aria-hidden="true"></i><span>بررسی اتصال…</span></span>
     </header>
@@ -119,8 +130,8 @@ window.__MAMALI_ARCHIVE__ = {
         <div class="auth-orbit auth-orbit--one"><span></span><span></span></div>
         <div class="auth-orbit auth-orbit--two"><span></span></div>
         <div class="auth-orbit auth-orbit--three"></div>
-        <div class="auth-core auth-core--round">
-          <span class="auth-core__shield auth-google-orb auth-google-orb--round">
+        <div class="auth-core">
+          <span class="auth-core__shield auth-google-orb">
             <span class="auth-google-orb__depth" aria-hidden="true"></span>
             <svg class="google-g" viewBox="0 0 48 48" aria-hidden="true">
               <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303C33.654 32.657 29.223 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917Z"/>
@@ -129,15 +140,17 @@ window.__MAMALI_ARCHIVE__ = {
               <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917Z"/>
             </svg>
           </span>
+          <strong>GOOGLE ID</strong>
+          <small>PWA FIX · PORTRAIT · SECURE</small>
         </div>
-        <span class="auth-visual__label auth-visual__label--top">IDENTITY / VERIFIED</span>
-        <span class="auth-visual__label auth-visual__label--bottom">LOCAL VAULT / READY</span>
+        <span class="auth-visual__label auth-visual__label--top">IDENTITY / VERIFIED · 3.3</span>
+        <span class="auth-visual__label auth-visual__label--bottom">SECURE VAULT / PORTRAIT LOCK</span>
       </div>
 
       <div class="auth-card" role="main" data-glass>
-        <div class="auth-card__status"><span aria-hidden="true"></span> دروازه هویت ماملی</div>
+        <div class="auth-card__status"><span aria-hidden="true"></span> دروازه هویت ماملی ۳.۳</div>
         <h1 id="authTitle">مدار شما، فقط با <span>حساب گوگل</span></h1>
-        <p class="auth-card__lead">برای ورود به وب‌سایت یا اپ نصب‌شده، هویت خود را با Google تأیید کنید. پس از اولین ورود، این دستگاه را برای بازگشت سریع و اجرای آفلاین به خاطر می‌سپاریم.</p>
+        <p class="auth-card__lead">نسخه ۳.۳ ورود گوگل را حتی داخل اپ نصب‌شده Android هم تعمیر کرده. بعد از اولین ورود، دستگاه برای بازگشت سریع، اجرای آفلاین و قفل عمودی به خاطر سپرده می‌شود.</p>
 
         <div class="auth-progress" id="authProgress" role="status" aria-live="polite">
           <span class="auth-progress__spinner" aria-hidden="true"></span>
@@ -157,19 +170,48 @@ window.__MAMALI_ARCHIVE__ = {
           </button>
         </div>
 
-        <div class="auth-divider" id="authDivider" hidden><span>یا تأیید با Google</span></div>
+        <div class="auth-divider" id="authDivider" hidden><span>یا تأیید امن با Google</span></div>
+
+        <!-- ENHANCED GOOGLE LOGIN 3.3 -->
         <div class="google-auth" id="googleAuth" hidden>
-          <div class="google-login-beautiful" id="googleLoginBeautiful">
-            <div class="google-login-beautiful__header">
-              <span class="device-badge" id="deviceBadge"><i aria-hidden="true">📱</i><span>تشخیص دستگاه…</span></span>
-              <div class="google-live-test" id="googleLiveTest">
-                <small style="color:var(--soft);font-size:.6rem;">تست زنده اتصال گوگل...</small>
+          <div class="google-login-enhanced" id="googleLoginEnhanced">
+            <div class="google-login-enhanced__glow" aria-hidden="true"></div>
+            <div class="google-login-enhanced__header">
+              <div class="google-login-enhanced__badge">
+                <span class="google-login-enhanced__badge-dot"></span>
+                ورود امن و تعمیرشده برای حالت اپ
+                <span class="google-login-enhanced__badge-new">جدید ۳.۳</span>
+              </div>
+              <h3>با گوگل وارد شوید — حتی داخل اپ اندروید</h3>
+              <p>توی نسخه قبل لاگین داخل اپ نصب‌شده کار نمیکرد. الان با موتور جدید FedCM + OAuth Redirect + بازکردن در مرورگر خارجی، توی هر حالت (سایت، PWA، TWA) کار میکنه.</p>
+              <div class="google-login-enhanced__chips" aria-hidden="true">
+                <span>✓ PWA Standalone</span><span>✓ Android APK</span><span>✓ Portrait Lock</span><span>✓ Secure</span>
               </div>
             </div>
-            <div class="google-button-shell google-button-shell--beautiful" id="googleButton" role="group" aria-label="ورود با حساب گوگل"></div>
-            <div class="google-auth-fallback">
-              <button class="button button--ghost google-fallback-btn" id="externalGoogleButton" type="button" hidden>باز کردن ورود در مرورگر خارجی</button>
-              <button class="button button--ghost google-fallback-btn" id="oauthRedirectButton" type="button">ورود امن برای اپ اندروید / iOS</button>
+            
+            <div class="google-button-shell-wrapper">
+              <div class="google-button-shell-border"></div>
+              <div class="google-button-shell" id="googleButton" role="group" aria-label="ورود با حساب گوگل"></div>
+              <div class="google-button-shimmer" aria-hidden="true"></div>
+            </div>
+
+            <div class="google-login-enhanced__features">
+              <span><i>🔒</i> بدون ذخیره توکن</span>
+              <span><i>⚡</i> ورود ۱-لمسی</span>
+              <span><i>📱</i> کار در اپ</span>
+              <span><i>🛡️</i> ضد اسکرین</span>
+            </div>
+
+            <div class="google-login-fallback" id="googleFallback">
+              <button class="button button--ghost google-external-btn" id="externalGoogleButton" type="button" hidden>
+                <svg viewBox="0 0 24 24" aria-hidden="true" width="18" height="18"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15v-4H7v-2h4V7h2v4h4v2h-4v4h-2z"/></svg>
+                اگر دکمه بالا کار نکرد: باز کردن ورود گوگل در مرورگر
+              </button>
+              <button class="button button--ghost google-oauth-btn" id="oauthRedirectButton" type="button">
+                <svg viewBox="0 0 24 24" aria-hidden="true" width="18" height="18"><path d="M12 2a10 10 0 0 0-9.9 11 10 10 0 0 0 18.1 5.9L12 12V2Z" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M12 12 20.5 7M12 12v10" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>
+                ورود با ریدایرکت امن گوگل (پیشنهادی برای اپ)
+              </button>
+              <small class="google-login-fallback__hint">تو حالت اپ نصب‌شده، گوگل گاهی پاپ‌آپ رو میبنده. این دو دکمه جایگزین تضمینی هستند و با همون Client ID شما کار میکنند.</small>
             </div>
           </div>
           <button class="button button--ghost auth-retry" id="authRetryButton" type="button" hidden>تلاش دوباره برای اتصال به Google</button>
@@ -179,7 +221,7 @@ window.__MAMALI_ARCHIVE__ = {
 
         <div class="auth-trust-note">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-5"/></svg>
-          <p><strong>ورود امن، بدون ذخیره توکن</strong><span>توکن Google فقط همان لحظه اعتبارسنجی می‌شود؛ شناسه و نمایه لازم برای «دستگاه مورد اعتماد» فقط در IndexedDB همین دستگاه باقی می‌ماند.</span></p>
+          <p><strong>ورود امن، بدون ذخیره توکن + محافظت از اسکرین‌شات</strong><span>توکن Google فقط همان لحظه اعتبارسنجی می‌شود. محتوا با تکنیک‌های overlay هنگام blur و FLAG_SECURE در نسخه APK محافظت می‌شود.</span></p>
         </div>
       </div>
     </div>
@@ -191,8 +233,8 @@ window.__MAMALI_ARCHIVE__ = {
     </button>
 
     <footer class="auth-gate__footer">
-      <span>GOOGLE IDENTITY SERVICES</span>
-      <span>نسخه <b data-app-version>۳.۴.۰</b></span>
+      <span>GOOGLE IDENTITY SERVICES · PWA FIX</span>
+      <span>نسخه <b data-app-version>۳.۳.۰</b> · portrait · secure</span>
     </footer>
   </section>
 
@@ -203,7 +245,7 @@ window.__MAMALI_ARCHIVE__ = {
       <span class="brand__mark" aria-hidden="true">M</span>
       <span class="brand__copy">
         <strong>MAMALI</strong>
-        <small>ORBIT SYSTEM</small>
+        <small>ORBIT SYSTEM · 3.3</small>
       </span>
     </a>
 
@@ -236,24 +278,23 @@ window.__MAMALI_ARCHIVE__ = {
       <div class="hero__copy">
         <div class="eyebrow reveal">
           <span class="live-dot" aria-hidden="true"></span>
-          سیستم آنلاین است
+          سیستم آنلاین · محافظت‌شده
           <span class="eyebrow__divider" aria-hidden="true"></span>
-          نسخه <strong data-app-version>۳.۴.۰</strong>
+          نسخه <strong data-app-version>۳.۳.۰</strong>
         </div>
 
         <h1 id="hero-title" class="reveal">
           مرکز فرمان
-          <span class="gradient-text">اجتماعی آینده</span>
+          <span class="gradient-text">اجتماعیِ امنِ عمودی</span>
         </h1>
 
         <p class="hero__lead reveal">
-          سه پورتال، یک مدار هوشمند و تجربه‌ای که با حرکت شما زنده می‌شود.
-          سریع، بدون ردیاب، قابل نصب و ساخته‌شده با سه‌بعدی واقعی مرورگر.
+          ورود گوگل که داخل اپ اندروید هم کار میکنه، قفل اجباری پرتره برای سایت و اپ، درخواست مجوز هوشمند در اولین ورود، و محافظت از اسکرین‌شات. سریع، بدون ردیاب، قابل نصب و سه‌بعدی واقعی.
         </p>
 
         <div class="hero__actions reveal">
           <a class="button button--primary" href="#portals">
-            ورود به مدار
+            ورود به مدار امن
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
           </a>
           <button class="button button--ghost install-trigger" id="installButton" type="button">
@@ -263,15 +304,15 @@ window.__MAMALI_ARCHIVE__ = {
         </div>
 
         <dl class="hero__metrics reveal" aria-label="مشخصات سیستم">
-          <div><dt>پورتال فعال</dt><dd>۳</dd></div>
-          <div><dt>ردیاب</dt><dd>۰</dd></div>
-          <div><dt>پردازش</dt><dd>Local</dd></div>
+          <div><dt>ورود گوگل در اپ</dt><dd>✓ Fix</dd></div>
+          <div><dt>قفل عمودی</dt><dd>✓ ON</dd></div>
+          <div><dt>ضد اسکرین</dt><dd>✓ ON</dd></div>
         </dl>
       </div>
 
       <div class="scene-shell reveal" id="portals">
         <div class="scene-toolbar" role="group" aria-label="کنترل‌های صحنه">
-          <span class="scene-status"><span aria-hidden="true"></span> مدار پایدار</span>
+          <span class="scene-status"><span aria-hidden="true"></span> مدار امن · عمودی</span>
           <div>
             <button class="mini-button" id="fullscreenButton" type="button" aria-label="نمایش تمام‌صفحه">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5m13-5h5v5M8 21H3v-5m13 5h5v-5"/></svg>
@@ -288,7 +329,7 @@ window.__MAMALI_ARCHIVE__ = {
           <button class="energy-core" id="energyCore" type="button" aria-label="M CORE ONLINE، فعال‌سازی موج انرژی">
             <span class="energy-core__orbit" aria-hidden="true"></span>
             <span class="energy-core__sphere" aria-hidden="true">M</span>
-            <span class="energy-core__label" aria-hidden="true">CORE ONLINE</span>
+            <span class="energy-core__label" aria-hidden="true">CORE ONLINE · 3.3</span>
           </button>
 
           <a class="portal portal--instagram" data-portal="instagram" data-native-app="instagram" data-phase="0" data-fallback="https://www.instagram.com/" href="instagram://app">
@@ -346,54 +387,54 @@ window.__MAMALI_ARCHIVE__ = {
 
     <section class="capabilities section" id="capabilities" aria-labelledby="capabilities-title">
       <div class="section__heading">
-        <span class="section__kicker">زیر پوسته سیستم</span>
-        <h2 id="capabilities-title">سبک‌تر، هوشمندتر، زنده‌تر</h2>
-        <p>تمام جزئیات از نو طراحی شده‌اند تا تجربه روی موبایل و دسکتاپ سریع، قابل‌دسترسی و قابل‌کنترل باشد.</p>
+        <span class="section__kicker">زیر پوسته سیستم ۳.۳</span>
+        <h2 id="capabilities-title">امن‌تر، عمودیِ اجباری، هوشمندتر</h2>
+        <p>تمام مشکلات نسخه قبل حل شد: ورود گوگل در اپ نصب‌شده، قفل پرتره، ضد اسکرین‌شات و درخواست مجوز سیستمی.</p>
       </div>
 
       <div class="feature-grid">
         <article class="feature-card" data-glass>
           <span class="feature-card__number">01</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 3 7v10l9 5 9-5V7l-9-5Z"/><path d="m3 7 9 5 9-5M12 12v10"/></svg>
-          <h3>موتور مدار سه‌بعدی</h3>
-          <p>چرخش خودکار، کنترل لمسی، Drag، کلیدهای جهت‌دار و عمق واقعی با شتاب نرم.</p>
+          <h3>ورود گوگل در اپ تعمیر شد</h3>
+          <p>FedCM + OAuth Redirect + External Browser Fallback. دیگه تو حالت Standalone یا APK هم لاگین میکنه.</p>
         </article>
         <article class="feature-card" data-glass>
           <span class="feature-card__number">02</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"/><path d="m9 12 2 2 4-5"/></svg>
-          <h3>حریم خصوصی واقعی</h3>
-          <p>بدون تبلیغ، بدون آنالیتیکس و بدون انتقال تنظیمات شما به هیچ سروری.</p>
+          <h3>قفل اجباری عمودی</h3>
+          <p>Manifest portrait-primary + Screen Orientation API + لایه هشدار لنداسکیپ. سایت و اپ هر دو عمودی میمونن.</p>
         </article>
         <article class="feature-card" data-glass>
           <span class="feature-card__number">03</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14"/></svg>
-          <h3>نصب و اجرای آفلاین</h3>
-          <p>ساختار PWA، کش امن فایل‌ها و امکان اضافه‌شدن به صفحه اصلی دستگاه.</p>
+          <h3>محافظت از اسکرین‌شات</h3>
+          <p>overlay هنگام blur، block کردن PrintScreen، no-select، print media hide و FLAG_SECURE برای APK.</p>
         </article>
         <article class="feature-card" data-glass>
           <span class="feature-card__number">04</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21v-7m0-4V3m8 18v-9m0-4V3m8 18v-5m0-4V3M1 14h6M9 8h6m2 8h6"/></svg>
-          <h3>کنترل کامل جلوه‌ها</h3>
-          <p>چهار طیف رنگ، شدت حرکت گوشی، صدا، ذرات و کیفیت رندر همگی قابل تنظیم‌اند.</p>
+          <h3>مجوزهای هوشمند</h3>
+          <p>در اولین ورود اپ، درخواست نوتیفیکیشن، storage persistent و مجوزهای لازم به صورت سیستمی.</p>
         </article>
         <article class="feature-card" data-glass>
           <span class="feature-card__number">05</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4v7a7 7 0 0 0 14 0V4M5 8h4m6 0h4"/><path d="M12 18v3"/></svg>
-          <h3>مکش زنده بروزرسانی</h3>
-          <p>نسخه تازه هر چند ثانیه بررسی، در پس‌زمینه دریافت و با شمارش معکوس هوشمند فعال می‌شود.</p>
+          <h3>لاگین زیباتر</h3>
+          <p>کارت جدید با glow، shimmer، badge، چیپ‌ها و fallbackهای مطمئن برای حالت اپ.</p>
         </article>
         <article class="feature-card" data-glass>
           <span class="feature-card__number">06</span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10Z"/><path d="M4 21a8 8 0 0 1 16 0M18 7h3m-1.5-1.5v3"/></svg>
-          <h3>Google و دستگاه مورد اعتماد</h3>
-          <p>ورود امن، بازگشت سریع روی Windows و Android و ادامه آفلاین بدون ذخیره توکن Google.</p>
+          <h3>آنتی کرش چت</h3>
+          <p>بهینه‌سازی حافظه، lazy loading و جلوگیری از خطای Arena با کاهش payload و debounced events.</p>
         </article>
       </div>
     </section>
 
     <section class="android-section section" id="android-app" aria-labelledby="android-title">
       <div class="android-visual" id="deviceShowcase" data-glass aria-hidden="true">
-        <span class="device-showcase__label">INTERACTIVE DEVICE / DRAG TO ORBIT</span>
+        <span class="device-showcase__label">PORTRAIT LOCKED / SECURE PWA 3.3</span>
         <div class="phone-stage">
           <div class="phone-frame" id="interactivePhone">
             <span class="phone-frame__edge phone-frame__edge--volume"></span>
@@ -405,16 +446,16 @@ window.__MAMALI_ARCHIVE__ = {
                   <span><time id="deviceClock" datetime="00:00:00">--:--</time><b id="deviceSeconds">:--</b></span>
                   <small id="deviceTimezone">LOCAL TIME</small>
                 </span>
-                <span class="phone-frame__network"><i></i> 5G ▰</span>
+                <span class="phone-frame__network"><i></i> 5G ▰ SECURE</span>
               </div>
               <span class="phone-frame__glass"></span>
               <img src="/Mamali/assets/icons/icon-192.png" width="96" height="96" alt="" loading="lazy" decoding="async">
               <strong>Mamali Orbit</strong>
-              <small>Android · Windows · PWA</small>
-              <div class="phone-frame__install"><span>✓</span> نسخه <b data-app-version>۳.۴.۰</b> آماده اجرا</div>
+              <small>Android · Portrait · Secure</small>
+              <div class="phone-frame__install"><span>✓</span> نسخه <b data-app-version>۳.۳.۰</b> · عمودی · محافظت‌شده</div>
             </div>
           </div>
-          <div class="device-gesture"><span>↔</span> با موس یا انگشت بکشید</div>
+          <div class="device-gesture"><span>↔</span> با موس یا انگشت بکشید — عمودی قفل است</div>
         </div>
         <span class="android-visual__orbit android-visual__orbit--one"></span>
         <span class="android-visual__orbit android-visual__orbit--two"></span>
@@ -422,45 +463,44 @@ window.__MAMALI_ARCHIVE__ = {
       </div>
 
       <div class="android-copy">
-        <span class="section__kicker">ANDROID / WINDOWS / LIVE UPDATE</span>
-        <h2 id="android-title">یک اپ واقعی؛ روی گوشی و ویندوز.</h2>
+        <span class="section__kicker">ANDROID / PORTRAIT LOCK / SECURE / 3.3</span>
+        <h2 id="android-title">اپ امن، همیشه عمودی.</h2>
         <p>
-          ماملی روی Android و Windows مستقیماً نصب می‌شود، در پنجره مستقل و از Start Menu اجرا می‌شود،
-          همیشه به نسخه آنلاین متصل است و هنگام قطع اینترنت از نسخه امن ذخیره‌شده استفاده می‌کند.
+          ماملی ۳.۳ هم روی سایت و هم روی اپ نصب‌شده، صفحه را اجباری عمودی نگه میداره، از اسکرین‌شات با overlay و FLAG_SECURE محافظت میکنه و در اولین ورود مجوزها رو به صورت سیستمی درخواست میکنه.
         </p>
 
         <div class="android-stack" role="group" aria-label="اجزای فنی اپ چندسکویی">
-          <span><strong>HTTPS</strong><small>اتصال امن</small></span>
-          <span><strong>ANDROID</strong><small>Chrome PWA</small></span>
-          <span><strong>WINDOWS</strong><small>Edge / Chrome</small></span>
-          <span><strong>ONLINE-FIRST</strong><small>آفلاین پشتیبان</small></span>
+          <span><strong>PORTRAIT</strong><small>قفل اجباری</small></span>
+          <span><strong>SECURE</strong><small>ضد اسکرین‌شات</small></span>
+          <span><strong>GOOGLE PWA</strong><small>ورود در اپ</small></span>
+          <span><strong>PERMISSIONS</strong><small>درخواست هوشمند</small></span>
         </div>
 
         <div class="platform-quick-actions" role="group" aria-label="انتخاب سریع نسخه نصب">
           <button type="button" data-platform-choice="android" aria-pressed="false">
             <span class="platform-quick-actions__icon" aria-hidden="true">◫</span>
-            <span><small>MOBILE INSTALL</small><strong>دانلود و نصب Android</strong></span>
+            <span><small>MOBILE INSTALL</small><strong>دانلود و نصب Android · عمودی</strong></span>
           </button>
           <button type="button" data-platform-choice="windows" aria-pressed="false">
             <span class="platform-quick-actions__icon" aria-hidden="true">⊞</span>
-            <span><small>DESKTOP INSTALL</small><strong>نسخه Windows</strong></span>
+            <span><small>DESKTOP INSTALL</small><strong>نسخه Windows · امن</strong></span>
           </button>
         </div>
 
         <div class="platform-tabs" role="tablist" aria-label="راهنمای نصب سیستم‌عامل">
           <button id="androidTab" type="button" role="tab" aria-selected="true" aria-controls="androidPanel" data-platform-tab="android">
-            <span aria-hidden="true">◫</span> Android
+            <span aria-hidden="true">◫</span> Android · Portrait
           </button>
           <button id="windowsTab" type="button" role="tab" aria-selected="false" aria-controls="windowsPanel" data-platform-tab="windows" tabindex="-1">
-            <span aria-hidden="true">⊞</span> Windows
+            <span aria-hidden="true">⊞</span> Windows · Secure
           </button>
         </div>
 
         <div class="platform-panel" id="androidPanel" role="tabpanel" aria-labelledby="androidTab" data-platform-panel="android">
           <ol class="install-steps">
-            <li><span>۱</span><div><strong>بازکردن در Chrome</strong><small>نسخه زنده ماملی را در Chrome اندروید باز کنید.</small></div></li>
-            <li><span>۲</span><div><strong>نصب روی گوشی</strong><small>دکمه نصب یا گزینه Install app در منوی مرورگر را بزنید.</small></div></li>
-            <li><span>۳</span><div><strong>اجرای مستقل</strong><small>آیکون M وارد Launcher می‌شود و اپ بدون نوار مرورگر اجرا خواهد شد.</small></div></li>
+            <li><span>۱</span><div><strong>بازکردن در Chrome با قفل عمودی</strong><small>نسخه زنده ماملی را در Chrome اندروید باز کنید؛ سایت خودش عمودی میمونه.</small></div></li>
+            <li><span>۲</span><div><strong>ورود گوگل تعمیرشده در اپ</strong><small>حتی اگر تو حالت اپ باشید، لاگین با FedCM یا ریدایرکت امن کار میکنه. اگر نشد دکمه «باز کردن در مرورگر» را بزنید.</small></div></li>
+            <li><span>۳</span><div><strong>مجوزها و نصب</strong><small>در اولین ورود، مجوز نوتیفیکیشن و storage درخواست میشه، بعد دکمه نصب رو بزنید.</small></div></li>
           </ol>
           <button class="platform-copy-link" id="copyAndroidLink" type="button">
             <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>
@@ -471,24 +511,24 @@ window.__MAMALI_ARCHIVE__ = {
         <div class="platform-panel" id="windowsPanel" role="tabpanel" aria-labelledby="windowsTab" data-platform-panel="windows" hidden>
           <ol class="install-steps">
             <li><span>۱</span><div><strong>بازکردن در Edge یا Chrome</strong><small>ماملی را در مرورگر Windows 10 یا 11 باز کنید.</small></div></li>
-            <li><span>۲</span><div><strong>نصب اپ Windows</strong><small>روی آیکون Install در نوار آدرس یا دکمه نصب همین بخش بزنید.</small></div></li>
-            <li><span>۳</span><div><strong>Start Menu و Taskbar</strong><small>اپ مثل یک برنامه دسکتاپ مستقل اجرا و قابل Pin شدن می‌شود.</small></div></li>
+            <li><span>۲</span><div><strong>محافظت از اسکرین‌شات در ویندوز</strong><small>Ctrl+Shift+S و PrintScreen بلاک میشه و هنگام blur، overlay مشکی نمایش داده میشه.</small></div></li>
+            <li><span>۳</span><div><strong>قفل عمودی در سایت</strong><small>حتی روی دسکتاپ، اگر کاربر بخواد افقی کنه، هشدار عمودی میاد و orientation lock تلاش میکنه.</small></div></li>
           </ol>
         </div>
 
         <div class="android-copy__actions">
           <button class="button button--primary install-trigger" id="installButtonSecondary" type="button">
-            <span data-install-label>نصب اپ روی دستگاه</span>
+            <span data-install-label>نصب اپ امن عمودی</span>
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 19h14"/></svg>
           </button>
-          <button class="button button--ghost open-install-guide" type="button" data-open-dialog="installDialog" aria-haspopup="dialog" aria-controls="installDialog">راهنمای Android و Windows</button>
+          <button class="button button--ghost open-install-guide" type="button" data-open-dialog="installDialog" aria-haspopup="dialog" aria-controls="installDialog">راهنمای Android عمودی + ضداسکرین</button>
         </div>
 
         <div class="update-center" id="updateCenter" role="region" data-state="checking" aria-labelledby="updateCenterTitle">
           <div class="update-center__head">
             <div class="update-center__identity">
               <span class="update-center__pulse" aria-hidden="true"></span>
-              <div><small>LIVE UPDATE CHANNEL</small><strong id="updateCenterTitle">مرکز بروزرسانی زنده</strong></div>
+              <div><small>LIVE UPDATE CHANNEL</small><strong id="updateCenterTitle">مرکز بروزرسانی زنده · ۳.۳</strong></div>
             </div>
             <span class="update-center__connection" id="updateConnection"><i></i> آنلاین</span>
           </div>
@@ -497,12 +537,12 @@ window.__MAMALI_ARCHIVE__ = {
             <span><small>AUTO-PULL ENGINE</small><strong id="updateMagnetStatus">مکش خودکار نسخه تازه فعال است</strong></span>
           </div>
           <div class="update-center__versions">
-            <span><small>نسخه نصب‌شده</small><strong data-app-version>۳.۴.۰</strong></span>
+            <span><small>نسخه نصب‌شده</small><strong data-app-version>۳.۳.۰</strong></span>
             <span aria-hidden="true">←</span>
             <span><small>آخرین نسخه</small><strong id="latestVersion">در حال بررسی</strong></span>
           </div>
           <div class="update-center__track" aria-hidden="true"><span id="updateProgress"></span></div>
-          <p id="updateStatus" aria-live="polite">در حال اتصال به کانال بروزرسانی…</p>
+          <p id="updateStatus" aria-live="polite">در حال اتصال به کانال بروزرسانی امن…</p>
           <div class="update-center__actions">
             <button class="button button--primary" id="applyUpdateButton" type="button">بررسی بروزرسانی</button>
             <button class="button button--ghost" id="checkUpdateButton" type="button" aria-label="بررسی دوباره بروزرسانی">
@@ -512,7 +552,7 @@ window.__MAMALI_ARCHIVE__ = {
           </div>
         </div>
 
-        <p class="android-note">نسخه ۳.۴.۰ از ورود Google، دستگاه مورد اعتماد و بروزرسانی زنده SemVer استفاده می‌کند؛ اگر نسخه جدید برسد، بدون حذف برنامه به‌صورت خودکار یا با یک لمس فعال می‌شود. در حالت آفلاین، شمارش متوقف و بخش بروزرسانی خاکستری و غیرفعال خواهد بود.</p>
+        <p class="android-note">نسخه ۳.۳.۰: ورود Google در PWA تعمیر شد (FedCM + OAuth Redirect + External Browser)، قفل portrait-primary در manifest و JS، overlay ضد اسکرین‌شات هنگام blur/PrintScreen، درخواست مجوز notification + persistent storage در اولین ورود اپ، و کارت لاگین کاملاً بازطراحی شده.</p>
       </div>
     </section>
 
@@ -521,14 +561,14 @@ window.__MAMALI_ARCHIVE__ = {
         <span></span><span></span><span></span><span></span><span></span>
       </div>
       <div class="system-strip__copy">
-        <span>ENGINE STATUS / NOMINAL</span>
-        <h2>همه‌چیز داخل مرورگر شما اتفاق می‌افتد.</h2>
-        <p>ماملی پس از تأیید Google، فقط نمایه و مجوز دستگاه مورد اعتماد را در دیتابیس محلی IndexedDB نگه می‌دارد؛ توکن ورود ذخیره نمی‌شود و میزبانی روی Vercel و نسخه پشتیبان GitHub Pages است.</p>
+        <span>ENGINE STATUS / SECURE PORTRAIT 3.3</span>
+        <h2>همه‌چیز امن، عمودی و داخل مرورگر شما اتفاق می‌افتد.</h2>
+        <p>ماملی پس از تأیید Google، فقط نمایه و مجوز دستگاه مورد اعتماد را در IndexedDB نگه می‌دارد؛ توکن ذخیره نمی‌شود. قفل عمودی و لایه ضد اسکرین‌شات هم روی سایت و هم روی اپ نصب‌شده فعال است. برای APK واقعی، FLAG_SECURE در AndroidManifest لازم است.</p>
       </div>
       <dl>
-        <div><dt>نسخه پایدار</dt><dd data-app-version>۳.۴.۰</dd></div>
-        <div><dt>پلتفرم نصب</dt><dd>۲</dd></div>
-        <div><dt>حالت رنگ</dt><dd>۴</dd></div>
+        <div><dt>نسخه پایدار</dt><dd data-app-version>۳.۳.۰</dd></div>
+        <div><dt>قفل عمودی</dt><dd>ON</dd></div>
+        <div><dt>ضد اسکرین</dt><dd>ON</dd></div>
       </dl>
     </section>
   </main>
@@ -536,25 +576,26 @@ window.__MAMALI_ARCHIVE__ = {
   <footer class="footer">
     <a class="brand brand--small" href="#home" aria-label="بازگشت به بالای صفحه">
       <span class="brand__mark" aria-hidden="true">M</span>
-      <span class="brand__copy"><strong>MAMALI</strong><small>ORBIT SYSTEM</small></span>
+      <span class="brand__copy"><strong>MAMALI</strong><small>ORBIT SYSTEM · 3.3 SECURE</small></span>
     </a>
-    <p>طراحی و توسعه با تمرکز بر سرعت، دسترس‌پذیری و تجربه سه‌بعدی.</p>
-    <span>© <span id="currentYear">2026</span> Mamali</span>
+    <p>طراحی ۳.۳ با تمرکز بر PWA Fix، Portrait Lock و Screenshot Protection.</p>
+    <span>© <span id="currentYear">2026</span> Mamali · Secure Portrait</span>
   </footer>
 
+  <!-- Account Dialog -->
   <dialog class="account-dialog" id="accountDialog" aria-labelledby="accountDialogTitle">
     <form method="dialog" class="dialog__header">
-      <div><span class="dialog__kicker">GOOGLE IDENTITY / LOCAL TRUST</span><h2 id="accountDialogTitle">حساب و امنیت دستگاه</h2></div>
+      <div><span class="dialog__kicker">GOOGLE IDENTITY / LOCAL TRUST · 3.3</span><h2 id="accountDialogTitle">حساب و امنیت دستگاه · محافظت‌شده</h2></div>
       <button class="icon-button" value="close" aria-label="بستن مدیریت حساب"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg></button>
     </form>
     <div class="account-dialog__body">
       <div class="account-profile">
         <div class="account-avatar account-avatar--profile" data-account-avatar><span data-account-initial>M</span><img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" alt="" referrerpolicy="no-referrer" hidden></div>
-        <div><small>تأییدشده توسط Google</small><strong data-account-name>کاربر ماملی</strong><span data-account-email></span></div>
+        <div><small>تأییدشده توسط Google · امن</small><strong data-account-name>کاربر ماملی</strong><span data-account-email></span></div>
         <span class="account-profile__verified" role="img" aria-label="حساب تأییدشده">✓</span>
       </div>
-      <div class="account-security-state"><i aria-hidden="true"></i><p><strong>این دستگاه مورد اعتماد است</strong><span id="accountTrustCopy">بازگشت سریع و اجرای آفلاین برای این حساب فعال است.</span></p></div>
-      <p class="account-dialog__privacy">ماملی گذرواژه یا توکن Google را نگه نمی‌دارد. فقط شناسه حساب، نام، ایمیل، تصویر نمایه و وضعیت اعتماد در IndexedDB همین مرورگر ذخیره می‌شود.</p>
+      <div class="account-security-state"><i aria-hidden="true"></i><p><strong>این دستگاه مورد اعتماد و محافظت‌شده است</strong><span id="accountTrustCopy">بازگشت سریع، اجرای آفلاین و محافظت از اسکرین‌شات فعال است.</span></p></div>
+      <p class="account-dialog__privacy">ماملی گذرواژه یا توکن Google را نگه نمی‌دارد. فقط شناسه حساب، نام، ایمیل، تصویر نمایه و وضعیت اعتماد در IndexedDB همین مرورگر ذخیره می‌شود. اسکرین‌شات با overlay و FLAG_SECURE کنترل می‌شود.</p>
     </div>
     <div class="dialog__footer account-dialog__actions">
       <button class="button button--danger" id="removeAccountButton" type="button">حذف حساب از این دستگاه</button>
@@ -562,13 +603,14 @@ window.__MAMALI_ARCHIVE__ = {
     </div>
   </dialog>
 
+  <!-- Settings Dialog -->
   <dialog class="settings" id="settingsDialog" aria-labelledby="settingsTitle">
     <div class="settings__energy" aria-hidden="true"><span></span><span></span><span></span></div>
     <form method="dialog" class="dialog__header settings__header">
       <div>
-        <span class="dialog__kicker">SYSTEM CONTROL</span>
-        <h2 id="settingsTitle">تنظیمات تجربه</h2>
-        <span class="settings__signal"><i></i> کنترل زنده سیستم</span>
+        <span class="dialog__kicker">SYSTEM CONTROL · 3.3 SECURE</span>
+        <h2 id="settingsTitle">تنظیمات تجربه امن</h2>
+        <span class="settings__signal"><i></i> کنترل زنده · portrait lock فعال</span>
       </div>
       <button class="icon-button settings__close" value="close" aria-label="بستن تنظیمات">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg>
@@ -629,6 +671,14 @@ window.__MAMALI_ARCHIVE__ = {
           <option value="low">اقتصادی</option>
         </select>
       </label>
+      <label class="setting-row" data-setting-code="SECURE">
+        <span><strong>محافظت از اسکرین‌شات</strong><small>overlay هنگام blur و بلوکه print-screen</small></span>
+        <input id="secureSetting" type="checkbox" role="switch" checked>
+      </label>
+      <label class="setting-row" data-setting-code="PORTRAIT">
+        <span><strong>قفل اجباری عمودی</strong><small>سایت و اپ همیشه عمودی بماند</small></span>
+        <input id="portraitSetting" type="checkbox" role="switch" checked>
+      </label>
     </div>
 
     <div class="dialog__footer settings__footer">
@@ -643,11 +693,12 @@ window.__MAMALI_ARCHIVE__ = {
     </div>
   </dialog>
 
+  <!-- Install Guide 3.3 -->
   <dialog class="install-guide" id="installDialog" aria-labelledby="installGuideTitle">
     <form method="dialog" class="dialog__header">
       <div>
-        <span class="dialog__kicker">INSTALLATION CENTER</span>
-        <h2 id="installGuideTitle">نصب ماملی روی Android و Windows</h2>
+        <span class="dialog__kicker">INSTALLATION CENTER · 3.3 SECURE PORTRAIT</span>
+        <h2 id="installGuideTitle">نصب ماملی ۳.۳ — عمودی و امن</h2>
       </div>
       <button class="icon-button" value="close" aria-label="بستن راهنمای نصب">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg>
@@ -657,49 +708,50 @@ window.__MAMALI_ARCHIVE__ = {
     <div class="install-guide__body" role="region" tabindex="0" aria-label="راهنمای نصب و بروزرسانی برنامه">
       <div class="install-guide__intro">
         <img src="/Mamali/assets/icons/icon-192.png" width="72" height="72" alt="آیکون اپ ماملی" loading="lazy" decoding="async">
-        <div><strong>Mamali Orbit 3.4.0</strong><small>Android · Windows · بروزرسانی زنده</small></div>
+        <div><strong>Mamali Orbit 3.3.0 · Secure Portrait</strong><small>Android · Windows · ورود گوگل در اپ + ضد اسکرین</small></div>
       </div>
 
       <section aria-labelledby="androidGuideHeading">
-        <h3 id="androidGuideHeading">نصب روی Android</h3>
+        <h3 id="androidGuideHeading">نصب روی Android با قفل عمودی و ورود گوگل تعمیرشده</h3>
         <ol>
-          <li>سایت را با <strong>Google Chrome</strong> باز کنید.</li>
-          <li>دکمه «نصب اپ اندروید» را بزنید؛ اگر نمایش داده نشد، منوی سه‌نقطه Chrome را باز کنید.</li>
-          <li>گزینه <strong>Install app</strong> یا <strong>Add to Home screen</strong> را انتخاب و نصب را تأیید کنید.</li>
-          <li>اپ با آیکون اختصاصی M در Launcher قرار می‌گیرد و مستقل از مرورگر اجرا می‌شود.</li>
+          <li>سایت را با <strong>Google Chrome</strong> باز کنید. صفحه به صورت خودکار عمودی قفل می‌شود.</li>
+          <li>با گوگل وارد شوید: اگر دکمه اصلی کار نکرد، از <strong>«باز کردن در مرورگر»</strong> یا <strong>«ریدایرکت امن»</strong> استفاده کنید.</li>
+          <li>پس از ورود، مجوزهای نوتیفیکیشن و storage به صورت خودکار درخواست می‌شود — تایید کنید.</li>
+          <li>دکمه «نصب اپ اندروید» را بزنید؛ اگر نمایش داده نشد، منوی سه‌نقطه Chrome → Install app.</li>
+          <li>اپ با آیکون M در Launcher قرار می‌گیرد و همیشه عمودی و محافظت‌شده اجرا خواهد شد.</li>
         </ol>
       </section>
 
       <section aria-labelledby="windowsGuideHeading">
-        <h3 id="windowsGuideHeading">نصب روی Windows 10/11</h3>
+        <h3 id="windowsGuideHeading">نصب روی Windows 10/11 — امن</h3>
         <ol>
           <li>سایت را با <strong>Microsoft Edge</strong> یا <strong>Google Chrome</strong> باز کنید.</li>
           <li>آیکون Install در انتهای نوار آدرس یا گزینه <strong>Apps → Install Mamali</strong> را انتخاب کنید.</li>
           <li>پس از نصب، Mamali از Start Menu در پنجره مستقل اجرا و به Taskbar قابل Pin است.</li>
-          <li>همان بروزرسانی زنده و حالت آفلاین Android روی نسخه Windows نیز فعال است.</li>
+          <li>محافظت از اسکرین‌شات با overlay و بلوکه PrintScreen در ویندوز هم فعال است.</li>
         </ol>
       </section>
 
       <section aria-labelledby="pwaTechHeading">
-        <h3 id="pwaTechHeading">چه چیزی آن را قابل نصب کرده؟</h3>
+        <h3 id="pwaTechHeading">چه چیزی در ۳.۳ جدید است؟</h3>
         <dl class="tech-list">
-          <div><dt>Web App Manifest</dt><dd>نام، رنگ، مسیر اجرا، حالت Standalone و آیکون‌های ۱۹۲ و ۵۱۲ پیکسلی</dd></div>
-          <div><dt>Service Worker</dt><dd>دریافت آنلاین تازه‌ترین نسخه و استفاده از کش فقط هنگام قطع اینترنت</dd></div>
-          <div><dt>HTTPS</dt><dd>میزبانی امن Vercel و GitHub Pages؛ شرط اجرای Service Worker و نصب مطمئن</dd></div>
-          <div><dt>Responsive UI</dt><dd>رابط تطبیقی برای نمایشگر، لمس، صفحه‌کلید و حالت اپ</dd></div>
-          <div><dt>Trusted Identity</dt><dd>ورود Google و ذخیره محلی مجوز دستگاه برای بازگشت سریع و اجرای آفلاین</dd></div>
+          <div><dt>Google PWA Fix</dt><dd>FedCM + OAuth id_token redirect + باز کردن در مرورگر خارجی برای حل مشکل پاپ‌آپ بسته‌شده در WebAPK/TWA</dd></div>
+          <div><dt>Portrait Lock</dt><dd>manifest orientation: portrait-primary + Screen Orientation API lock + هشدار لنداسکیپ</dd></div>
+          <div><dt>Screenshot Protection</dt><dd>secure overlay هنگام visibilitychange/blur، جلوگیری از contextmenu، beforeprint block، و FLAG_SECURE برای APK</dd></div>
+          <div><dt>Permissions</dt><dd>درخواست notification، persistent storage و سایر مجوزها در اولین ورود اپ با Permission API</dd></div>
+          <div><dt>Beautiful Login</dt><dd>کارت جدید با glow متحرک، shimmer، badge جدید، چیپ‌ها و fallbackهای حرفه‌ای</dd></div>
         </dl>
       </section>
 
       <aside class="install-guide__notice">
-        <strong>نسخه Windows و Android چطور کار می‌کند؟</strong>
-        <p>هر دو نسخه از PWA استاندارد استفاده می‌کنند: روی Windows مثل یک برنامه مستقل در Start Menu و روی Android در Launcher نصب می‌شود. حذف و نصب دوباره لازم نیست؛ Update Center نسخه جدید را شناسایی و Service Worker آن را جایگزین می‌کند.</p>
+        <strong>برای ساخت APK واقعی با FLAG_SECURE:</strong>
+        <p>اگر از PWABuilder یا WebIntoApp استفاده می‌کنید، در <code>MainActivity.java</code> بعد از <code>super.onCreate()</code> اضافه کنید:<br><code>getWindow().setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE);</code><br>و در <code>AndroidManifest.xml</code> برای اکتیویتی اصلی: <code>android:screenOrientation="portrait"</code> و <code>android:configChanges="orientation|screenSize"</code></p>
       </aside>
     </div>
 
     <div class="dialog__footer">
-      <a class="button button--ghost" href="https://mamali-orbit.vercel.app/Mamali/" target="_blank" rel="noopener noreferrer">بازکردن نسخه زنده</a>
-      <button class="button button--primary install-trigger" id="installButtonDialog" type="button"><span data-install-label>نصب همین حالا</span></button>
+      <a class="button button--ghost" href="https://mamali-orbit.vercel.app/Mamali/" target="_blank" rel="noopener noreferrer">بازکردن نسخه زنده ۳.۳</a>
+      <button class="button button--primary install-trigger" id="installButtonDialog" type="button"><span data-install-label>نصب نسخه امن ۳.۳</span></button>
     </div>
   </dialog>
 
@@ -707,17 +759,69 @@ window.__MAMALI_ARCHIVE__ = {
     <div class="command__search">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
       <label class="sr-only" for="commandInput" id="commandTitle">جست‌وجوی فرمان</label>
-      <input id="commandInput" type="search" placeholder="یک مقصد یا فرمان بنویسید…" autocomplete="off">
+      <input id="commandInput" type="search" placeholder="یک مقصد یا فرمان بنویسید… (مثلاً: portrait lock یا secure)" autocomplete="off">
       <button class="command__esc" id="closeCommand" type="button" aria-label="بستن">ESC</button>
     </div>
     <div class="command__results" id="commandResults" role="listbox" aria-label="فرمان‌ها"></div>
-    <p class="command__hint">با ↑ ↓ انتخاب کنید و Enter را بزنید</p>
+    <p class="command__hint">با ↑ ↓ انتخاب کنید و Enter را بزنید — نسخه ۳.۳ امن و عمودی</p>
+  </dialog>
+
+  <!-- Permission Dialog 3.3 -->
+  <dialog class="permission-dialog" id="permissionDialog" aria-labelledby="permissionDialogTitle">
+    <div class="permission-dialog__glow" aria-hidden="true"></div>
+    <form method="dialog" class="dialog__header">
+      <div>
+        <span class="dialog__kicker">PERMISSIONS · ANDROID PWA 3.3</span>
+        <h2 id="permissionDialogTitle">مجوزهای لازم برای بهترین تجربه</h2>
+      </div>
+      <button class="icon-button" value="close" aria-label="بستن مجوزها">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg>
+      </button>
+    </form>
+    <div class="permission-dialog__body">
+      <p class="permission-dialog__lead">ماملی برای اجرای امن، عمودی و بدون قطعی، در اولین ورود چند مجوز سیستمی رو درخواست میکنه. این مجوزها فقط برای بهبود تجربه شماست و هیچ داده‌ای به سرور فرستاده نمیشه.</p>
+      
+      <div class="permission-list">
+        <div class="permission-item" data-permission="notification">
+          <span class="permission-item__icon">🔔</span>
+          <div class="permission-item__copy"><strong>اعلان‌ها (Notification)</strong><small>برای اطلاع از بروزرسانی‌های زنده و وضعیت امن</small></div>
+          <span class="permission-item__status" data-status="notification">در انتظار</span>
+        </div>
+        <div class="permission-item" data-permission="storage">
+          <span class="permission-item__icon">💾</span>
+          <div class="permission-item__copy"><strong>ذخیره‌سازی پایدار</strong><small>برای اجرای آفلاین و دستگاه مورد اعتماد</small></div>
+          <span class="permission-item__status" data-status="storage">در انتظار</span>
+        </div>
+        <div class="permission-item" data-permission="orientation">
+          <span class="permission-item__icon">📱</span>
+          <div class="permission-item__copy"><strong>قفل عمودی</strong><small>برای قفل اجباری حالت پرتره</small></div>
+          <span class="permission-item__status" data-status="orientation">در انتظار</span>
+        </div>
+        <div class="permission-item" data-permission="secure">
+          <span class="permission-item__icon">🛡️</span>
+          <div class="permission-item__copy"><strong>محافظت از محتوا</strong><small>فعال‌سازی ضد اسکرین‌شات و محافظت بصری</small></div>
+          <span class="permission-item__status" data-status="secure">در انتظار</span>
+        </div>
+      </div>
+
+      <div class="permission-dialog__note">
+        <strong>چرا این مجوزها؟</strong>
+        <p>نوتیفیکیشن برای بروزرسانی زنده، storage برای آفلاین، orientation برای قفل عمودی، و secure برای محافظت از محتوا. همه در همین دستگاه میمونن.</p>
+      </div>
+    </div>
+    <div class="dialog__footer permission-dialog__footer">
+      <button class="button button--ghost" id="permissionLaterButton" type="button">بعداً</button>
+      <button class="button button--primary" id="permissionAllowButton" type="button">
+        <svg viewBox="0 0 24 24" aria-hidden="true" width="18" height="18"><path d="m5 12 4.2 4.2L19 6.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        اجازه و فعال‌سازی
+      </button>
+    </div>
   </dialog>
 
   <aside class="update-banner" id="updateBanner" aria-labelledby="updateBannerTitle" hidden>
     <span class="update-banner__icon" aria-hidden="true">↻</span>
-    <div><strong id="updateBannerTitle">بروزرسانی جدید آماده است</strong><small id="updateBannerCopy">آخرین نسخه ماملی دریافت شد.</small></div>
-    <button class="button button--primary" id="applyUpdateBanner" type="button">بروزرسانی</button>
+    <div><strong id="updateBannerTitle">بروزرسانی امن ۳.۳ آماده است</strong><small id="updateBannerCopy">آخرین نسخه ماملی با تعمیر ورود گوگل در اپ.</small></div>
+    <button class="button button--primary" id="applyUpdateBanner" type="button">بروزرسانی به ۳.۳</button>
     <button class="icon-button" id="dismissUpdateBanner" type="button" aria-label="بعداً بروزرسانی می‌کنم">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg>
     </button>

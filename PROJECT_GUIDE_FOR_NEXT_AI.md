@@ -1,4 +1,4 @@
-# Mamali Orbit — راهنمای کامل برای AI بعدی (نسخه 3.6.2)
+# Mamali Orbit — راهنمای کامل برای AI بعدی (نسخه 3.7.0)
 
 > اگر چت فعلی خطا داد، همین فایل را اول بخوان. به زبان ساده، از صفر تا صد.
 
@@ -12,22 +12,33 @@
 - صاحب پروژه گفته: Vercel اصل است، GitHub فقط پشتیبان
 
 ## 2. نسخه فعلی و مسیر نسخه‌ها
-- فعلی: `3.6.2`
-- قبلی: `3.6.1` → `3.6.0` → `3.5.0` → `3.4.0` → `3.3.1` → `3.3.0` → `3.2.0` → `3.1.0` → `3.0.0`
+- فعلی: `3.7.0`
+- قبلی: `3.6.2` → `3.6.1` → `3.6.0` → `3.5.0` → `3.4.0` → `3.3.1` → `3.3.0` → `3.2.0` → `3.1.0` → `3.0.0`
 - آرشیو داخل برنامه: بخش `#versions` و فایل `history/versions.json`
 - bump نسخه: `node scripts/release.mjs patch|minor|major`
 
+### مهم: آرشیو دیگر پوستر ثابت نیست
+هر نسخه پوشه واقعی دارد:
+- زنده: `/Mamali/`
+- آرشیو: `/Mamali/history/play/3.x.x/`
+- هر پوشه `index.html` + `app.js` + `styles.css` همان نسخه است
+- IndexedDB جدا: `mamali-archive-identity-xxx`
+- Service Worker آرشیو ثبت نمی‌شود تا PWA زنده را ندزدد
+- مهمان آرشیو بدون به‌هم‌ریختن حساب زنده وارد UI همان نسخه می‌شود
+- `history/play/era.html` فقط fallback است، مسیر اصلی کارت‌ها نیست
+
 ## 3. ساختار فایل‌ها
 ```
-index.html                 صفحه ورود + اپ
-assets/app.js              قلب برنامه
-assets/styles.css          ظاهر
+index.html                 صفحه ورود + اپ زنده
+assets/app.js              قلب برنامه زنده
+assets/styles.css          ظاهر زنده
 manifest.webmanifest       PWA — orientation: any (JS تصمیم می‌گیرد)
 sw.js                      Service Worker online-first
 version.json               کانال بروزرسانی
-vercel.json                / → /Mamali/ + rewrite + API
+vercel.json                / → /Mamali/ + rewrite + API + play folders
 api/session.js             قفل یک‌دستگاهی
 history/versions.json      آرشیو نسخه‌ها
+history/play/3.x.x/        خود همان نسخه واقعی
 android/                   نمونه APK: FLAG_SECURE + portrait
 ios/README.md
 docs/
@@ -45,12 +56,13 @@ PROJECT_GUIDE_FOR_NEXT_AI.md  همین فایل
 7. JWT با JWK گوگل در مرورگر verify می‌شود. توکن ذخیره نمی‌شود
 8. `SessionLockManager` ادعا می‌کند این ایمیل مال همین deviceId است
 9. اگر ایمیل روی دستگاه دیگری زنده باشد: ورود رد می‌شود تا آنجا خروج بزند
-10. بعد از ورود: مدار سه‌بعدی، پورتال‌ها، نصب، بروزرسانی، آرشیو نسخه‌ها
+10. «قفل و خروج از ماملی» قفل سرور را release می‌کند تا همان ایمیل روی دستگاه دیگر وارد شود
+11. بعد از ورود: مدار سه‌بعدی، پورتال‌ها، نصب، بروزرسانی، آرشیو نسخه‌ها
 
-## 5. ورود گوگل در اپ اندروید (مهم‌ترین باگ قدیمی)
+## 5. ورود گوگل در اپ اندروید
 Google داخل PWA standalone پاپ‌آپ GIS را می‌بندد.
 
-راه‌حل 3.5:
+راه‌حل:
 - دکمه اصلی `#googlePrimaryButton` → `startGoogleLogin()`
 - اگر `prefersOAuthRedirect()` (PWA / WebView / Android): `window.location.assign` به OAuth implicit
 - `redirect_uri` روی Vercel همیشه `https://mamali-orbit.vercel.app/Mamali/`
@@ -71,50 +83,44 @@ Google داخل PWA standalone پاپ‌آپ GIS را می‌بندد.
 
 ## 7. اسکرین‌شات
 - وب ۱۰۰٪ قابل بستن نیست
-- 3.5 حداکثر تلاش: تاری روی blur/visibility، بلاک چاپ و کلیک‌راست، PrintScreen
+- حداکثر تلاش: تاری روی blur/visibility، بلاک چاپ و کلیک‌راست، PrintScreen
 - APK: `FLAG_SECURE` در `android/MainActivity.java`
 
 ## 8. مجوزها
-- `#permissionDialog` باید در HTML باشد (در 3.4 جا افتاده بود و کار نمی‌کرد)
+- `#permissionDialog` باید در HTML باشد
 - Notification + storage.persist + orientation.lock
 - فقط روی Android / PWA / wrapper، اولین ورود
 
 ## 9. قفل یک ایمیل = یک دستگاه
 - `POST /api/session` با actionهای claim / heartbeat / release / status
 - deviceId در localStorage: `mamali_device_id_v1`
-- TTL ۱۵ دقیقه بعد از آخرین heartbeat
-- اگر KV_REST_API_URL و KV_REST_API_TOKEN روی Vercel باشد، قفل پایدار است
-- بدون KV: حافظه همان instance (بهترین تلاش). ورود اگر API در دسترس نباشد fail-open است تا کسی قفل نشود
-- برای قفل جدی، در Vercel یک Upstash/KV وصل کن
+- TTL ۱۴ روز بعد از آخرین heartbeat؛ تا خروج نزند جای دیگر وارد نشود
+- «قفل و خروج» و «حذف حساب» هر دو `release` می‌زنند
+- اگر KV_REST_API_URL و KV_REST_API_TOKEN روی Vercel باشد، قفل بین instanceها پایدار است
+- بدون KV: حافظه + فایل `/tmp` همان instance. ورود اگر API در دسترس نباشد fail-open است
+- برای قفل جدی چندسروره، در Vercel یک Upstash/KV وصل کن
 
-## 10. باگ‌هایی که 3.5 و 3.6.2 درست کردند
-- `$('#secureSetting')` و `$('#portraitSetting')` در HTML نبودند → `applySettings` بعد ورود کرش می‌کرد
-- `#permissionDialog` نبود
-- rotate prompt کلاس `is-visible` نداشت
-- ورود گوگل در Chrome PWA به پاپ‌آپ وابسته بود
-
-
-
-### افزوده‌های 3.6.2
-- نسخه‌های 3.6.1 / 3.6.0 / 3.5.0 / 3.3.1 تا 3.0.0 از `history/play/era.html?v=` باز می‌شوند.
-- نسخه 3.4.0 مسیر جدا دارد: `history/play/3.4.0/` و دیتابیس `mamali-archive-identity-340`.
-- هیچ آیتم آرشیو نباید `play:null` داشته باشد.
-- `SessionLockManager` و API heartbeat نباید کاربر همان دستگاه را وسط کار بیرون بیندازد.
-- دکمه فرمان سریع روی موبایل مخفی نشود؛ اگر کلاس `command-launch` اضافه شد، `display:none` ممنوع است.
+## 10. باگ‌هایی که تا 3.7.0 درست شدند
+- کلیک نسخه‌ها می‌رفت یک صفحه ثابت era.html
+- فرمان سریع روی گوشی مخفی می‌شد
+- heartbeat کاربر را وسط کار پرت می‌کرد
+- GIS popup داخل PWA اندروید می‌مرد
+- «قفل و خروج» ایمیل را آزاد نمی‌کرد
 
 ## 11. دیتابیس محلی
-- IndexedDB: `mamali-trusted-identity-v1` نسخه 2
+- زنده: IndexedDB `mamali-trusted-identity-v1` نسخه 2
+- آرشیو: `mamali-archive-identity-xxx`
 - store `sessions` + `events`
 - فقط profile: sub, email, name, picture, verifiedAt — نه idToken
 
 ## 12. دیپلوی
-- شاخه Arena این جلسه: `arena/01a01b45-mamali` — روی همین کار کن
+- شاخه Arena این جلسه: `arena/01a01bbb-mamali` — روی همین کار کن
 - Vercel پروژه `mamali-orbit` از `main` پروداکشن می‌سازد
-- برای زنده کردن سایت یا PR به main بده یا `vercel --prod`
+- برای زنده کردن سایت PR به main بده
 - تست: `node --check assets/app.js && node tests/smoke.mjs`
 
 ## 13. امنیت توکن‌ها
-کاربر قبلاً توکن Vercel و GitHub را در چت گذاشته. آن‌ها را داخل کد نگذار، commit نکن، revoke را پیشنهاد بده.
+توکن Vercel و GitHub را داخل کد نگذار، commit نکن.
 Client ID گوگل عمومی است.
 
 ## 14. چیزهایی که نباید خراب کنی
@@ -131,4 +137,4 @@ Client ID گوگل عمومی است.
 4. اسکرین‌شات وب نرم باشد یا حداکثر؟
 
 ---
-Mamali Orbit 3.6.2 — Arena.ai Agent — 2026-08-19
+Mamali Orbit 3.7.0 — Arena.ai Agent — 2026-08-19

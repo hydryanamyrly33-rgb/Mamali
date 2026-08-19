@@ -25,6 +25,16 @@ const requiredFiles = [
   '.nojekyll',
   'api/session.js',
   'history/versions.json',
+  'history/play/3.0.0/index.html',
+  'history/play/3.1.0/index.html',
+  'history/play/3.2.0/index.html',
+  'history/play/3.3.0/index.html',
+  'history/play/3.3.1/index.html',
+  'history/play/3.4.0/index.html',
+  'history/play/3.5.0/index.html',
+  'history/play/3.6.0/index.html',
+  'history/play/3.6.1/index.html',
+  'history/play/3.6.2/index.html',
   'PROJECT_GUIDE_FOR_NEXT_AI.md',
 ];
 
@@ -43,7 +53,15 @@ const releaseScript = await readFile('scripts/release.mjs', 'utf8');
 const manifest = JSON.parse(await readFile('manifest.webmanifest', 'utf8'));
 const vercel = JSON.parse(await readFile('vercel.json', 'utf8'));
 const release = JSON.parse(await readFile('version.json', 'utf8'));
+const history = JSON.parse(await readFile('history/versions.json', 'utf8'));
 const escapedVersion = release.version.replaceAll('.', '\\.');
+if (history.current !== release.version) failures.push('history/versions.json با version.json هماهنگ نیست.');
+for (const item of history.archive || []) {
+  if (item.play == null) failures.push(`آیتم آرشیو ${item.version} نباید play:null داشته باشد.`);
+  if (item.status !== 'current' && item.play && item.play.includes('era.html')) {
+    failures.push(`نسخه ${item.version} نباید به era.html ثابت برود.`);
+  }
+}
 
 if (!/^\d+\.\d+\.\d+$/.test(release.version)) failures.push('نسخه باید از SemVer عددی x.y.z استفاده کند.');
 if (!Array.isArray(release.notes) || !release.notes.length) failures.push('یادداشت انتشار version.json خالی است.');

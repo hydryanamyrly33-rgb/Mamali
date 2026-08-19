@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-  <meta name="description" content="ماملی اوربیت ۳.۳؛ اپ اجتماعی سه‌بعدی قابل نصب روی Android و Windows با ورود امن گوگل در اپ، قفل عمودی و طراحی گرد گوگل.">
+  <meta name="description" content="ماملی اوربیت ۳.۶.۲؛ اپ اجتماعی سه‌بعدی فارسی RTL با ورود گوگل PWA، آرشیو قابل‌بازی، فرمان سریع موبایل و قفل یک‌دستگاهی پایدار.">
   <meta name="keywords" content="Mamali, ماملی, Google Sign-In PWA Fix, portrait lock, Windows PWA, Android PWA, بروزرسانی زنده">
   <meta name="author" content="Amirali">
   <meta name="theme-color" content="#050816">
@@ -15,12 +15,12 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com/gsi/client https://accounts.google.com/gsi/intermediate; style-src 'self' 'unsafe-inline' https://accounts.google.com/gsi/style; img-src 'self' data: https://lh3.googleusercontent.com https://*.googleusercontent.com https://accounts.google.com; font-src 'self'; connect-src 'self' https://accounts.google.com https://www.googleapis.com; frame-src https://accounts.google.com https://accounts.google.com/gsi/; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self' https://accounts.google.com; upgrade-insecure-requests">
 
-  <link rel="canonical" href="https://mamali-orbit.vercel.app/Mamali/history/play/3.4.0/">
+  <link rel="canonical" href="https://mamali-orbit.vercel.app/Mamali/history/play/3.6.2/">
   <link rel="icon" href="/Mamali/assets/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="/Mamali/assets/icons/apple-touch-icon.png">
   <link rel="manifest" href="/Mamali/manifest.webmanifest">
-  <link rel="preload" href="./styles.css?v=3.4.0" as="style">
-  <link rel="stylesheet" href="./styles.css?v=3.4.0">
+  <link rel="preload" href="./styles.css?v=3.6.2" as="style">
+  <link rel="stylesheet" href="./styles.css?v=3.6.2">
 
   <meta property="og:type" content="website">
   <meta property="og:locale" content="fa_IR">
@@ -34,15 +34,25 @@
   <meta name="twitter:description" content="اپ سه‌بعدی با گوگل گرد، قفل عمودی، تشخیص هوشمند دستگاه و طراحی ویندوز بهبود یافته.">
   <meta name="twitter:image" content="https://mamali-orbit.vercel.app/Mamali/assets/social-preview.svg">
 
-  <title>Mamali Orbit 3.4.0 — گرد، عمودی، هوشمند</title>
+  <title>Mamali Orbit 3.6.2 — آرشیو قابل‌بازی، فرمان سریع موبایل</title>
   <script>
-    // Early portrait lock + OAuth token capture
+    // Early device-aware orientation + OAuth token capture (must run before app.js)
     (function(){
       try {
+        const ua = navigator.userAgent.toLowerCase();
+        let device = 'desktop';
+        if (/android/.test(ua)) device = 'android';
+        else if (/iphone|ipad|ipod/.test(ua)) device = 'ios';
+        else if (ua.includes('windows')) device = 'windows';
+        document.documentElement.dataset.device = device;
+
         const tryLock = () => {
           try {
-            if (screen.orientation && screen.orientation.lock && document.visibilityState === 'visible') {
+            if (!screen.orientation || !screen.orientation.lock || document.visibilityState !== 'visible') return;
+            if (device === 'android' || device === 'ios') {
               screen.orientation.lock('portrait-primary').catch(()=>screen.orientation.lock('portrait').catch(()=>{}));
+            } else if (device === 'windows') {
+              screen.orientation.lock('landscape-primary').catch(()=>screen.orientation.lock('landscape').catch(()=>{}));
             }
           } catch {}
         };
@@ -50,32 +60,33 @@
         document.addEventListener('DOMContentLoaded', tryLock, {once:true});
         window.addEventListener('load', tryLock, {once:true});
         document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) tryLock(); });
-        if (location.hash && location.hash.includes('id_token=')) {
-          try {
-            const params = new URLSearchParams(location.hash.substring(1));
-            const idToken = params.get('id_token');
-            if (idToken) {
-              sessionStorage.setItem('mamali_external_id_token', idToken);
-              history.replaceState(null, '', location.pathname + location.search);
-            }
-          } catch {}
+
+        const storeToken = (token) => {
+          if (!token) return;
+          sessionStorage.setItem('mamali_external_id_token', token);
+          try { localStorage.setItem('mamali_external_id_token', token); } catch {}
+        };
+        if (location.hash && (location.hash.includes('id_token=') || location.hash.includes('error='))) {
+          const params = new URLSearchParams(location.hash.substring(1));
+          storeToken(params.get('id_token'));
+          if (params.get('error')) sessionStorage.setItem('mamali_oauth_error', params.get('error'));
+          history.replaceState(null, '', location.pathname + location.search);
         }
-        // Device detection early for CSS
-        const ua = navigator.userAgent.toLowerCase();
-        let device = 'desktop';
-        if (/android/.test(ua)) device = 'android';
-        else if (/iphone|ipad|ipod/.test(ua)) device = 'ios';
-        else if (ua.includes('windows')) device = 'windows';
-        document.documentElement.dataset.device = device;
+        if (location.search && (location.search.includes('id_token=') || location.search.includes('error='))) {
+          const params = new URLSearchParams(location.search);
+          storeToken(params.get('id_token'));
+          if (params.get('error')) sessionStorage.setItem('mamali_oauth_error', params.get('error'));
+          history.replaceState(null, '', location.pathname);
+        }
       } catch {}
     })();
   </script>
-  <script type="module" src="./app.js?v=3.4.0"></script>
+  <script type="module" src="./app.js?v=3.6.2"></script>
 
 <script>
 window.__MAMALI_ARCHIVE__ = {
-  version: "3.4.0",
-  database: "mamali-archive-identity-340",
+  version: "3.6.2",
+  database: "mamali-archive-identity-362",
   live: '/Mamali/'
 };
 </script>
@@ -86,7 +97,7 @@ window.__MAMALI_ARCHIVE__ = {
 </style>
 </head>
 <body>
-  <div class="mamali-archive-bar" dir="rtl"><span>آرشیو واقعی ماملی · نسخه <b>3.4.0</b></span><a href="/Mamali/">بازگشت به نسخه زنده</a></div>
+  <div class="mamali-archive-bar" dir="rtl"><span>آرشیو واقعی ماملی · نسخه <b>3.6.2</b></span><a href="/Mamali/">بازگشت به نسخه زنده</a></div>
 
   <!-- Rotate prompt for portrait lock - minimal -->
   <div id="rotatePrompt" class="rotate-prompt" hidden>
@@ -166,10 +177,26 @@ window.__MAMALI_ARCHIVE__ = {
                 <small style="color:var(--soft);font-size:.6rem;">تست زنده اتصال گوگل...</small>
               </div>
             </div>
-            <div class="google-button-shell google-button-shell--beautiful" id="googleButton" role="group" aria-label="ورود با حساب گوگل"></div>
+            <button class="google-primary-btn" id="googlePrimaryButton" type="button">
+              <span class="google-primary-btn__orb" aria-hidden="true">
+                <svg class="google-g" viewBox="0 0 48 48">
+                  <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303C33.654 32.657 29.223 36 24 36c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4 12.955 4 4 12.955 4 24s8.955 20 20 20 20-8.955 20-20c0-1.341-.138-2.65-.389-3.917Z"/>
+                  <path fill="#FF3D00" d="m6.306 14.691 6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4c-7.682 0-14.344 4.337-17.694 10.691Z"/>
+                  <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238C29.211 35.091 26.715 36 24 36c-5.202 0-9.619-3.317-11.283-7.946l-6.522 5.025C9.505 39.556 16.227 44 24 44Z"/>
+                  <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303a12.04 12.04 0 0 1-4.087 5.571l.003-.002 6.19 5.238C36.971 39.205 44 34 44 24c0-1.341-.138-2.65-.389-3.917Z"/>
+                </svg>
+              </span>
+              <span class="google-primary-btn__copy">
+                <small>GOOGLE IDENTITY · PWA READY</small>
+                <strong>ورود با گوگل</strong>
+              </span>
+              <span class="google-primary-btn__arrow" aria-hidden="true">←</span>
+            </button>
+            <p class="google-primary-hint" id="googlePrimaryHint">روی اپ اندروید، همین دکمه شما را به صفحه امن گوگل می‌برد و بعد به ماملی برمی‌گرداند.</p>
+            <div class="google-button-shell google-button-shell--beautiful" id="googleButton" role="group" aria-label="ورود رسمی گوگل"></div>
             <div class="google-auth-fallback">
               <button class="button button--ghost google-fallback-btn" id="externalGoogleButton" type="button" hidden>باز کردن ورود در مرورگر خارجی</button>
-              <button class="button button--ghost google-fallback-btn" id="oauthRedirectButton" type="button">ورود امن برای اپ اندروید / iOS</button>
+              <button class="button button--ghost google-fallback-btn" id="oauthRedirectButton" type="button">اگر دکمه بالا کار نکرد: ریدایرکت امن گوگل</button>
             </div>
           </div>
           <button class="button button--ghost auth-retry" id="authRetryButton" type="button" hidden>تلاش دوباره برای اتصال به Google</button>
@@ -192,7 +219,7 @@ window.__MAMALI_ARCHIVE__ = {
 
     <footer class="auth-gate__footer">
       <span>GOOGLE IDENTITY SERVICES</span>
-      <span>نسخه <b data-app-version>۳.۴.۰</b></span>
+      <span>نسخه <b data-app-version>۳.۶.۲</b></span>
     </footer>
   </section>
 
@@ -211,6 +238,7 @@ window.__MAMALI_ARCHIVE__ = {
       <a href="#portals">پورتال‌ها</a>
       <a href="#capabilities">قابلیت‌ها</a>
       <a href="#android-app">نصب و بروزرسانی</a>
+      <a href="#versions">نسخه‌ها</a>
       <button class="nav__command" id="commandButton" type="button" aria-keyshortcuts="Control+K Meta+K">
         فرمان سریع
         <kbd>⌘ K</kbd>
@@ -238,7 +266,7 @@ window.__MAMALI_ARCHIVE__ = {
           <span class="live-dot" aria-hidden="true"></span>
           سیستم آنلاین است
           <span class="eyebrow__divider" aria-hidden="true"></span>
-          نسخه <strong data-app-version>۳.۴.۰</strong>
+          نسخه <strong data-app-version>۳.۶.۲</strong>
         </div>
 
         <h1 id="hero-title" class="reveal">
@@ -411,7 +439,7 @@ window.__MAMALI_ARCHIVE__ = {
               <img src="/Mamali/assets/icons/icon-192.png" width="96" height="96" alt="" loading="lazy" decoding="async">
               <strong>Mamali Orbit</strong>
               <small>Android · Windows · PWA</small>
-              <div class="phone-frame__install"><span>✓</span> نسخه <b data-app-version>۳.۴.۰</b> آماده اجرا</div>
+              <div class="phone-frame__install"><span>✓</span> نسخه <b data-app-version>۳.۶.۲</b> آماده اجرا</div>
             </div>
           </div>
           <div class="device-gesture"><span>↔</span> با موس یا انگشت بکشید</div>
@@ -463,8 +491,7 @@ window.__MAMALI_ARCHIVE__ = {
             <li><span>۳</span><div><strong>اجرای مستقل</strong><small>آیکون M وارد Launcher می‌شود و اپ بدون نوار مرورگر اجرا خواهد شد.</small></div></li>
           </ol>
           <button class="platform-copy-link" id="copyAndroidLink" type="button">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>
-            کپی لینک برای بازکردن روی گوشی Android
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svکپی لینک برای بازکردن روی گوشی Android
           </button>
         </div>
 
@@ -497,7 +524,7 @@ window.__MAMALI_ARCHIVE__ = {
             <span><small>AUTO-PULL ENGINE</small><strong id="updateMagnetStatus">مکش خودکار نسخه تازه فعال است</strong></span>
           </div>
           <div class="update-center__versions">
-            <span><small>نسخه نصب‌شده</small><strong data-app-version>۳.۴.۰</strong></span>
+            <span><small>نسخه نصب‌شده</small><strong data-app-version>۳.۶.۲</strong></span>
             <span aria-hidden="true">←</span>
             <span><small>آخرین نسخه</small><strong id="latestVersion">در حال بررسی</strong></span>
           </div>
@@ -512,7 +539,7 @@ window.__MAMALI_ARCHIVE__ = {
           </div>
         </div>
 
-        <p class="android-note">نسخه ۳.۴.۰ از ورود Google، دستگاه مورد اعتماد و بروزرسانی زنده SemVer استفاده می‌کند؛ اگر نسخه جدید برسد، بدون حذف برنامه به‌صورت خودکار یا با یک لمس فعال می‌شود. در حالت آفلاین، شمارش متوقف و بخش بروزرسانی خاکستری و غیرفعال خواهد بود.</p>
+        <p class="android-note">نسخه ۳.۶.۲ کلیک آرشیو نسخه‌ها، فرمان سریع روی گوشی، ریدایرکت امن گوگل در PWA و heartbeat قفل نشست را پایدارتر می‌کند. ۳.۴.۰ با دیتابیس جدا و نسخه‌های ۳.۰ تا ۳.۶.۱ با پلیر تاریخچه باز می‌شوند.</p>
       </div>
     </section>
 
@@ -526,10 +553,19 @@ window.__MAMALI_ARCHIVE__ = {
         <p>ماملی پس از تأیید Google، فقط نمایه و مجوز دستگاه مورد اعتماد را در دیتابیس محلی IndexedDB نگه می‌دارد؛ توکن ورود ذخیره نمی‌شود و میزبانی روی Vercel و نسخه پشتیبان GitHub Pages است.</p>
       </div>
       <dl>
-        <div><dt>نسخه پایدار</dt><dd data-app-version>۳.۴.۰</dd></div>
+        <div><dt>نسخه پایدار</dt><dd data-app-version>۳.۶.۲</dd></div>
         <div><dt>پلتفرم نصب</dt><dd>۲</dd></div>
         <div><dt>حالت رنگ</dt><dd>۴</dd></div>
       </dl>
+    </section>
+
+    <section class="section versions-archive" id="versions" aria-labelledby="versions-title">
+      <div class="section__heading">
+        <span class="section__kicker">RELEASE ARCHIVE / 3.0 → 3.6.2</span>
+        <h2 id="versions-title">نسخه‌های قبلی، همین‌جا قابل مشاهده‌اند</h2>
+        <p>از نسخه اولیه تا همین ۳.۶.۲. هر کارت نسخه دکمه اجرای مستقیم دارد؛ ۳.۴.۰ با IndexedDB جداگانه آرشیوی باز می‌شود تا حساب فعلی را دست نزند.</p>
+      </div>
+      <div class="version-grid" id="versionArchive"></div>
     </section>
   </main>
 
@@ -629,6 +665,14 @@ window.__MAMALI_ARCHIVE__ = {
           <option value="low">اقتصادی</option>
         </select>
       </label>
+      <label class="setting-row" data-setting-code="SECURE">
+        <span><strong>محافظت از اسکرین‌شات</strong><small>تاری در سوییچر، بدون چاپ، FLAG_SECURE در APK</small></span>
+        <input id="secureSetting" type="checkbox" role="switch" checked>
+      </label>
+      <label class="setting-row" data-setting-code="PORTRAIT">
+        <span><strong>قفل جهت صفحه</strong><small>اندروید/iOS عمودی · ویندوز افقی</small></span>
+        <input id="portraitSetting" type="checkbox" role="switch" checked>
+      </label>
     </div>
 
     <div class="dialog__footer settings__footer">
@@ -657,7 +701,7 @@ window.__MAMALI_ARCHIVE__ = {
     <div class="install-guide__body" role="region" tabindex="0" aria-label="راهنمای نصب و بروزرسانی برنامه">
       <div class="install-guide__intro">
         <img src="/Mamali/assets/icons/icon-192.png" width="72" height="72" alt="آیکون اپ ماملی" loading="lazy" decoding="async">
-        <div><strong>Mamali Orbit 3.4.0</strong><small>Android · Windows · بروزرسانی زنده</small></div>
+        <div><strong>Mamali Orbit 3.6.2</strong><small>Android · Windows · آرشیو قابل‌بازی</small></div>
       </div>
 
       <section aria-labelledby="androidGuideHeading">
@@ -725,6 +769,36 @@ window.__MAMALI_ARCHIVE__ = {
 
   </div>
 
+
+  <dialog class="permission-dialog" id="permissionDialog" aria-labelledby="permissionDialogTitle">
+    <form method="dialog" class="dialog__header">
+      <div>
+        <span class="dialog__kicker">SYSTEM PERMISSIONS</span>
+        <h2 id="permissionDialogTitle">مجوزهای لازم برای اپ</h2>
+      </div>
+      <button class="icon-button" value="close" aria-label="بستن مجوزها">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5 5 19"/></svg>
+      </button>
+    </form>
+    <div class="permission-dialog__body">
+      <p>اولین ورود روی گوشی: ماملی این مجوزها را به‌صورت سیستمی می‌خواهد تا اعلان بروزرسانی، ذخیره آفلاین و قفل عمودی درست کار کند.</p>
+      <ul class="permission-list">
+        <li><span>اعلان‌ها</span><b data-status="notification">در انتظار</b></li>
+        <li><span>ذخیره پایدار</span><b data-status="storage">در انتظار</b></li>
+        <li><span>قفل جهت صفحه</span><b data-status="orientation">در انتظار</b></li>
+        <li><span>محافظت اسکرین‌شات</span><b data-status="secure">در انتظار</b></li>
+      </ul>
+    </div>
+    <div class="dialog__footer">
+      <button class="button button--ghost" id="permissionLaterButton" type="button">بعداً</button>
+      <button class="button button--primary" id="permissionAllowButton" type="button">اجازه و فعال‌سازی</button>
+    </div>
+  </dialog>
+
+  <div class="secure-guard" id="secureGuard" hidden>
+    <span aria-hidden="true">🔒</span>
+    <strong>محتوای ماملی محافظت شده است</strong>
+  </div>
   <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
   <div class="sr-only" id="systemAnnouncer" aria-live="polite"></div>
 </body>
