@@ -2233,7 +2233,17 @@
   @media (max-width: 360px) { .phone-frame { width: 205px !important; } }
 }
 
-/* ================= MAMALI 3.5.0 ================= */
+/* ================= MAMALI 3.6.2 ================= */
+  /* 3.6.2: the quick command launcher must stay visible on phones/PWA. */
+  .command-launch {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+  .version-card__actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .version-card__play { display: inline-flex; align-items: center; gap: 7px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 999px; color: var(--text); background: rgba(255,255,255,.045); text-decoration: none; font-size: .72rem; }
+  .version-card__play:hover { border-color: var(--line-strong); background: rgba(255,255,255,.08); }
+
 @layer components {
   .google-login-beautiful__header {
     display: flex;

@@ -1,30 +1,68 @@
 {
-  "current": "3.5.0",
+  "current": "3.6.2",
   "channel": "stable",
   "canonical": "https://mamali-orbit.vercel.app/Mamali/",
   "archive": [
     {
+      "version": "3.6.2",
+      "title": "آرشیو قابل‌بازی + فرمان سریع موبایل",
+      "date": "2026-08-19",
+      "status": "current",
+      "play": "/Mamali/",
+      "highlights": [
+        "کارت‌های نسخه‌ها واقعاً باز می‌شوند و play:null حذف شد",
+        "فرمان سریع روی گوشی و PWA همیشه قابل دسترس است",
+        "heartbeat نشست دیگر کاربر را وسط کار از حساب پرت نمی‌کند",
+        "۳.۴.۰ با IndexedDB جداگانه آرشیوی اجرا می‌شود"
+      ]
+    },
+    {
+      "version": "3.6.1",
+      "title": "تعمیر کلیک نسخه‌های قبلی",
+      "date": "2026-08-19",
+      "status": "previous",
+      "play": "/Mamali/history/play/era.html?v=3.6.1",
+      "highlights": [
+        "رفع eraStage دوبل در پلیر تاریخچه",
+        "بهبود مسیرهای /Mamali/ در Vercel",
+        "هماهنگی CSP با اجرای آرشیو"
+      ]
+    },
+    {
+      "version": "3.6.0",
+      "title": "فرمان‌ها و مجوزها روی موبایل",
+      "date": "2026-08-19",
+      "status": "previous",
+      "play": "/Mamali/history/play/era.html?v=3.6.0",
+      "highlights": [
+        "دکمه‌های فرمان سریع روی گوشی مخفی نمی‌شوند",
+        "دیالوگ مجوزهای Notification، Storage و Orientation پایدارتر شد",
+        "دکمه‌های فرمان با کلیک و کیبورد اجرا می‌شوند"
+      ]
+    },
+    {
       "version": "3.5.0",
       "title": "ورود گوگل در PWA + قفل یک‌دستگاهی",
       "date": "2026-08-19",
-      "status": "current",
+      "status": "archive",
+      "play": "/Mamali/history/play/era.html?v=3.5.0",
       "highlights": [
-        "ورود گوگل در اپ Chrome اندروید با ریدایرکت امن (نه پاپ‌آپ)",
+        "ورود گوگل در اپ Chrome اندروید با ریدایرکت امن",
         "یک ایمیل فقط روی یک دستگاه تا خروج",
-        "قفل عمودی اندروید/iOS و افقی ویندوز",
-        "حداکثر محافظت اسکرین‌شات + مجوزهای سیستمی واقعی",
-        "آرشیو نسخه‌های قبلی داخل خود برنامه"
+        "قفل عمودی اندروید/iOS و افقی ویندوز"
       ]
     },
     {
       "version": "3.4.0",
-      "title": "ویندوز افقی / اندروید عمودی",
+      "title": "ویندوز افقی / اندروید عمودی واقعی",
       "date": "2026-08-19",
-      "status": "previous",
+      "status": "archive",
+      "play": "/Mamali/history/play/3.4.0/",
+      "database": "mamali-archive-identity-340",
       "highlights": [
         "نور موس ویندوز جدا از ریپل لمسی اندروید",
-        "تست زنده کلاینت گوگل",
-        "FLAG_SECURE واقعی در APK"
+        "FLAG_SECURE واقعی در APK",
+        "IndexedDB جدا برای آرشیو ۳.۴.۰"
       ]
     },
     {
@@ -32,54 +70,40 @@
       "title": "گوگل گرد و ویندوز جمع‌تر",
       "date": "2026-08-19",
       "status": "archive",
-      "highlights": [
-        "نشان گوگل کاملاً گرد",
-        "تشخیص هوشمند دستگاه",
-        "حذف overlay اذیت‌کن اسکرین‌شات"
-      ]
+      "play": "/Mamali/history/play/era.html?v=3.3.1",
+      "highlights": ["نشان گوگل کاملاً گرد", "تشخیص هوشمند دستگاه", "حذف overlay اذیت‌کن اسکرین‌شات"]
     },
     {
       "version": "3.3.0",
       "title": "تعمیر ورود گوگل در اپ",
       "date": "2026-08-19",
       "status": "archive",
-      "highlights": [
-        "FedCM + ریدایرکت OAuth + مرورگر خارجی",
-        "قفل عمودی و دیالوگ مجوز"
-      ]
+      "play": "/Mamali/history/play/era.html?v=3.3.0",
+      "highlights": ["FedCM + ریدایرکت OAuth + مرورگر خارجی", "قفل عمودی و دیالوگ مجوز"]
     },
     {
       "version": "3.2.0",
       "title": "موتور مدار و مکش بروزرسانی",
       "date": "2026-08-18",
       "status": "archive",
-      "highlights": [
-        "گوشی سه‌بعدی آزاد",
-        "ساعت محلی واقعی",
-        "Update Magnet هر ۳۰ ثانیه"
-      ]
+      "play": "/Mamali/history/play/era.html?v=3.2.0",
+      "highlights": ["گوشی سه‌بعدی آزاد", "ساعت محلی واقعی", "Update Magnet هر ۳۰ ثانیه"]
     },
     {
       "version": "3.1.0",
       "title": "ورود گوگل و دستگاه مورد اعتماد",
       "date": "2026-08-18",
       "status": "archive",
-      "highlights": [
-        "Google Identity Services",
-        "اعتبارسنجی JWT در مرورگر",
-        "IndexedDB بدون ذخیره توکن"
-      ]
+      "play": "/Mamali/history/play/era.html?v=3.1.0",
+      "highlights": ["Google Identity Services", "اعتبارسنجی JWT در مرورگر", "IndexedDB بدون ذخیره توکن"]
     },
     {
       "version": "3.0.0",
       "title": "نسخه اولیه مدار سه‌بعدی",
       "date": "2026-08-18",
       "status": "archive",
-      "highlights": [
-        "PWA قابل نصب Android و Windows",
-        "سه پورتال اینستا / یوتیوب / تلگرام",
-        "میزبانی استاتیک Vercel"
-      ]
+      "play": "/Mamali/history/play/era.html?v=3.0.0",
+      "highlights": ["PWA قابل نصب Android و Windows", "سه پورتال اینستا / یوتیوب / تلگرام", "RTL و مسیر پایدار /Mamali/"]
     }
   ]
 }
