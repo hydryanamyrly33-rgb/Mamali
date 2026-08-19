@@ -41,58 +41,85 @@ window.__MAMALI_ARCHIVE__ = {
 };
 </script>
 <style id="mamali-archive-chrome">
-  .mamali-archive-bar{position:sticky;z-index:10050;top:0;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(114,246,255,.22);background:linear-gradient(180deg,rgba(5,8,22,.96),rgba(5,8,22,.78));color:#eef7ff;font-family:Vazirmatn,Tahoma,Arial,sans-serif;backdrop-filter:blur(16px)}
-  .mamali-archive-bar b{color:#72f6ff;direction:ltr}
-  .mamali-archive-bar a.mamali-back-to-new{
+  .mamali-archive-exit{
+    position:relative;z-index:5;
+    display:flex;flex-direction:column;align-items:center;gap:16px;
+    padding:56px 20px 72px;margin-top:8px;text-align:center;
+    font-family:Vazirmatn,Tahoma,Arial,sans-serif;
+    border-top:1px solid rgba(114,246,255,.14);
+    background:radial-gradient(120% 140% at 50% 0%,rgba(108,245,255,.06),transparent 60%);
+  }
+  .mamali-archive-exit .exit-badge{
     display:inline-flex;align-items:center;gap:8px;
-    padding:9px 18px 9px 14px;
+    padding:6px 14px;border-radius:999px;
+    border:1px solid rgba(114,246,255,.24);
+    background:rgba(5,8,22,.55);
+    color:#cfe9ff;font-size:.74rem;font-weight:600;letter-spacing:.02em;
+  }
+  .mamali-archive-exit .exit-badge b{color:#72f6ff;direction:ltr}
+  .mamali-archive-exit .exit-badge .exit-dot{
+    width:8px;height:8px;border-radius:50%;
+    background:#72f6ff;box-shadow:0 0 8px #72f6ff;
+    animation:mamali-pulse 2s ease-in-out infinite;flex-shrink:0;
+  }
+  .mamali-archive-exit h2{
+    margin:0;font-size:clamp(1.4rem,4vw,2.1rem);font-weight:800;line-height:1.25;
+    background:linear-gradient(135deg,#6cf5ff,#8b5cff);
+    -webkit-background-clip:text;background-clip:text;
+    -webkit-text-fill-color:transparent;color:#8b5cff;
+  }
+  .mamali-archive-exit p{
+    margin:0;max-width:34ch;color:#a9bcd6;font-size:.92rem;line-height:1.7;
+  }
+  .mamali-archive-exit a.mamali-back-to-new{
+    margin-top:8px;
+    display:inline-flex;align-items:center;gap:10px;
+    padding:14px 30px 14px 24px;
     border:1px solid rgba(114,246,255,.32);border-radius:999px;
-    color:#eef7ff;text-decoration:none;font-size:.82rem;font-weight:700;
-    background:linear-gradient(135deg,rgba(108,245,255,.12),rgba(139,92,255,.10));
-    box-shadow:0 4px 16px rgba(108,245,255,.13),0 1px 3px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.08);
-    perspective:400px;
-    transform:perspective(400px) rotateX(0deg);
+    color:#eef7ff;text-decoration:none;font-size:1rem;font-weight:800;
+    background:linear-gradient(135deg,rgba(108,245,255,.14),rgba(139,92,255,.12));
+    box-shadow:0 8px 26px rgba(108,245,255,.16),0 2px 6px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.08);
+    perspective:600px;
+    transform:perspective(600px) rotateX(0deg);
     transition:transform .22s cubic-bezier(.2,.8,.2,1),box-shadow .22s ease,border-color .22s ease;
     position:relative;overflow:hidden;
   }
-  .mamali-archive-bar a.mamali-back-to-new::before{
+  .mamali-archive-exit a.mamali-back-to-new::before{
     content:"";position:absolute;top:0;left:-75%;width:50%;height:100%;
     background:linear-gradient(105deg,transparent 40%,rgba(255,255,255,.18) 50%,transparent 60%);
     animation:mamali-shine 3.5s ease-in-out infinite;pointer-events:none;
   }
-  .mamali-archive-bar a.mamali-back-to-new::after{
-    content:"";width:8px;height:8px;border-radius:50%;
+  .mamali-archive-exit a.mamali-back-to-new::after{
+    content:"";width:10px;height:10px;border-radius:50%;
     background:#55f3b3;box-shadow:0 0 8px #55f3b3;
     animation:mamali-pulse 2s ease-in-out infinite;flex-shrink:0;
   }
-  .mamali-archive-bar a.mamali-back-to-new .back-icon{
-    display:inline-flex;width:18px;height:18px;
+  .mamali-archive-exit a.mamali-back-to-new .back-icon{
+    display:inline-flex;width:20px;height:20px;
     transform:translateY(-1px) rotate(180deg);
     transition:transform .22s cubic-bezier(.2,.8,.2,1);
   }
-  .mamali-archive-bar a.mamali-back-to-new .back-icon svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-  .mamali-archive-bar a.mamali-back-to-new:hover{
-    transform:perspective(400px) rotateX(-6deg) translateY(-2px);
+  .mamali-archive-exit a.mamali-back-to-new .back-icon svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .mamali-archive-exit a.mamali-back-to-new:hover{
+    transform:perspective(600px) rotateX(-8deg) translateY(-3px);
     border-color:rgba(108,245,255,.55);
-    box-shadow:0 8px 28px rgba(108,245,255,.22),0 2px 6px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.12);
+    box-shadow:0 14px 38px rgba(108,245,255,.26),0 3px 8px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.12);
   }
-  .mamali-archive-bar a.mamali-back-to-new:hover .back-icon{transform:translateY(-2px) rotate(180deg) translateX(3px)}
-  .mamali-archive-bar a.mamali-back-to-new:active{
-    transform:perspective(400px) rotateX(2deg) translateY(1px);
-    box-shadow:0 1px 4px rgba(108,245,255,.1),inset 0 2px 4px rgba(0,0,0,.2);
+  .mamali-archive-exit a.mamali-back-to-new:hover .back-icon{transform:translateY(-2px) rotate(180deg) translateX(4px)}
+  .mamali-archive-exit a.mamali-back-to-new:active{
+    transform:perspective(600px) rotateX(3deg) translateY(1px);
+    box-shadow:0 2px 6px rgba(108,245,255,.12),inset 0 2px 5px rgba(0,0,0,.22);
   }
   @keyframes mamali-shine{0%,100%{left:-75%}50%{left:125%}}
   @keyframes mamali-pulse{0%,100%{opacity:1;box-shadow:0 0 8px #55f3b3}50%{opacity:.5;box-shadow:0 0 16px #55f3b3,0 0 32px rgba(85,243,179,.3)}}
   @media(max-width:480px){
-    .mamali-archive-bar{padding:8px 10px;gap:8px}
-    .mamali-archive-bar a.mamali-back-to-new{padding:7px 12px 7px 10px;font-size:.72rem;gap:6px}
-    .mamali-archive-bar a.mamali-back-to-new .back-icon{width:15px;height:15px}
+    .mamali-archive-exit{padding:44px 16px 56px}
+    .mamali-archive-exit a.mamali-back-to-new{padding:12px 22px 12px 18px;font-size:.9rem;gap:8px}
+    .mamali-archive-exit a.mamali-back-to-new .back-icon{width:17px;height:17px}
   }
 </style>
 </head>
 <body>
-  <div class="mamali-archive-bar" dir="rtl"><span>آرشیو واقعی ماملی · نسخه <b>3.0.0</b></span><a class="mamali-back-to-new" href="/Mamali/"><span class="back-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>بازگشت به نسخهٔ جدید</a></div>
-
   <a class="skip-link" href="#main-content">پرش به محتوای اصلی</a>
 
   <canvas id="cosmos" class="cosmos" aria-hidden="true"></canvas>
@@ -403,6 +430,13 @@ window.__MAMALI_ARCHIVE__ = {
     <p>طراحی و توسعه با تمرکز بر سرعت، دسترس‌پذیری و تجربه سه‌بعدی.</p>
     <span>© <span id="currentYear">2026</span> Mamali</span>
   </footer>
+
+  <section class="mamali-archive-exit" dir="rtl" aria-label="بازگشت به نسخهٔ جدید">
+    <span class="exit-badge"><span class="exit-dot" aria-hidden="true"></span>آرشیو · نسخه <b>3.0.0</b></span>
+    <h2>آماده‌ای برای نسخهٔ جدید؟</h2>
+    <p>این نسخهٔ نخست ماملی اوربیت است. برای تجربهٔ کامل و امکانات تازه به نسخهٔ جدید برگرد.</p>
+    <a class="mamali-back-to-new" href="/Mamali/"><span class="back-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></span>بازگشت به نسخهٔ جدید</a>
+  </section>
 
   <dialog class="settings" id="settingsDialog" aria-labelledby="settingsTitle">
     <div class="settings__energy" aria-hidden="true"><span></span><span></span><span></span></div>
