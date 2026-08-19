@@ -2103,3 +2103,132 @@
     body.is-windows .phone-frame { cursor: grab; }
   }
 }
+
+/* ================= MAMALI 3.4.0 - NEW FEATURES ================= */
+@layer components {
+  /* Mouse trail - Windows light orb following cursor */
+  .mouse-trail {
+    position: fixed;
+    top: 0; left: 0;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--primary) 18%, transparent), transparent 70%);
+    pointer-events: none;
+    z-index: 9998;
+    mix-blend-mode: screen;
+    opacity: 0.6;
+    transform: translate(-50%, -50%);
+    transition: opacity 0.3s ease;
+  }
+  body:not(.has-mouse-trail) .mouse-trail { display: none; }
+  body.is-android .mouse-trail,
+  body.is-ios .mouse-trail { display: none !important; }
+
+  /* Touch ripple - Android/iOS finger */
+  .touch-ripple-container {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    overflow: hidden;
+  }
+  .touch-ripple {
+    position: absolute;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--primary) 60%, transparent), transparent 70%);
+    border: 2px solid color-mix(in srgb, var(--primary) 40%, transparent);
+    transform: translate(-50%, -50%) scale(0);
+    animation: touch-ripple 0.7s var(--ease) forwards;
+    pointer-events: none;
+  }
+  @keyframes touch-ripple {
+    0% { transform: translate(-50%, -50%) scale(0); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(8); opacity: 0; }
+  }
+
+  /* Live Google test panel - beautiful in login only */
+  .google-live-test {
+    display: grid;
+    gap: 6px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid color-mix(in srgb, var(--primary) 15%, var(--line));
+    background: rgba(0,0,0,.18);
+    font: 600 .66rem/1.4 ui-monospace, monospace;
+  }
+  .live-test-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 3px 0;
+    border-bottom: 1px dashed color-mix(in srgb, var(--line) 50%, transparent);
+  }
+  .live-test-row:last-child { border: none; }
+  .live-test-row.ok { color: var(--success); }
+  .live-test-row.fail { color: var(--danger); }
+  .live-test-row span:last-child { direction: ltr; }
+
+  /* Device badge beautiful - only in login */
+  .google-login-beautiful .device-badge {
+    background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 12%, transparent), color-mix(in srgb, var(--secondary) 8%, transparent));
+    border: 1px solid color-mix(in srgb, var(--primary) 22%, var(--line));
+    box-shadow: 0 0 16px color-mix(in srgb, var(--primary) 8%, transparent), inset 0 1px 0 rgba(255,255,255,.08);
+    animation: device-badge-float 3s ease-in-out infinite;
+  }
+  @keyframes device-badge-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+
+  /* Windows landscape enforced - hide portrait prompt style */
+  .landscape-enforced .phone-frame {
+    /* On Windows, show phone horizontal? Actually Windows should be landscape */
+    transform: translate3d(var(--phone-x), var(--phone-y), var(--phone-z)) rotateY(var(--phone-ry)) rotateX(var(--phone-rx)) !important;
+  }
+
+  /* iOS same as Android */
+  body[data-device-os="ios"] .android-visual {
+    /* iOS same as Android portrait */
+  }
+
+  /* Scroll cinematic progress */
+  #scrollProgressBar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    z-index: 99999;
+    width: 0%;
+    transition: width 0.08s linear;
+    box-shadow: 0 0 8px var(--primary);
+  }
+
+  /* Windows hover light following mouse */
+  :root { --mouse-x: 50%; --mouse-y: 50%; }
+  body.is-windows .android-visual::before {
+    background:
+      radial-gradient(circle at var(--mouse-x) var(--mouse-y), color-mix(in srgb, var(--primary) 18%, transparent), transparent 38%),
+      radial-gradient(circle at calc(50% + var(--light-x)) calc(42% + var(--light-y)), color-mix(in srgb, var(--primary) 18%, transparent), transparent 35%),
+      radial-gradient(circle at 15% 85%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 32%),
+      linear-gradient(145deg, color-mix(in srgb, var(--secondary) 11%, transparent), transparent 60%);
+  }
+
+  /* Fix empty ugly space on Windows */
+  body.is-windows .hero {
+    min-height: 88vh;
+    padding: 56px 0 64px;
+  }
+  body.is-windows .section {
+    padding: 72px 0;
+  }
+  body.is-windows .android-section {
+    gap: 48px;
+  }
+  body.is-windows .system-strip {
+    margin-bottom: 48px;
+    padding: 28px 32px;
+  }
+
+  /* Ensure Android design intact - original sizes */
+  .phone-frame { width: min(278px, 74%) !important; }
+  @media (max-width: 430px) { .phone-frame { width: 220px !important; } }
+  @media (max-width: 360px) { .phone-frame { width: 205px !important; } }
+}

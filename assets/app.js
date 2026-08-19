@@ -1,7 +1,7 @@
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
-const APP_VERSION = '3.3.1';
+const APP_VERSION = '3.4.0';
 
 const SITE_CONFIG = Object.freeze({
   version: APP_VERSION,
@@ -123,44 +123,77 @@ let installPrompt = null;
 const announcer = $('#systemAnnouncer');
 const toastRegion = $('#toastRegion');
 
-// ================= ORIENTATION LOCK MANAGER 3.3 =================
+// ================= ORIENTATION SMART MANAGER 3.4.0 - Android portrait, Windows landscape, iOS portrait =================
+// Requirement: Android vertical, Windows horizontal, iOS like Android
 class OrientationLockManager {
   constructor() {
     this.prompt = $('#rotatePrompt');
     this.isLocked = false;
+    this.device = this.detectDevice();
+  }
+  detectDevice() {
+    const ua = navigator.userAgent.toLowerCase();
+    if (/android/.test(ua)) return 'android';
+    if (/iphone|ipad|ipod/.test(ua)) return 'ios';
+    if (ua.includes('windows')) return 'windows';
+    return 'desktop';
+  }
+  getDesiredOrientation() {
+    // User requirement: Windows landscape, Android portrait, iOS = Android
+    const d = this.detectDevice();
+    if (d === 'windows') return 'landscape-primary';
+    if (d === 'android' || d === 'ios') return 'portrait-primary';
+    // Desktop other: allow any but prefer landscape for windows-like
+    return null; // no lock
   }
   async lock() {
-    if (!settings.portrait) return false;
+    if (!settings.portrait && this.device !== 'windows') return false;
+    // For windows, even if portrait setting off, we still lock landscape if setting portrait true? Requirement says Windows horizontal lock
+    const desired = this.getDesiredOrientation();
+    if (!desired) {
+      document.body.classList.remove('is-landscape', 'is-portrait');
+      if (this.prompt) this.prompt.hidden = true;
+      return false;
+    }
     try {
-      if (screen.orientation && screen.orientation.lock) {
-        if (document.visibilityState === 'visible') {
-          await screen.orientation.lock('portrait-primary').catch(() => screen.orientation.lock('portrait').catch(()=>{}));
-          this.isLocked = true;
-          document.body.classList.add('portrait-enforced');
-          return true;
-        }
+      if (screen.orientation && screen.orientation.lock && document.visibilityState === 'visible') {
+        await screen.orientation.lock(desired).catch(async ()=>{
+          // fallback
+          if (desired.includes('portrait')) await screen.orientation.lock('portrait').catch(()=>{});
+          else await screen.orientation.lock('landscape').catch(()=>{});
+        });
+        this.isLocked = true;
+        document.body.classList.add(desired.includes('portrait') ? 'portrait-enforced' : 'landscape-enforced');
+        document.body.classList.remove(desired.includes('portrait') ? 'landscape-enforced' : 'portrait-enforced');
+        return true;
       }
     } catch {}
-    // Fallback: CSS + prompt
     this.checkOrientation();
     return false;
   }
   checkOrientation() {
-    if (!settings.portrait) {
+    const desired = this.getDesiredOrientation();
+    if (!desired) {
       if (this.prompt) this.prompt.hidden = true;
-      document.body.classList.remove('is-landscape');
+      document.body.classList.remove('is-landscape', 'is-portrait');
       return;
     }
     try {
-      const isLandscape = window.innerWidth > window.innerHeight && window.innerWidth > 480;
-      const isLandscapeMedia = window.matchMedia('(orientation: landscape)').matches;
-      if ((isLandscape || isLandscapeMedia) && window.innerWidth <= 900) {
-        document.body.classList.add('is-landscape');
+      const isLandscapeNow = window.innerWidth > window.innerHeight;
+      const shouldBePortrait = desired.includes('portrait');
+      const isWrong = (shouldBePortrait && isLandscapeNow && window.innerWidth <= 900) || (!shouldBePortrait && !isLandscapeNow && this.device === 'windows' && window.innerWidth <= 1200);
+      if (isWrong) {
+        document.body.classList.add('is-wrong-orientation');
         if (this.prompt && document.documentElement.dataset.authState !== 'booting') {
           this.prompt.hidden = false;
+          const strong = this.prompt.querySelector('strong');
+          if (strong) {
+            if (shouldBePortrait) strong.textContent = 'لطفاً گوشی را عمودی نگه دارید';
+            else strong.textContent = 'لطفاً دستگاه ویندوز را افقی نگه دارید';
+          }
         }
       } else {
-        document.body.classList.remove('is-landscape');
+        document.body.classList.remove('is-wrong-orientation');
         if (this.prompt) this.prompt.hidden = true;
       }
     } catch {}
@@ -169,15 +202,15 @@ class OrientationLockManager {
     this.lock();
     this.checkOrientation();
     window.addEventListener('resize', () => { this.checkOrientation(); this.lock(); }, {passive:true});
-    window.addEventListener('orientationchange', () => { setTimeout(()=>{ this.checkOrientation(); this.lock(); }, 150); }, {passive:true});
+    window.addEventListener('orientationchange', () => { setTimeout(()=>{ this.checkOrientation(); this.lock(); }, 200); }, {passive:true});
     document.addEventListener('visibilitychange', () => { if (!document.hidden) { this.lock(); this.checkOrientation(); } });
     $('#rotatePromptClose')?.addEventListener('click', () => {
       if (this.prompt) this.prompt.hidden = true;
       this.lock();
-      toast('لطفاً گوشی را عمودی کنید — قفل پرتره فعال است.');
+      if (this.getDesiredOrientation().includes('portrait')) toast('📱 قفل عمودی برای اندروید/iOS فعال است.');
+      else toast('🪟 قفل افقی برای ویندوز فعال است.');
     });
-    // Prevent landscape via CSS meta - try every 2s
-    setInterval(()=>{ if(settings.portrait) this.lock(); }, 2000);
+    setInterval(()=>{ this.lock(); }, 3000);
   }
 }
 
@@ -318,6 +351,240 @@ class DeviceDetectionManager {
     if (this.device.os === 'android') {
       document.body.classList.add('is-android');
     }
+  }
+}
+
+
+// ================= MOUSE TRAIL MANAGER 3.4.0 - Windows light orb =================
+// Windows mouse has light effect following cursor, different from Android touch ripple
+class MouseTrailManager {
+  constructor() {
+    this.trail = null;
+    this.x = 0; this.y = 0;
+    this.targetX = 0; this.targetY = 0;
+    this.raf = 0;
+    this.enabled = false;
+  }
+  init() {
+    // Only for Windows desktop with mouse
+    const isWindows = /windows/i.test(navigator.userAgent);
+    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const hasFinePointer = window.matchMedia('(pointer: fine)').matches;
+    this.enabled = isWindows && hasFinePointer;
+
+    if (!this.enabled) return;
+
+    // Create trail element
+    this.trail = document.createElement('div');
+    this.trail.className = 'mouse-trail';
+    this.trail.setAttribute('aria-hidden','true');
+    document.body.appendChild(this.trail);
+
+    document.addEventListener('mousemove', (e)=>{
+      this.targetX = e.clientX;
+      this.targetY = e.clientY;
+      document.documentElement.style.setProperty('--mouse-x', e.clientX + 'px');
+      document.documentElement.style.setProperty('--mouse-y', e.clientY + 'px');
+    }, {passive:true});
+
+    const animate = () => {
+      this.x += (this.targetX - this.x) * 0.12;
+      this.y += (this.targetY - this.y) * 0.12;
+      if (this.trail) {
+        this.trail.style.transform = `translate3d(${this.x}px, ${this.y}px, 0) translate(-50%, -50%)`;
+      }
+      this.raf = requestAnimationFrame(animate);
+    };
+    animate();
+
+    document.body.classList.add('has-mouse-trail');
+  }
+  destroy() {
+    if (this.raf) cancelAnimationFrame(this.raf);
+    this.trail?.remove();
+  }
+}
+
+// ================= TOUCH RIPPLE MANAGER 3.4.0 - Android/iOS finger different from mouse =================
+class TouchRippleManager {
+  constructor() {
+    this.container = null;
+    this.enabled = false;
+  }
+  init() {
+    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const isAndroid = /android/i.test(navigator.userAgent);
+    const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent.toLowerCase());
+    this.enabled = isTouch && (isAndroid || isIOS);
+
+    if (!this.enabled) return;
+
+    this.container = document.createElement('div');
+    this.container.className = 'touch-ripple-container';
+    this.container.setAttribute('aria-hidden','true');
+    document.body.appendChild(this.container);
+
+    document.addEventListener('touchstart', (e)=>{
+      if (!e.touches[0]) return;
+      const touch = e.touches[0];
+      this.createRipple(touch.clientX, touch.clientY);
+    }, {passive:true});
+
+    document.addEventListener('click', (e)=>{
+      // For Android, also show ripple on click if not from touch
+      if (this.enabled && e.clientX) {
+        // Avoid double ripple if touch already
+        if (e.detail === 0) return; // touch triggered
+        this.createRipple(e.clientX, e.clientY);
+      }
+    }, {passive:true});
+  }
+  createRipple(x, y) {
+    if (!this.container) return;
+    const ripple = document.createElement('span');
+    ripple.className = 'touch-ripple';
+    ripple.style.left = x + 'px';
+    ripple.style.top = y + 'px';
+    this.container.appendChild(ripple);
+    // Remove after animation
+    setTimeout(()=>ripple.remove(), 700);
+  }
+}
+
+// ================= LIVE GOOGLE CLIENT TEST MANAGER 3.4.0 =================
+// Real-time test of Google Client, shows connection status live
+class LiveGoogleTestManager {
+  constructor() {
+    this.networkEl = $('#authNetwork');
+    this.results = {
+      internet: false,
+      gsiScript: false,
+      jwks: false,
+      clientId: false,
+      origin: false,
+    };
+    this.latencies = {};
+  }
+  async test() {
+    const startAll = performance.now();
+    // Test 1: Internet
+    this.results.internet = navigator.onLine;
+    
+    // Test 2: GSI Script reachable
+    try {
+      const t0 = performance.now();
+      const res = await fetch('https://accounts.google.com/gsi/client?hl=fa', {method:'HEAD', mode:'no-cors', cache:'no-store'});
+      // no-cors will be opaque, but if no error, consider reachable
+      this.results.gsiScript = true;
+      this.latencies.gsiScript = Math.round(performance.now() - t0);
+    } catch {
+      this.results.gsiScript = false;
+    }
+
+    // Test 3: JWKs
+    try {
+      const t0 = performance.now();
+      const res = await fetch('https://www.googleapis.com/oauth2/v3/certs', {cache:'no-store'});
+      this.results.jwks = res.ok;
+      this.latencies.jwks = Math.round(performance.now() - t0);
+    } catch {
+      this.results.jwks = false;
+    }
+
+    // Test 4: Client ID format
+    const clientId = '737314975140-nhilm65a3mr9bsemufr4e83cmhisq77e.apps.googleusercontent.com';
+    this.results.clientId = /^[0-9]+-[a-z0-9]+\.apps\.googleusercontent\.com$/.test(clientId);
+
+    // Test 5: Authorized origin
+    const origin = window.location.origin;
+    this.results.origin = origin === 'https://mamali-orbit.vercel.app' || origin.includes('vercel.app') || origin.includes('github.io') || origin.includes('localhost');
+
+    // Update UI
+    this.updateUI();
+
+    // Return summary
+    return { results: this.results, latencies: this.latencies, total: Math.round(performance.now() - startAll) };
+  }
+  updateUI() {
+    if (!this.networkEl) return;
+    const allGood = Object.values(this.results).every(v=>v===true);
+    this.networkEl.dataset.state = allGood ? 'online' : (this.results.internet ? 'warning' : 'offline');
+    const span = this.networkEl.querySelector('span');
+    if (span) {
+      if (allGood) span.textContent = `آنلاین · Google ${this.latencies.gsiScript || 0}ms · ${this.latencies.jwks || 0}ms`;
+      else if (!this.results.internet) span.textContent = 'آفلاین';
+      else span.textContent = `اتصال Google: GSI:${this.results.gsiScript?'✓':'✗'} JWKs:${this.results.jwks?'✓':'✗'}`;
+    }
+
+    // Also create detailed live test panel if exists
+    const detailEl = $('#googleLiveTest');
+    if (detailEl) {
+      detailEl.innerHTML = `
+        <div class="live-test-row ${this.results.internet?'ok':'fail'}"><span>اینترنت</span><span>${this.results.internet?'✓ متصل':'✗ قطع'}</span></div>
+        <div class="live-test-row ${this.results.gsiScript?'ok':'fail'}"><span>GSI Script</span><span>${this.results.gsiScript?`✓ ${this.latencies.gsiScript}ms`:'✗'}</span></div>
+        <div class="live-test-row ${this.results.jwks?'ok':'fail'}"><span>JWKs Certs</span><span>${this.results.jwks?`✓ ${this.latencies.jwks}ms`:'✗'}</span></div>
+        <div class="live-test-row ${this.results.clientId?'ok':'fail'}"><span>Client ID</span><span>${this.results.clientId?'✓ معتبر':'✗ نامعتبر'}</span></div>
+        <div class="live-test-row ${this.results.origin?'ok':'fail'}"><span>Origin</span><span>${this.results.origin?'✓ '+window.location.origin:'✗ '+window.location.origin}</span></div>
+      `;
+    }
+  }
+  init() {
+    this.test();
+    // Retest every 15s and on online/offline
+    setInterval(()=>this.test(), 15000);
+    window.addEventListener('online', ()=>this.test());
+    window.addEventListener('offline', ()=>this.test());
+  }
+}
+
+// ================= SCROLL CINEMATIC MANAGER 3.4.0 - Animations and scroll =================
+class ScrollCinematicManager {
+  constructor() {
+    this.progress = 0;
+  }
+  init() {
+    // Scroll progress bar (if element exists)
+    const createProgress = () => {
+      let bar = document.getElementById('scrollProgressBar');
+      if (!bar) {
+        bar = document.createElement('div');
+        bar.id = 'scrollProgressBar';
+        bar.style.cssText = 'position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--primary),var(--accent));z-index:9999;width:0%;transition:width 0.1s linear;';
+        document.body.appendChild(bar);
+      }
+      const update = () => {
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        const p = max > 0 ? (window.scrollY / max) * 100 : 0;
+        bar.style.width = p + '%';
+        this.progress = p;
+        // Parallax for hero
+        const hero = document.querySelector('.hero');
+        if (hero) {
+          hero.style.setProperty('--scroll-y', window.scrollY + 'px');
+          hero.style.transform = `translateY(${window.scrollY * 0.05}px)`;
+        }
+      };
+      window.addEventListener('scroll', update, {passive:true});
+      update();
+    };
+    createProgress();
+
+    // Cinematic reveal with stagger - enhance existing
+    const observer = new IntersectionObserver((entries)=>{
+      entries.forEach((entry, i)=>{
+        if (entry.isIntersecting) {
+          entry.target.style.transitionDelay = (i * 80) + 'ms';
+          entry.target.classList.add('is-visible');
+          // Add cinematic scale
+          entry.target.animate([
+            { opacity: 0, transform: 'translateY(24px) scale(0.98)' },
+            { opacity: 1, transform: 'translateY(0) scale(1)' }
+          ], { duration: 600, easing: 'cubic-bezier(.2,.8,.2,1)', delay: i*80 });
+        }
+      });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.feature-card, .android-visual, .android-copy, .system-strip').forEach(el=>observer.observe(el));
   }
 }
 
@@ -1608,6 +1875,10 @@ let orientationManager;
 let screenshotManager;
 let permissionManager;
 let deviceDetectionManager;
+let mouseTrailManager;
+let touchRippleManager;
+let liveGoogleTestManager;
+let scrollCinematicManager;
 let protectedAppInitialized = false;
 
 function cycleTheme() {
@@ -2422,6 +2693,18 @@ function initProtectedApp() {
   deviceDetectionManager = new DeviceDetectionManager();
   deviceDetectionManager.init();
 
+  mouseTrailManager = new MouseTrailManager();
+  mouseTrailManager.init();
+
+  touchRippleManager = new TouchRippleManager();
+  touchRippleManager.init();
+
+  liveGoogleTestManager = new LiveGoogleTestManager();
+  liveGoogleTestManager.init();
+
+  scrollCinematicManager = new ScrollCinematicManager();
+  scrollCinematicManager.init();
+
   permissionManager = new PermissionManager();
   permissionManager.init();
 
@@ -2449,6 +2732,14 @@ async function bootstrap() {
   screenshotManager.init();
   deviceDetectionManager = new DeviceDetectionManager();
   deviceDetectionManager.init();
+  mouseTrailManager = new MouseTrailManager();
+  mouseTrailManager.init();
+  touchRippleManager = new TouchRippleManager();
+  touchRippleManager.init();
+  liveGoogleTestManager = new LiveGoogleTestManager();
+  liveGoogleTestManager.init();
+  scrollCinematicManager = new ScrollCinematicManager();
+  scrollCinematicManager.init();
 
   authManager = new AuthManager();
   await authManager.init();

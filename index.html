@@ -19,8 +19,8 @@
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="preload" href="assets/styles.css?v=3.3.1" as="style">
-  <link rel="stylesheet" href="assets/styles.css?v=3.3.1">
+  <link rel="preload" href="assets/styles.css?v=3.4.0" as="style">
+  <link rel="stylesheet" href="assets/styles.css?v=3.4.0">
 
   <meta property="og:type" content="website">
   <meta property="og:locale" content="fa_IR">
@@ -30,11 +30,11 @@
   <meta property="og:url" content="https://mamali-orbit.vercel.app/Mamali/">
   <meta property="og:image" content="https://mamali-orbit.vercel.app/Mamali/assets/social-preview.svg">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Mamali Orbit 3.3.1">
+  <meta name="twitter:title" content="Mamali Orbit 3.4.0">
   <meta name="twitter:description" content="اپ سه‌بعدی با گوگل گرد، قفل عمودی، تشخیص هوشمند دستگاه و طراحی ویندوز بهبود یافته.">
   <meta name="twitter:image" content="https://mamali-orbit.vercel.app/Mamali/assets/social-preview.svg">
 
-  <title>Mamali Orbit 3.3.1 — گرد، عمودی، هوشمند</title>
+  <title>Mamali Orbit 3.4.0 — گرد، عمودی، هوشمند</title>
   <script>
     // Early portrait lock + OAuth token capture
     (function(){
@@ -70,7 +70,7 @@
       } catch {}
     })();
   </script>
-  <script type="module" src="assets/app.js?v=3.3.1"></script>
+  <script type="module" src="assets/app.js?v=3.4.0"></script>
 </head>
 <body>
   <!-- Rotate prompt for portrait lock - minimal -->
@@ -147,11 +147,14 @@
           <div class="google-login-beautiful" id="googleLoginBeautiful">
             <div class="google-login-beautiful__header">
               <span class="device-badge" id="deviceBadge"><i aria-hidden="true">📱</i><span>تشخیص دستگاه…</span></span>
+              <div class="google-live-test" id="googleLiveTest">
+                <small style="color:var(--soft);font-size:.6rem;">تست زنده اتصال گوگل...</small>
+              </div>
             </div>
             <div class="google-button-shell google-button-shell--beautiful" id="googleButton" role="group" aria-label="ورود با حساب گوگل"></div>
             <div class="google-auth-fallback">
               <button class="button button--ghost google-fallback-btn" id="externalGoogleButton" type="button" hidden>باز کردن ورود در مرورگر خارجی</button>
-              <button class="button button--ghost google-fallback-btn" id="oauthRedirectButton" type="button">ورود امن برای اپ اندروید</button>
+              <button class="button button--ghost google-fallback-btn" id="oauthRedirectButton" type="button">ورود امن برای اپ اندروید / iOS</button>
             </div>
           </div>
           <button class="button button--ghost auth-retry" id="authRetryButton" type="button" hidden>تلاش دوباره برای اتصال به Google</button>
@@ -174,7 +177,7 @@
 
     <footer class="auth-gate__footer">
       <span>GOOGLE IDENTITY SERVICES</span>
-      <span>نسخه <b data-app-version>۳.۳.۱</b></span>
+      <span>نسخه <b data-app-version>۳.۴.۰</b></span>
     </footer>
   </section>
 
@@ -220,7 +223,7 @@
           <span class="live-dot" aria-hidden="true"></span>
           سیستم آنلاین است
           <span class="eyebrow__divider" aria-hidden="true"></span>
-          نسخه <strong data-app-version>۳.۳.۱</strong>
+          نسخه <strong data-app-version>۳.۴.۰</strong>
         </div>
 
         <h1 id="hero-title" class="reveal">
@@ -393,7 +396,7 @@
               <img src="assets/icons/icon-192.png" width="96" height="96" alt="" loading="lazy" decoding="async">
               <strong>Mamali Orbit</strong>
               <small>Android · Windows · PWA</small>
-              <div class="phone-frame__install"><span>✓</span> نسخه <b data-app-version>۳.۳.۱</b> آماده اجرا</div>
+              <div class="phone-frame__install"><span>✓</span> نسخه <b data-app-version>۳.۴.۰</b> آماده اجرا</div>
             </div>
           </div>
           <div class="device-gesture"><span>↔</span> با موس یا انگشت بکشید</div>
@@ -479,7 +482,7 @@
             <span><small>AUTO-PULL ENGINE</small><strong id="updateMagnetStatus">مکش خودکار نسخه تازه فعال است</strong></span>
           </div>
           <div class="update-center__versions">
-            <span><small>نسخه نصب‌شده</small><strong data-app-version>۳.۳.۱</strong></span>
+            <span><small>نسخه نصب‌شده</small><strong data-app-version>۳.۴.۰</strong></span>
             <span aria-hidden="true">←</span>
             <span><small>آخرین نسخه</small><strong id="latestVersion">در حال بررسی</strong></span>
           </div>
@@ -494,7 +497,7 @@
           </div>
         </div>
 
-        <p class="android-note">نسخه ۳.۳.۱ از ورود Google، دستگاه مورد اعتماد و بروزرسانی زنده SemVer استفاده می‌کند؛ اگر نسخه جدید برسد، بدون حذف برنامه به‌صورت خودکار یا با یک لمس فعال می‌شود. در حالت آفلاین، شمارش متوقف و بخش بروزرسانی خاکستری و غیرفعال خواهد بود.</p>
+        <p class="android-note">نسخه ۳.۴.۰ از ورود Google، دستگاه مورد اعتماد و بروزرسانی زنده SemVer استفاده می‌کند؛ اگر نسخه جدید برسد، بدون حذف برنامه به‌صورت خودکار یا با یک لمس فعال می‌شود. در حالت آفلاین، شمارش متوقف و بخش بروزرسانی خاکستری و غیرفعال خواهد بود.</p>
       </div>
     </section>
 
@@ -508,7 +511,7 @@
         <p>ماملی پس از تأیید Google، فقط نمایه و مجوز دستگاه مورد اعتماد را در دیتابیس محلی IndexedDB نگه می‌دارد؛ توکن ورود ذخیره نمی‌شود و میزبانی روی Vercel و نسخه پشتیبان GitHub Pages است.</p>
       </div>
       <dl>
-        <div><dt>نسخه پایدار</dt><dd data-app-version>۳.۳.۱</dd></div>
+        <div><dt>نسخه پایدار</dt><dd data-app-version>۳.۴.۰</dd></div>
         <div><dt>پلتفرم نصب</dt><dd>۲</dd></div>
         <div><dt>حالت رنگ</dt><dd>۴</dd></div>
       </dl>
@@ -639,7 +642,7 @@
     <div class="install-guide__body" role="region" tabindex="0" aria-label="راهنمای نصب و بروزرسانی برنامه">
       <div class="install-guide__intro">
         <img src="assets/icons/icon-192.png" width="72" height="72" alt="آیکون اپ ماملی" loading="lazy" decoding="async">
-        <div><strong>Mamali Orbit 3.3.1</strong><small>Android · Windows · بروزرسانی زنده</small></div>
+        <div><strong>Mamali Orbit 3.4.0</strong><small>Android · Windows · بروزرسانی زنده</small></div>
       </div>
 
       <section aria-labelledby="androidGuideHeading">
