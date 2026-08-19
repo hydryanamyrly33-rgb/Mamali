@@ -1,7 +1,7 @@
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
-const APP_VERSION = '3.7.0';
+const APP_VERSION = '3.8.0';
 
 const SITE_CONFIG = Object.freeze({
   version: APP_VERSION,
@@ -2357,7 +2357,7 @@ function setupCommandPalette() {
     { icon: 'YT', title: 'بازکردن اپ یوتیوب', hint: 'Deep Link مستقیم', keywords: 'youtube یوتیوب ویدیو app اپ', run: () => openNativeApp('youtube') },
     { icon: 'TG', title: 'بازکردن اپ تلگرام', hint: 'Deep Link مستقیم', keywords: 'telegram تلگرام app اپ', run: () => openNativeApp('telegram') },
     { icon: 'APP', title: 'نصب اپ عمودی و امن', hint: 'Android portrait + secure', keywords: 'android windows اندروید ویندوز install نصب pwa portrait secure عمودی امن', run: () => $('#installDialog').showModal() },
-    { icon: 'UP', title: 'بررسی بروزرسانی ۳.۷.۰', hint: `نسخه ${toPersianDigits(APP_VERSION)} · کانال پایدار`, keywords: 'update بروزرسانی آپدیت version نسخه 3.7.0 3.7 3.6' , run: () => { $('#updateCenter').scrollIntoView({ behavior: settings.reducedMotion ? 'auto' : 'smooth', block: 'center' }); updateManager?.check(); } },
+    { icon: 'UP', title: 'بررسی بروزرسانی ۳.۸.۰', hint: `نسخه ${toPersianDigits(APP_VERSION)} · کانال پایدار`, keywords: 'update بروزرسانی آپدیت version نسخه 3.8.0 3.8 3.7' , run: () => { $('#updateCenter').scrollIntoView({ behavior: settings.reducedMotion ? 'auto' : 'smooth', block: 'center' }); updateManager?.check(); } },
     { icon: '◐', title: 'تغییر تم رنگی',  hint: 'نئون، شفق، خورشیدی', keywords: 'theme تم رنگ ظاهر', run: cycleTheme },
     { icon: '⚙', title: 'تنظیمات امن و عمودی', hint: 'کنترل جلوه‌ها + portrait + secure', keywords: 'settings تنظیمات کنترل secure portrait عمودی امن', run: () => $('#settingsDialog').showModal() },
     { icon: '⌁', title: 'حساب و امنیت دستگاه', hint: 'قفل، خروج یا حذف حساب محلی', keywords: 'google account حساب امنیت قفل خروج', run: () => $('#accountDialog').showModal() },
@@ -2482,7 +2482,7 @@ function setupControls() {
     void core.offsetWidth;
     core.classList.add('is-pulsing');
     sound.play('energy');
-    toast('موج انرژی مدار امن ۳.۷.۰ فعال شد.');
+    toast('موج انرژی مدار امن ۳.۸.۰ فعال شد.');
     window.setTimeout(() => core.classList.remove('is-pulsing'), 1000);
   });
 
@@ -2572,7 +2572,7 @@ class UpdateManager {
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (!this.applying || this.reloading) return;
         this.reloading = true;
-        toast('نسخه امن ۳.۷.۰ فعال شد؛ در حال راه‌اندازی دوباره ماملی…', 3000);
+        toast('نسخه امن ۳.۸.۰ فعال شد؛ در حال راه‌اندازی دوباره ماملی…', 3000);
         window.setTimeout(() => window.location.reload(), 350);
       });
     }
@@ -2606,7 +2606,7 @@ class UpdateManager {
   watchRegistration(registration) {
     const watchWorker = worker => {
       if (!worker) return;
-      this.setMagnet('pulling', 'نسخه امن ۳.۷.۰ پیدا شد؛ در حال آماده‌سازی بسته…');
+      this.setMagnet('pulling', 'نسخه امن ۳.۸.۰ پیدا شد؛ در حال آماده‌سازی بسته…');
       const inspect = () => {
         if (worker.state === 'installed' && navigator.serviceWorker.controller) {
           this.setAvailable(this.latestVersion, [], { workerReady: true });
@@ -2658,7 +2658,7 @@ class UpdateManager {
     this.latestVersion = compareVersions(version, APP_VERSION) >= 0 ? version : APP_VERSION;
     this.latest.textContent = toPersianDigits(this.latestVersion);
     this.setState('available', { workerReady });
-    const note = Array.isArray(notes) && notes.length ? notes[0] : 'نسخه امن ۳.۷.۰ با آرشیو واقعی نسخه‌ها و خروج آزادکننده.';
+    const note = Array.isArray(notes) && notes.length ? notes[0] : 'نسخه امن ۳.۸.۰ با آرشیو واقعی نسخه‌ها و خروج آزادکننده.';
     this.bannerCopy.textContent = `نسخه ${toPersianDigits(this.latestVersion)} — ${note}`;
     if (workerReady && !this.dismissed) this.banner.hidden = false;
     if (workerReady) {
@@ -2879,7 +2879,7 @@ function setupInstall() {
     installed = true;
     installPrompt = null;
     updateInstallState();
-    toast('ماملی امن ۳.۷.۰ با موفقیت نصب شد و اکنون عمودی و محافظت‌شده اجرا می‌شود.', 4500);
+    toast('ماملی امن ۳.۸.۰ با موفقیت نصب شد و اکنون عمودی و محافظت‌شده اجرا می‌شود.', 4500);
   });
 
   updateInstallState();

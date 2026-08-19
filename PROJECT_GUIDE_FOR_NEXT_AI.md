@@ -1,4 +1,4 @@
-# Mamali Orbit — راهنمای کامل برای AI بعدی (نسخه 3.7.0)
+# Mamali Orbit — راهنمای کامل برای AI بعدی (نسخه 3.8.0)
 
 > اگر چت فعلی خطا داد، همین فایل را اول بخوان. به زبان ساده، از صفر تا صد.
 
@@ -12,19 +12,18 @@
 - صاحب پروژه گفته: Vercel اصل است، GitHub فقط پشتیبان
 
 ## 2. نسخه فعلی و مسیر نسخه‌ها
-- فعلی: `3.7.0`
-- قبلی: `3.6.2` → `3.6.1` → `3.6.0` → `3.5.0` → `3.4.0` → `3.3.1` → `3.3.0` → `3.2.0` → `3.1.0` → `3.0.0`
+- فعلی: `3.8.0`
 - آرشیو داخل برنامه: بخش `#versions` و فایل `history/versions.json`
 - bump نسخه: `node scripts/release.mjs patch|minor|major`
 
-### مهم: آرشیو دیگر پوستر ثابت نیست
-هر نسخه پوشه واقعی دارد:
-- زنده: `/Mamali/`
-- آرشیو: `/Mamali/history/play/3.x.x/`
-- هر پوشه `index.html` + `app.js` + `styles.css` همان نسخه است
-- IndexedDB جدا: `mamali-archive-identity-xxx`
+### مهم: آرشیو در ۳.۸.۰ خلوت شد
+فقط دو نسخه می‌مانند:
+- زنده: `/Mamali/` → نسخه ۳.۸.۰
+- آرشیو: `/Mamali/history/play/3.0.0/` → نسخهٔ نخست ۳.۰.۰ (پوشه واقعی با `index.html` + `app.js` + `styles.css`)
+- نسخه‌های میانی ۳.۱.۰ تا ۳.۶.۲ حذف شده‌اند؛ اگر خواستی دوباره اضافه‌شان کنی، پوشه واقعی هر نسخه را در `history/play/` برگردان و ورودی‌اش را در `history/versions.json` اضافه کن.
+- در نسخهٔ ۳.۰.۰ دکمهٔ «بازگشت به نسخهٔ جدید» هست که به `/Mamali/` برمی‌گردد.
+- IndexedDB جدا: `mamali-archive-identity-300`
 - Service Worker آرشیو ثبت نمی‌شود تا PWA زنده را ندزدد
-- مهمان آرشیو بدون به‌هم‌ریختن حساب زنده وارد UI همان نسخه می‌شود
 - `history/play/era.html` فقط fallback است، مسیر اصلی کارت‌ها نیست
 
 ## 3. ساختار فایل‌ها
@@ -37,8 +36,8 @@ sw.js                      Service Worker online-first
 version.json               کانال بروزرسانی
 vercel.json                / → /Mamali/ + rewrite + API + play folders
 api/session.js             قفل یک‌دستگاهی
-history/versions.json      آرشیو نسخه‌ها
-history/play/3.x.x/        خود همان نسخه واقعی
+history/versions.json      آرشیو نسخه‌ها (فقط 3.8.0 و 3.0.0)
+history/play/3.0.0/        خود نسخهٔ نخست واقعی
 android/                   نمونه APK: FLAG_SECURE + portrait
 ios/README.md
 docs/
@@ -100,21 +99,21 @@ Google داخل PWA standalone پاپ‌آپ GIS را می‌بندد.
 - بدون KV: حافظه + فایل `/tmp` همان instance. ورود اگر API در دسترس نباشد fail-open است
 - برای قفل جدی چندسروره، در Vercel یک Upstash/KV وصل کن
 
-## 10. باگ‌هایی که تا 3.7.0 درست شدند
+## 10. باگ‌هایی که تا 3.8.0 درست شدند
 - کلیک نسخه‌ها می‌رفت یک صفحه ثابت era.html
 - فرمان سریع روی گوشی مخفی می‌شد
 - heartbeat کاربر را وسط کار پرت می‌کرد
 - GIS popup داخل PWA اندروید می‌مرد
 - «قفل و خروج» ایمیل را آزاد نمی‌کرد
+- در 3.8.0 آرشیو شلوغ بود؛ خلوت شد به نسخهٔ نخست ۳.۰.۰ + نسخهٔ نو ۳.۸.۰ و نسخهٔ نخست دکمهٔ «بازگشت به نسخهٔ جدید» گرفت
 
 ## 11. دیتابیس محلی
 - زنده: IndexedDB `mamali-trusted-identity-v1` نسخه 2
-- آرشیو: `mamali-archive-identity-xxx`
+- آرشیو: `mamali-archive-identity-300` (فقط برای 3.0.0)
 - store `sessions` + `events`
 - فقط profile: sub, email, name, picture, verifiedAt — نه idToken
 
 ## 12. دیپلوی
-- شاخه Arena این جلسه: `arena/01a01bbb-mamali` — روی همین کار کن
 - Vercel پروژه `mamali-orbit` از `main` پروداکشن می‌سازد
 - برای زنده کردن سایت PR به main بده
 - تست: `node --check assets/app.js && node tests/smoke.mjs`
@@ -129,6 +128,7 @@ Client ID گوگل عمومی است.
 - دقیقاً ۶ کارت feature-card
 - start_url و rewrite `/Mamali/`
 - زبان fa و dir=rtl
+- آرشیو فقط 3.0.0 و 3.8.0؛ نسخهٔ میانی بدون دلیل اضافه نکن
 
 ## 15. سوال‌های ساده برای کاربر
 1. اپ را از Chrome نصب کرده یا APK وب‌ویو؟
@@ -137,4 +137,4 @@ Client ID گوگل عمومی است.
 4. اسکرین‌شات وب نرم باشد یا حداکثر؟
 
 ---
-Mamali Orbit 3.7.0 — Arena.ai Agent — 2026-08-19
+Mamali Orbit 3.8.0 — Arena.ai Agent — 2026-08-19
