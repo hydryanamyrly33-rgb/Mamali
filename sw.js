@@ -1,11 +1,11 @@
-const APP_VERSION = '3.3.0';
-const CACHE_NAME = 'mamali-orbit-v3.3.0';
+const APP_VERSION = '3.3.1';
+const CACHE_NAME = 'mamali-orbit-v3.3.1';
 const OFFLINE_DOCUMENT = './index.html';
 const APP_SHELL = [
   './',
   OFFLINE_DOCUMENT,
-  './assets/styles.css?v=3.3.0',
-  './assets/app.js?v=3.3.0',
+  './assets/styles.css?v=3.3.1',
+  './assets/app.js?v=3.3.1',
   './assets/favicon.svg',
   './assets/social-preview.svg',
   './assets/icons/icon-192.png',
@@ -52,7 +52,6 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Don't cache Google OAuth / GSI requests
   if (url.pathname.includes('oauth') || url.hostname.includes('google')) return;
 
   event.respondWith((async () => {

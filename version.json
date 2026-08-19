@@ -1,16 +1,19 @@
 {
-  "version": "3.3.0",
-  "previous_version": "3.2.0",
+  "version": "3.3.1",
+  "previous_version": "3.3.0",
   "channel": "stable",
-  "released_at": "2026-08-19T09:00:00.000Z",
+  "released_at": "2026-08-19T12:00:00.000Z",
   "minimum_supported_version": "3.0.0",
   "platforms": ["android", "windows", "web"],
   "notes": [
-    "تعمیر کامل ورود گوگل در حالت اپ نصب‌شده Android (PWA Standalone, TWA, APK) با FedCM + OAuth id_token redirect + باز کردن در مرورگر خارجی",
-    "قفل اجباری عمودی (Portrait) برای سایت و اپ: manifest portrait-primary + Screen Orientation API + هشدار لنداسکیپ",
-    "محافظت از اسکرین‌شات: overlay هنگام blur/visibilitychange، بلوکه PrintScreen، no-contextmenu، print hide، و FLAG_SECURE برای APK",
-    "درخواست سیستمی مجوزها در اولین ورود اپ: notification، persistent storage، orientation lock و secure mode",
-    "بازطراحی کامل کارت ورود گوگل با glow متحرک، shimmer، badge جدید، چیپ‌ها و fallbackهای تضمینی",
-    "آنتی کرش برای چت طولانی با بهینه‌سازی حافظه و کاهش payload"
+    "گرد کردن کامل نشان سه‌بعدی گوگل (50% border-radius) و حذف متن امکانات از آن ناحیه برای زیبایی",
+    "تشخیص هوشمند دستگاه (Android/Windows/iOS) با badge زنده و toast خوش‌آمدگویی",
+    "بهبود طراحی ویندوز: کاهش فضای خالی بی‌فایده، کامپکت کردن android-section، افکت هاور موس",
+    "ریسپانسیو هوشمند: container query و چیدمان بهینه برای هر سایز (موبایل/تبلت/دسکتاپ عریض)",
+    "قفل عمودی پایدار با overlay مینیمال (بدون خطای مزاحم اسکرین‌شات) و تلاش هر ۲ ثانیه",
+    "محافظت اسکرین‌شات فقط با FLAG_SECURE برای APK (بدون overlay و toast اذیت‌کن تو وب)",
+    "تعمیر ورود گوگل در اپ اندروید (FedCM + OAuth id_token redirect + external browser) با طراحی قبلی حفظ شده",
+    "درخواست سیستمی دقیق مجوزها (notification + persistent storage) در اولین ورود اپ",
+    "مستندسازی کامل پروژه برای چت بعدی و AI بعدی"
   ]
 }

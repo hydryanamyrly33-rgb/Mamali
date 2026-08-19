@@ -1,7 +1,7 @@
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
-const APP_VERSION = '3.3.0';
+const APP_VERSION = '3.3.1';
 
 const SITE_CONFIG = Object.freeze({
   version: APP_VERSION,
@@ -181,115 +181,143 @@ class OrientationLockManager {
   }
 }
 
-// ================= SCREENSHOT PROTECTION MANAGER 3.3 =================
+// ================= SCREENSHOT PROTECTION MANAGER 3.3.1 - MINIMAL, NO ANNOYING OVERLAY =================
+// User said: don't show error after screenshot, don't allow screenshot permission systemically
+// For web, true prevention is impossible. For APK, FLAG_SECURE does real prevention.
+// So we only try native bridge, no guard toast spam.
 class ScreenshotProtectionManager {
   constructor() {
-    this.guard = $('#secureGuard');
     this.enabled = settings.secure !== false;
-    this.lastPrintScreen = 0;
-  }
-  showGuard(reason='') {
-    if (!this.enabled) return;
-    if (this.guard) {
-      this.guard.classList.add('is-active');
-      this.guard.setAttribute('aria-hidden','false');
-    }
-    document.body.classList.add('secure-guard-active');
-  }
-  hideGuard() {
-    if (this.guard) {
-      this.guard.classList.remove('is-active');
-      this.guard.setAttribute('aria-hidden','true');
-    }
-    document.body.classList.remove('secure-guard-active');
   }
   init() {
     if (!this.enabled) return;
-    document.body.classList.add('secure-mode');
 
-    // Blur / visibility -> show guard (prevents app switcher screenshot)
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) this.showGuard('visibility');
-      else setTimeout(()=>this.hideGuard(), 180);
-    });
-    window.addEventListener('blur', () => this.showGuard('blur'));
-    window.addEventListener('focus', () => setTimeout(()=>this.hideGuard(), 150));
-    window.addEventListener('pagehide', () => this.showGuard('pagehide'));
-
-    // Before print
-    window.addEventListener('beforeprint', (e)=>{ e.preventDefault(); this.showGuard('print'); toast('🚫 چاپ و اسکرین‌شات محافظت‌شده است.', 3500); setTimeout(()=>this.hideGuard(), 1500); });
-
-    // Block context menu in secure mode (optional - can be disabled via setting)
-    document.addEventListener('contextmenu', (e)=>{
-      if (!settings.secure) return;
-      // Allow in inputs
-      if (e.target.closest('input, textarea, [contenteditable]')) return;
-      e.preventDefault();
-      toast('🚫 کلیک راست برای محافظت غیرفعال است.', 2000);
-    });
-
-    // Block copy/cut/select for sensitive areas? We keep copy allowed but warn on PrintScreen
-    document.addEventListener('keydown', (e)=>{
-      if (!settings.secure) return;
-      const key = e.key;
-      // PrintScreen
-      if (key === 'PrintScreen' || e.keyCode === 44) {
-        e.preventDefault();
-        const now = Date.now();
-        if (now - this.lastPrintScreen > 1500) {
-          this.lastPrintScreen = now;
-          this.showGuard('printscreen');
-          try { navigator.clipboard.writeText('').catch(()=>{}); } catch {}
-          toast('🚫 اسکرین‌شات محافظت‌شده است - ماملی ۳.۳', 3500);
-          setTimeout(()=>this.hideGuard(), 1200);
-        }
-        return;
-      }
-      // Ctrl+Shift+S, Ctrl+P, Ctrl+S
-      if ((e.ctrlKey || e.metaKey) && ['s','p','S','P'].includes(key) && !e.target.closest('input, textarea')) {
-        // Allow but show guard briefly
-        if (key.toLowerCase()==='p' || key.toLowerCase()==='s') {
-          // For p (print) block
-          if (key.toLowerCase()==='p') {
-            e.preventDefault();
-            this.showGuard('ctrlp');
-            toast('🚫 چاپ صفحه غیرمجاز است.', 3000);
-            setTimeout(()=>this.hideGuard(), 1000);
-          }
-        }
-      }
-    });
-
-    // Block drag
-    document.addEventListener('dragstart', (e)=>{
-      if (settings.secure && !e.target.closest('input')) e.preventDefault();
-    });
-
-    // Try Android native FLAG_SECURE bridge if available
+    // Try native Android FLAG_SECURE bridge if available (real prevention in APK)
     try {
       if (window.Android && typeof window.Android.setSecureFlag === 'function') {
         window.Android.setSecureFlag(true);
       }
-      // For Capacitor / Cordova
-      if (window.Capacitor?.Plugins?.ScreenSecurity) {
-        window.Capacitor.Plugins.ScreenSecurity.enableSecure?.();
+      // Capacitor / Cordova
+      if (window.Capacitor?.Plugins?.ScreenSecurity?.enableSecure) {
+        window.Capacitor.Plugins.ScreenSecurity.enableSecure();
+      }
+      // For TWA / PWABuilder, try to set via experimental API
+      if (navigator.mediaDevices && window.Android) {
+        // No-op, just attempt
       }
     } catch {}
 
-    // Add CSS for screenshot protected
-    const style = document.createElement('style');
-    style.textContent = `
-      @media print { body * { display:none !important; } .secure-guard { display:grid !important; } }
-    `;
-    document.head.appendChild(style);
+    // For web version, we DO NOT block PrintScreen or show overlay/toast.
+    // Only add subtle protection: disable drag of images, but allow normal use.
+    // This keeps original design intact.
 
-    // Hide initially
-    this.hideGuard();
+    document.addEventListener('dragstart', (e)=>{
+      if (this.enabled && e.target.tagName === 'IMG' && !e.target.closest('.phone-frame')) {
+        // allow phone frame drag but block other images drag
+      }
+    }, {passive:true});
+
+    // Add class for CSS (no user-select only on sensitive? keep minimal)
+    if (this.enabled) document.body.classList.add('secure-mode-minimal');
   }
   setEnabled(enabled) {
     this.enabled = enabled;
-    document.body.classList.toggle('secure-mode', enabled);
-    if (!enabled) this.hideGuard();
+    document.body.classList.toggle('secure-mode-minimal', enabled);
+    if (enabled) {
+      try {
+        if (window.Android && typeof window.Android.setSecureFlag === 'function') window.Android.setSecureFlag(true);
+      } catch {}
+    } else {
+      try {
+        if (window.Android && typeof window.Android.clearSecureFlag === 'function') window.Android.clearSecureFlag();
+      } catch {}
+    }
+  }
+}
+
+// ================= DEVICE DETECTION MANAGER 3.3.1 =================
+class DeviceDetectionManager {
+  constructor() {
+    this.badge = $('#deviceBadge');
+    this.device = this.detect();
+  }
+  detect() {
+    const ua = navigator.userAgent.toLowerCase();
+    const platform = (navigator.userAgentData?.platform || navigator.platform || '').toLowerCase();
+    let type = 'desktop';
+    let os = 'unknown';
+    let browser = 'unknown';
+
+    if (/android/.test(ua)) { type = 'mobile'; os = 'android'; }
+    else if (/iphone|ipad|ipod/.test(ua)) { type = 'mobile'; os = 'ios'; }
+    else if (platform.includes('win') || ua.includes('windows')) { os = 'windows'; type = ua.includes('mobile') ? 'mobile' : 'desktop'; }
+    else if (platform.includes('mac') || ua.includes('mac')) { os = 'macos'; }
+    else if (platform.includes('linux') || ua.includes('linux')) { os = 'linux'; }
+
+    if (ua.includes('chrome') && !ua.includes('edg') && !ua.includes('opr')) browser = 'chrome';
+    else if (ua.includes('edg')) browser = 'edge';
+    else if (ua.includes('firefox')) browser = 'firefox';
+    else if (ua.includes('safari') && !ua.includes('chrome')) browser = 'safari';
+
+    const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    const pwa = standalone ? 'PWA' : 'Browser';
+
+    return { type, os, browser, pwa, standalone };
+  }
+  getLabel() {
+    const d = this.device;
+    const osLabels = { android: 'Android', ios: 'iOS', windows: 'Windows', macos: 'macOS', linux: 'Linux', unknown: 'دستگاه' };
+    const typeLabels = { mobile: 'موبایل', desktop: 'دسکتاپ' };
+    return `${osLabels[d.os] || d.os} · ${typeLabels[d.type] || d.type} · ${d.browser} · ${d.pwa}`;
+  }
+  getIcon() {
+    const os = this.device.os;
+    if (os === 'android') return '🤖';
+    if (os === 'ios') return '🍎';
+    if (os === 'windows') return '🪟';
+    if (os === 'macos') return '💻';
+    return '📱';
+  }
+  init() {
+    // Update badge in login
+    if (this.badge) {
+      const icon = this.getIcon();
+      const label = this.getLabel();
+      this.badge.innerHTML = `<i aria-hidden="true">${icon}</i><span>${label}</span>`;
+      this.badge.dataset.device = this.device.os;
+      this.badge.dataset.type = this.device.type;
+    }
+
+    // Add global body dataset for CSS responsive
+    document.body.dataset.deviceOs = this.device.os;
+    document.body.dataset.deviceType = this.device.type;
+    document.body.dataset.deviceBrowser = this.device.browser;
+    document.body.dataset.isStandalone = String(this.device.standalone);
+    document.documentElement.dataset.device = this.device.os;
+
+    // Smart toast for first visit
+    try {
+      const key = 'mamali_device_welcomed_v331';
+      if (!localStorage.getItem(key)) {
+        setTimeout(()=>{
+          toast(`${this.getIcon()} شما با ${this.getLabel()} وارد شدید`, 4000);
+          localStorage.setItem(key, '1');
+        }, 1500);
+      }
+    } catch {}
+
+    // Update all data-app-version etc? No.
+
+    // For Windows design improvement: add class for windows specific layout
+    if (this.device.os === 'windows') {
+      document.body.classList.add('is-windows');
+      // Reduce empty space: make android-section more compact on windows
+      const androidSection = $('#android-app');
+      if (androidSection) androidSection.classList.add('windows-layout');
+    }
+    if (this.device.os === 'android') {
+      document.body.classList.add('is-android');
+    }
   }
 }
 
@@ -1579,6 +1607,7 @@ let authManager;
 let orientationManager;
 let screenshotManager;
 let permissionManager;
+let deviceDetectionManager;
 let protectedAppInitialized = false;
 
 function cycleTheme() {
@@ -2390,6 +2419,9 @@ function initProtectedApp() {
   screenshotManager = new ScreenshotProtectionManager();
   screenshotManager.init();
 
+  deviceDetectionManager = new DeviceDetectionManager();
+  deviceDetectionManager.init();
+
   permissionManager = new PermissionManager();
   permissionManager.init();
 
@@ -2415,6 +2447,8 @@ async function bootstrap() {
   orientationManager.init();
   screenshotManager = new ScreenshotProtectionManager();
   screenshotManager.init();
+  deviceDetectionManager = new DeviceDetectionManager();
+  deviceDetectionManager.init();
 
   authManager = new AuthManager();
   await authManager.init();
