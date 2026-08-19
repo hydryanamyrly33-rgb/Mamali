@@ -1,5 +1,5 @@
 /**
- * Mamali Orbit 3.7.0 — single-session lock (one Google email = one live device).
+ * Mamali Orbit 3.8.0 — single-session lock (one Google email = one live device).
  *
  * Persistence:
  *  1) Vercel KV / Upstash REST if KV_REST_API_URL + KV_REST_API_TOKEN exist
@@ -16,7 +16,7 @@
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 
-const APP_VERSION = '3.7.0';
+const APP_VERSION = '3.8.0';
 const LOCK_TTL_MS = 14 * 24 * 60 * 60 * 1000;
 const TMP_PATH = '/tmp/mamali-session-locks.json';
 const ALLOWED_ORIGINS = [

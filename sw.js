@@ -1,11 +1,11 @@
-const APP_VERSION = '3.7.0';
-const CACHE_NAME = 'mamali-orbit-v3.7.0';
+const APP_VERSION = '3.8.0';
+const CACHE_NAME = 'mamali-orbit-v3.8.0';
 const OFFLINE_DOCUMENT = './index.html';
 const APP_SHELL = [
   './',
   OFFLINE_DOCUMENT,
-  './assets/styles.css?v=3.7.0',
-  './assets/app.js?v=3.7.0',
+  './assets/styles.css?v=3.8.0',
+  './assets/app.js?v=3.8.0',
   './assets/favicon.svg',
   './assets/social-preview.svg',
   './assets/icons/icon-192.png',

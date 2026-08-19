@@ -26,15 +26,6 @@ const requiredFiles = [
   'api/session.js',
   'history/versions.json',
   'history/play/3.0.0/index.html',
-  'history/play/3.1.0/index.html',
-  'history/play/3.2.0/index.html',
-  'history/play/3.3.0/index.html',
-  'history/play/3.3.1/index.html',
-  'history/play/3.4.0/index.html',
-  'history/play/3.5.0/index.html',
-  'history/play/3.6.0/index.html',
-  'history/play/3.6.1/index.html',
-  'history/play/3.6.2/index.html',
   'PROJECT_GUIDE_FOR_NEXT_AI.md',
 ];
 
